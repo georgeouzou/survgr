@@ -22,7 +22,7 @@ def hattblock_info(request, id):
 		'name': hb.name,
 		'center_lon': hb.center_lon,
 		'center_lat': hb.center_lat,
-		'okxe_coefficients': {c.type: c.value for c in hb.okxecoefficient_set}
+		'okxe_coefficients': {c.type: c.value for c in hb.okxecoefficient_set.all()}
 	}
 	return HttpResponse(json.dumps(hb, ensure_ascii=False), content_type="application/json; charset=utf-8")
 	
