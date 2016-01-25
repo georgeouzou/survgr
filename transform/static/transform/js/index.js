@@ -1,32 +1,4 @@
-$(function() {
-  var hattblockSource = new ol.source.Vector({
-    url: HATTBLOCK_FEATURES_URL,
-    format: new ol.format.GeoJSON()
-  });
-
-
-  
-  var map = new ol.Map({
-    layers:[
-      new ol.layer.Tile({
-        source: new ol.source.OSM()
-      }),
-      new ol.layer.Vector({
-        source: hattblockSource
-      })
-    ],
-    target: "map",
-    view: new ol.View({
-      projection: 'EPSG:4326', // wgs84,
-      center: [25,37],
-      zoom: 6
-    })
-  });
-
-  $("#map").on("click", function(e){
-    console.log(hattblockSource.getFeatures().length);
-  });
-
+function initBloodhound(){
   var charMap = {
     "ά": "α",
     "έ": "ε",
@@ -43,9 +15,17 @@ $(function() {
     });
     return input;
   };
-  var states = ['Άβδηρα', 'Αγαθονήσιον', 'Αγ.Ειρήνη', 'Αγιά', 'Άγ.Κήρυκος',
-    'Αγ.Μαρίνα', 'Άγ.Ματθαίος', 'Αγ.Νικόλαος-Βόρ.', 'Αγ.Νικόλαος-Νότ.', 'Άγ.Νικόλαος-Κρήτης', 'Hawaii',
-     'Αγ.Παρασκευή', 'Άγ.Πέτρος', 'Αγιόφυλλον'];
+  
+  var initBloodhoundData = function(featureCollection){
+    return $.map(featureCollection.features, function(feat){
+      var name = feat.properties.name;
+      return {
+        id: feat.id,
+        name: normalize(name).replace(/[-.]/g,' '),
+        displayName: name
+      };
+    });
+  }
 
   var queryTokenizer = function (query) {
     return normalize(query).split(/[-.\s+]/g);
@@ -55,15 +35,10 @@ $(function() {
       datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
       //datumTokenizer: datumTokenizer,
       queryTokenizer: queryTokenizer,
-      local: $.map(hattblockSource.getFeatures(), function (feat) {
-          return {
-              id: feat.id,
-               // Normalize the name - use this for searching
-              name: normalize(feat.name).replace(/[-.]/g, ' '),
-              // Include the original name - use this for display purposes
-              displayName: name
-          };
-      })
+      prefetch: {
+        url: HATTBLOCK_FEATURES_URL,
+        transform: initBloodhoundData
+      }
   });
 
   $('.typeahead').typeahead({
@@ -73,16 +48,45 @@ $(function() {
     highlight: false
   },{
     // dataset
-    name: 'hattblocks',
+    //name: 'hattblocks',
     display: 'displayName',
     source: engine,
   });
+}
+
+
+function initMap(){
+  var map = new ol.Map({
+    layers:[
+      new ol.layer.Tile({
+        source: new ol.source.OSM()
+      }),
+      new ol.layer.Vector({
+        source: new ol.source.Vector({
+          url:HATTBLOCK_FEATURES_URL,
+          format: new ol.format.GeoJSON()
+        })
+      }),
+    ],
+    target: "map",
+    view: new ol.View({
+      projection: 'EPSG:4326', // wgs84,
+      center: [25,37],
+      zoom: 6
+    })
+  });
+
+}
+
+
+
+$(function() { 
+  initBloodhound();
+  initMap();
 
   $('.typeahead').bind('typeahead:select', function(ev, suggestion) {
     console.log(suggestion);
-
   });
-
 });
 
 
