@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os.path
+import os
 from functools import partial
 from itertools import izip
 
@@ -78,7 +78,7 @@ class WorkHorseTransformer(object):
 		self.log = []
 		
 		if 'from_hatt_id' in kwargs:
-			if not 'from_srid' in kwargs:
+			if 'from_srid' not in kwargs:
 				kwargs['from_srid'] = HATT_SRID
 			try:
 				kwargs['from_hattblock'] = Hattblock.objects.get(id=kwargs['from_hatt_id'])
@@ -101,7 +101,7 @@ class WorkHorseTransformer(object):
 
 	def _compile(self, **kwargs):
 	 	
-	 	from_srid = kwargs['from_srid']
+		from_srid = kwargs['from_srid']
 		to_srid = kwargs['to_srid']
 
 		# check if from-to ref. systems are the same (except if we are dealing with hatt blocks)
@@ -120,9 +120,9 @@ class WorkHorseTransformer(object):
 
 		# specialize proj4 definition for any of the reference systems that are hatt blocks
 		if from_srid == HATT_SRID:
-			srs1 = RefSys(name = srs1.name, datum_id = srs1.datum_id, proj4text = kwargs['from_hattblock'].proj4text)
+			srs1 = RefSys(name = '%s (%s)' % (srs1.name, kwargs['from_hattblock'].name), datum_id = srs1.datum_id, proj4text = kwargs['from_hattblock'].proj4text)
 		if to_srid == HATT_SRID:
-			srs2 = RefSys(name = srs2.name, datum_id = srs2.datum_id, proj4text = kwargs['to_hattblock'].proj4text)
+			srs2 = RefSys(name = '%s (%s)' % (srs1.name, kwargs['to_hattblock'].name), datum_id = srs2.datum_id, proj4text = kwargs['to_hattblock'].proj4text)
 	 	
 		# check if from-datum is the old greek, so we can use OKXE transformation
 		if srs1.datum_id == 2 and srs2.datum_id != 2:
@@ -188,7 +188,7 @@ class WorkHorseTransformer(object):
 		return tuple(filter(lambda array: array is not None, [x, y, z]))
 
 	def log(self):
-		return '\n'.join(self.log)
+		return '\n'.join(list(self.log))
 
 #
 # Below are the transformers that can be used with the workhorse transformer
@@ -219,14 +219,13 @@ class OKXETransformer(object):
 
 		return tuple(filter(lambda array: array is not None, [x, y, z]))
 
-
 class HeposTransformer(object):
 	'''
 	Func object for HTRS07 Datum.
 	Transforms in place from HTRS / TM07 to GGRS87 / GG (inverse=False)
 	or from GGRS87 / GG to HTRS / TM07 (inverse=True)
 	'''
-	grid_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "htrs/hepos.grb")
+	grid_path = os.path.join(os.path.dirname(__file__), "htrs", "hepos.grb")
 
 	def __init__(self, inverse=False):
 		# grid containing the shifts de, dn in cm
@@ -241,7 +240,6 @@ class HeposTransformer(object):
 
 	def __call__(self, x, y, z=None):
 		grid = self._grid
-		
 		if self._inverse: #ggrs -> htrs
 			# first apply the approximate tranformation
 			h_xyz = pyproj.transform(self._ggrs_proj4, self._htrs_proj4, x, y, z)

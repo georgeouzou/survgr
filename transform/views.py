@@ -1,6 +1,6 @@
 import json
 
-from django.http import HttpResponse, Http404, JsonResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
@@ -15,7 +15,7 @@ def hattblock_info(request, id):
 	try:
 		hb = Hattblock.objects.get(id=id)
 	except Hattblock.DoesNotExist:
-		return JsonResponse({'error':'Hattblock does not exist.'}, status=404)
+		raise Http404
 
 	hb = {
 		'id': hb.id,
@@ -24,37 +24,46 @@ def hattblock_info(request, id):
 		'center_lat': hb.center_lat,
 		'okxe_coefficients': {c.type: c.value for c in hb.okxecoefficient_set.all()}
 	}
-	return HttpResponse(json.dumps(hb, ensure_ascii=False), content_type="application/json; charset=utf-8")
-	
+	return json_response(hb)
+
+from shapely.ops import transform as shapely_transform
+from shapely.geometry import asShape
+from shapely import speedups
+if speedups.available:
+	speedups.enable()
+
 @csrf_exempt
 def transform(request):
-	if request.method == "GET": raise Http404
-	if len(request.body) > 1024 * 250: raise Http404 # 250 kB
-	
+	#if request.method == "GET": raise Http404
+	#if len(request.body) > 1024 * 250: raise Http404 # 250 kB	
 	try:
 		data = json.loads(request.body)
-	except ValueError:
-		return JsonResponse({'error':'Could not parse JSON object.'})
+	except ValueError as e:
+		return json_response({
+				'status':'fail',
+				'data':{ 'data': str(e) }
+			}, status=400)
 
-	print 'size of data = %d bytes' % len(request.body)
-	del request
-	
-	params = data['params']
-	geometries = data['geometries']
-	
-	from shapely.ops import transform as shape_transform
-	from shapely.geometry import asShape
-	
-	
+	try:
+		params = data['params']
+		features = data['features']
+	except KeyError as e:
+		return json_response({
+				'status': 'fail',
+				'data':{ e[0]: '%f  is required'}
+			}, status=400)
+
+	# # compile transformer
 	horse = WorkHorseTransformer(**params)
 
-	for i, geom in enumerate(geometries):
-		geometries[i] = shape_transform(horse, asShape(geom)).__geo_interface__
+	for i, feat in enumerate(features):
+		shapely_geometry = asShape(feat['geometry']) # map to shapely object
+		shapely_geometry = shapely_transform(horse, shapely_geometry) # transform feature geometry 
+		feat['geometry'] = shapely_geometry.__geo_interface__ # convert to dictionary geojson interface
 
-	#return JsonResponse({'geometries':geometries, 'log':horse.log()})
-	return HttpResponse(json.dumps({'geometries':geometries, 'log':horse.log()}, ensure_ascii=False), content_type="application/json;charset=utf-8")
+	return json_response({'features':features})
 
-		
-		
-		
+# utility
+def json_response(data, status=200):
+	return HttpResponse(json.dumps(data, ensure_ascii=False), content_type="application/json; charset=utf-8", status=status)	
 
