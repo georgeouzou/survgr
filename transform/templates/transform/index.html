@@ -1,4 +1,5 @@
 {% load staticfiles %}
+
 <!DOCTYPE HTML>
 <html lang="el-GR">
 	<head>
@@ -8,14 +9,23 @@
     <!--jQuery-->
     <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script> 
     <!--Open Layers 3-->
-    <link rel="stylesheet" href="http://openlayers.org/en/v3.11.1/css/ol.css" type="text/css">
-    <script src="http://openlayers.org/en/v3.11.1/build/ol.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="http://openlayers.org/en/v3.13.0/css/ol.css" type="text/css">
+    <script src="http://openlayers.org/en/v3.13.0/build/ol.js" type="text/javascript"></script>
     <!--Bootstrap 3-->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
     <!--Twitter typeahead-->
     <script src="{% static 'transform/js/typeahead.js' %}" type="text/javascript"></script>
     <link href="{% static 'transform/css/typeaheadjs.css' %}" rel="stylesheet">
+    <!--styling-->
+    <style>
+      .map{
+        width:100%;
+        height:400px;
+        margin:0;
+        padding:0;
+      }
+    </style>
   </head>
 
   <body>
@@ -26,11 +36,12 @@
       </div>
 
       {% regroup ref_systems|dictsortreversed:"datum" by datum as datums %}
-    	<form id="form-params" class="form-vertical" role="form" method="post" action="{% url 'transform' %}"> 
-        <div class="row"> <!--Reference system selection row -->     
+    	<form id="form-params" class="form-vertical" role="form" method="post" action="{% url 'transform' %}">
+        <!--Reference system selection row -->
+        <div class="row">      
           <div class="form-group col-sm-6"> 
             <label for="from-srid" class="form-control-label" >Από το σύστημα αναφοράς:</label>
-            <select id="from-srid" name="from_srid" class="form-control">
+            <select id="from-srid" name="from_srid" class="srid-selection form-control">
       			{% for datum in datums %}
        				<optgroup label="{{ datum.grouper }}">
       				{% for refsys in datum.list %}
@@ -53,25 +64,27 @@
             </select>
           </div>
         </div>
-
-        <div class="row"> <!--Hatt block selection row-->
-          <div id="container-from-hatt" class="form-group col-sm-6">
-            <label for="from-hatt-id" class="form-control-label">Από το φύλλο χάρτη:</label>
+        <!--Hatt block selection row-->
+        <div class="row"> 
+          <div class="hatt-selection form-group col-sm-6">
+            <label for="from-hatt-name" class="form-control-label">Από το φύλλο χάρτη ΓΥΣ 1:50.000:</label>
             <div class="input-group">
-              <input type="text" id="from-hatt-id" name="from_hatt_id" class="form-control typeahead" autocomplete="off" spellcheck="false"></input>
+              <input type="text" id="from-hatt-name" class="hatt-name form-control typeahead" autocomplete="off" placeholder="Εισάγετε όνομα&hellip;" ></input>
+              <input type="hidden" class="hatt-id" name="from_hatt_id" value="-1"/>
               <span class="input-group-btn">
-                <button type="button" class="btn btn-default">
+                <button type="button" class="btn btn-default" data-toggle="modal" data-target="#mapModal">
                   <span class="glyphicon glyphicon-map-marker"></span> Επιλογή
                 </button>
               </span>
             </div>
           </div>
-          <div id="container-to-hatt" class="form-group col-sm-6">
-            <label for="to-hatt-id" class="form-control-label">Πρός το φύλλο χάρτη:</label>
+          <div class="hatt-selection form-group col-sm-6">
+            <label for="to-hatt-name" class="form-control-label">Πρός το φύλλο χάρτη ΓΥΣ 1:50.000:</label>
             <div class="input-group">
-              <input type="text" id="to-hatt-id" name="to_hatt_id" class="form-control typeahead" autocomplete="off" spellcheck="false"></input>
+              <input type="text" id="to-hatt-name" class="hatt-name form-control typeahead" autocomplete="off" placeholder="Εισάγετε όνομα&hellip;" ></input>
+              <input type="hidden" class="hatt-id" name="to_hatt_id" value="-1"/>
               <span class="input-group-btn">
-                <button type="button" class="btn btn-default">
+                <button type="button" class="btn btn-default" data-toggle="modal" data-target="#mapModal">
                   <span class="glyphicon glyphicon-map-marker"></span> Επιλογή
                 </button>
               </span>
@@ -82,13 +95,12 @@
       </form>
 
       <hr>
-    
+      <!--Input and output area-->
       <div class="row">
         <div class="form-group col-sm-5">
           <label for="input-points" class="form-control-label">Εισαγωγή σημείων:</label>
           <textarea id="input-points" class="form-control" rows="10"></textarea>
-        </div>  
-
+        </div>
         <div class="col-sm-2 btn-transform">
           <button class="btn btn-primary form-control">Go</button>
         </div>
@@ -97,17 +109,33 @@
           <textarea id="output-points" class="form-control" rows="10"></textarea>
         </div>
       </div>
- 
+
     </div> <!--container-->
     
-    <div id="map" class="map">
+    <!--hattblocks map modal-->
+    <div id="mapModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mapModalLabel">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title" id="mapModalLabel"></h4>
+          </div>
+          <div class="modal-body">
+            <h4 id="selected-feature-name">Επιλογή</h4>
+            <div class="map" id="map"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Επιστροφή</button>
+          </div>
+        </div>
+      </div>
     </div>
-
+  
   	<script src="{% static 'transform/js/index.js' %}" type="text/javascript"></script>	
     <script type="text/javascript">
       var HATTBLOCK_FEATURES_URL = "{% static 'transform/assets/hattblocks.min.geojson' %}";
     </script>
-
   </body>
-
 </html>

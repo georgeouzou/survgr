@@ -10,6 +10,16 @@ class OKXETransformTest(TestCase):
 		self.coeffs = [370552.68, 0.9997155, 0.0175123, -1.08e-09, 1.63e-09, 2.04e-09,\
 		4511927.23, -0.0174755, 0.9996979, -6.50e-10, 5.60e-10, -1.65e-09]
 
+	def test_coeff_num(self):
+		with self.assertRaises(ValueError):
+			hatt2ggrs.fwd([1]*13, -16997.09, -14277.15)
+		with self.assertRaises(ValueError):
+			hatt2ggrs.inv([1]*13, 353310.92, 4497950.95)
+		with self.assertRaises(ValueError):
+			hatt2ggrs.fwd([1]*9, -16997.09, -14277.15)
+		with self.assertRaises(ValueError):
+			hatt2ggrs.inv([1]*8, 353310.92, 4497950.95)
+
 	def test_forward_func(self):
 		self.setup()
 		x1, y1 = (-16997.09, -14277.15)

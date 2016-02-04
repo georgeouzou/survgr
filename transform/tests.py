@@ -6,7 +6,6 @@ from transform import WorkHorseTransformer
 
 class TransformAPITest(TestCase):
 	def test_horse(self):
-
 		params = {
 			'from_srid':1000005,
 			'to_srid': 2100

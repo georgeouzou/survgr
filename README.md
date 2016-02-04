@@ -1,5 +1,5 @@
 # survgr  
-A Python-Django-1.9 project for transforming coordinates between the various Coordinate Systems used in Greece.  
+A Python-2.7 Django-1.9 project for transforming coordinates between the various Coordinate Systems used in Greece.  
   
 It is (will be for the time being) a website / web api for transforming earth point coordinates and other geometries between:  
     -GGRS87 / TM87 (EPSG:2100 and EPSG:4121 - http://spatialreference.org/ref/epsg/ggrs87-greek-grid/)  
@@ -11,8 +11,9 @@ It is (will be for the time being) a website / web api for transforming earth po
     -The new HTRS07 / TM07 using the accurate transformation published by Hepos (http://www.hepos.gr/)  
   
 The project can be run locally:  
-    -Make an new python 2.7+ virtual environment  
+    -Make an new python 2.7 virtual environment
     -Pip install the requirements  
     -Rename the survgr/local_settings.py.template to local_settings.py  
-    -Django migrate to create a local sqlite db with some initial data  
+    -Django migrate to create a local sqlite db with some initial data
+    -Run htrs/grd2bin script to compile the hepos binary grid file
     -Run tests  
