@@ -3,7 +3,7 @@ The functions below transform projected coordinates of a point
 between the Old Greek datum and the GGRS87 datum using the
 published polynomial coefficients of OKXE (http://www.okxe.gr/el/)
 Old Greek datum:
- 	epsg: (http://spatialreference.org/ref/epsg/4815/)
+	epsg: (http://spatialreference.org/ref/epsg/4815/)
 	projection: Azimuthal Equidistant (Hatt map blocks)
 GGRS87 datum:
 	epsg: (http://spatialreference.org/ref/epsg/2100/html/)
@@ -66,10 +66,10 @@ def inv(coeffs, x, y):
 		x = idet * (d*e - b*n)
 		y = idet * (a*n - c*e)
 
- 		if (abs(x-x0) < convergence) and (abs(y-y0) < convergence):
- 			return (x, y)
- 		else:
- 			x0, y0 = x, y
- 			iters += 1
+		if (abs(x-x0) < convergence) and (abs(y-y0) < convergence):
+			return (x, y)
+		else:
+			x0, y0 = x, y
+			iters += 1
 
- 	return (0, 0)
+	return (0, 0)

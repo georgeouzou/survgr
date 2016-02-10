@@ -2,7 +2,7 @@ import os
 
 from django.test import TestCase
 
-from grid import GridFile
+from .grid import GridFile
 
 class HTRSGridFileTest(TestCase):
 

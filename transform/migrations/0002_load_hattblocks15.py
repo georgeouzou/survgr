@@ -25,11 +25,11 @@ def load(apps, schema_editor):
 				geometry=GEOSGeometry(json.dumps(chunk['geom']))
 			)
 			hattblocks.append(hb)
-			for ctype, cvalue in chunk['okxe_coeffs'].iteritems():
+			for ctype, cvalue in chunk['okxe_coeffs'].items():
 				coeffs.append(OKXECoefficient(block=hb,type=ctype,value=cvalue))
 
 		Hattblock.objects.bulk_create(hattblocks)
-   		OKXECoefficient.objects.bulk_create(coeffs)
+		OKXECoefficient.objects.bulk_create(coeffs)
 
 class Migration(migrations.Migration):
 

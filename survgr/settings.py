@@ -16,7 +16,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # secret file containing local conf
-from local_settings import *
+from survgr.local_settings import *
 
 
 # Application definition

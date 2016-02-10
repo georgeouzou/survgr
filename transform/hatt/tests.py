@@ -2,7 +2,7 @@
 from django.test import TestCase
 
 from .models import Hattblock, OKXECoefficient
-import hatt2ggrs
+from . import hatt2ggrs
 
 class OKXETransformTest(TestCase):
 

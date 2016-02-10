@@ -1,3 +1,11 @@
+/*
+ * Constants
+ */
+var NOT_SELECTED_ID = -1;
+
+/*
+ * Initializers
+ */
 function initBloodhound(){
 
   // hattblock names need normalization for nice autocompletion
@@ -44,17 +52,6 @@ function initBloodhound(){
     var hatt = $(this).parents('.hatt-selection');
     hatt.find('.hatt-id').val(obj.id);
   });
-
-  // $('.hatt-name').on('typeahead:change', function(e){
-  //   // check to which text box is the change happening
-  //   engine.search(e.target.value, function(suggestion){
-  //     if (suggestion.length == 1){
-  //       var hatt = $('.hatt-name').parents('.hatt-selection');
-  //       hatt.find('.hatt-id').val(suggestion[0].id);
-  //       console.log(hatt.find('.hatt-id').val());
-  //     } 
-  //   });
-  // });
   
   $('.hatt-name').typeahead({
     // options
@@ -69,14 +66,13 @@ function initBloodhound(){
   });
 }
 
-function initMap(){
-  /*
-   * Map initialization.
-   * Uses a single map instance enabling the user to select graphically 
-   * the hatt block of choice. The map is contained within a modal and 
-   * the modal is related/bound on the show event to the calling html 
-   * container class "hatt-selection" 
-   */
+function initMap() {
+    
+  // Map initialization.
+  // Uses a single map instance enabling the user to select graphically 
+  // the hatt block of choice. The map is contained within a modal and 
+  // the modal is related/bound on the show event to the calling html 
+  // container class "hatt-selection" 
 
   // this is the geojson source used in the map
   var hattblocks = new ol.source.Vector({
@@ -88,7 +84,7 @@ function initMap(){
       projection: 'EPSG:3857', //spherical merc 
       center: ol.proj.transform([25,38.4],'EPSG:4326','EPSG:3857'),
       zoom: 6
-  })
+  });
   var map = new ol.Map({
     layers:[
       new ol.layer.Tile({
@@ -115,7 +111,6 @@ function initMap(){
     $('#selected-feature-name').text('Επιλογή: ');
   });
 
-  var NOT_SELECTED_ID = -1;
   // set hatt id element values to default -1 (nothing selected)
   $('.hatt-id').val(NOT_SELECTED_ID);
   // related bound hatt container (contains the name and id html elements)
@@ -128,9 +123,6 @@ function initMap(){
   $('#mapModal').on('show.bs.modal', function (e){
     // get the related hatt container element and store it to the modal instance
     bound_hatt = $(e.relatedTarget).parents('.hatt-selection');
-    // change the title of the modal based on bound hatt container
-    var title = bound_hatt.find('label').text();
-    $(this).find('.modal-title').text(title);
     // clear previous selected feature if exists
     var selectedFeatures = selectAction.getFeatures();
     selectedFeatures.clear();
@@ -178,53 +170,121 @@ function initMap(){
   });
 }
 
-// on document load
+function initSridSelector(){
+  // visibility of hatt selection html elements is based
+  // on the selected srid
+  // SRIDS are defined in transform.py
+  var HATT_SRID = 1000000;
+  var OLD_GREEK_SRIDS = [1000000, 1000001, 1000002, 1000003, 4815];
+  function isOldGreek(srid){
+    return OLD_GREEK_SRIDS.indexOf(parseInt(srid)) != -1;
+  }
+
+  var ANIM_TIME = 300;
+  $(".srid-selection").on('change', function(){
+    fromSrid = $("#from-srid").val();
+    toSrid = $("#to-srid").val();
+
+    if (fromSrid == HATT_SRID || (isOldGreek(fromSrid) && !isOldGreek(toSrid))) {
+      $("#from-hatt").show(ANIM_TIME);
+    } else {
+      $("#from-hatt").hide(ANIM_TIME);
+    }
+
+    if (toSrid == HATT_SRID || (!isOldGreek(fromSrid) && isOldGreek(toSrid))) {
+      $("#to-hatt").show(ANIM_TIME);
+    } else {
+      $("#to-hatt").hide(ANIM_TIME);
+    }
+  });
+}
+
+
+/*
+ * Point Readers
+ */
+function readPointsAsTxt(){
+  //convert text to geojson interface points
+  points = [];
+
+  var parser = function(line){
+    var words = line.split(); // split by space
+    var id = words[0];
+    var x = parseFloat(words[1]);
+    var y = parseFloat(words[2]);
+    return {
+      "type": "Feature",
+      "id" : id,
+      "geometry" : {
+        "type": "Point",
+        "coordinates": [x, y]
+      }
+    }
+  };
+
+  $('#input-points').split("\n").forEach(function(line){
+
+  });
+}
+
+/*
+ * Main
+ */
 $(function() { 
   initBloodhound();
   initMap();
-  // $('.typeahead').bind('typeahead:select', function(ev, suggestion) {
-  //   console.log(suggestion);
-  // });
+  initSridSelector();
+
+
+  // var getParams = function(){
+  //           var params = {
+  //             from_srid:parseInt($('#from_srid').val()),
+  //             to_srid:parseInt($('#to_srid').val()),
+  //             from_hatt_id:parseInt($('#from_hatt_id').val()),
+  //             to_hatt_id:parseInt($('#to_hatt_id').val())
+  //           };
+  //           for (var p in params){
+  //             if (!params[p]){
+  //               delete params[p];
+  //             }
+  //           }
+  //           return params;
+  //         };
 
   var params = $('#form-params');
-  $(params).submit(function(e){
+  $('#form-params').submit(function(e){
     e.preventDefault();
-    var data = $(params).serialize();
+    var data = {};
+
+    $(params).serializeArray().forEach(function(pair){
+      if (pair.value != -1)
+        data[pair.name] = pair.value;
+    });
+    
+    JSON.stringify(data);
     console.log(data);
   });
+  // $('#form-params').submit(function(e){
+  //   e.preventDefault();   
+  //   $.ajax({
+  //     type: 'POST',
+  //     url: $(this).attr('action'),
+  //     dataType: 'json',
+  //     contentType: 'application/json;charset=utf-8',
+  //     data: JSON.stringify({
+  //       params:getParams(), 
+  //       geometries:getPoints()
+  //     })
+  //    }).done(function(response){
+  //     ;
+  //     setPoints(response.geometries);
+  //   });
+  // });
+
 
 });
 
 
-       // var getParams = function(){
-          //   var params = {
-          //     from_srid:parseInt($('#from_srid').val()),
-          //     to_srid:parseInt($('#to_srid').val()),
-          //     from_hatt_id:parseInt($('#from_hatt_id').val()),
-          //     to_hatt_id:parseInt($('#to_hatt_id').val())
-          //   };
-          //   for (var p in params){
-          //     if (!params[p]){
-          //       delete params[p];
-          //     }
-          //   }
-          //   return params;
-          // };
+       
 
-
-          // $('#input_params').submit(function(e){
-          //   e.preventDefault();   
-          //   $.ajax({
-          //     type: 'POST',
-          //     url: $(this).attr('action'),
-          //     dataType: 'json',
-          //     contentType: 'application/json;charset=utf-8',
-          //     data: JSON.stringify({
-          //       params:getParams(), 
-          //       geometries:getPoints()
-          //     })
-          //    }).done(function(response){
-          //     ;
-          //     setPoints(response.geometries);
-          //   });  
-          // });
+          

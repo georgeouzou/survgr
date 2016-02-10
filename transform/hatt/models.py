@@ -21,7 +21,7 @@ class Hattblock(models.Model):
 	def get_coeffs(self):
 		return self.okxecoefficient_set.order_by('type').values_list('value', flat=True)
 
-	def __unicode__(self):
+	def __str__(self):
 		return self.name
 
 class OKXECoefficient(models.Model):
@@ -33,5 +33,5 @@ class OKXECoefficient(models.Model):
 	type = models.CharField(max_length=3) # can be from A0...A5 or B0...B5
 	value = models.FloatField()
 
-	def __unicode__(self):
+	def __str__(self):
 		return '%s-%s: %e' % (self.block.name, self.type, self.value)

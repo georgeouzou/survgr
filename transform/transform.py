@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
 from functools import partial
-from itertools import izip
 
 import pyproj
 import numpy
 
-from hatt import hatt2ggrs
-from hatt.models import Hattblock
-from htrs.grid import GridFile
+from .hatt import hatt2ggrs
+from .hatt.models import Hattblock
+from .htrs.grid import GridFile
 
 DATUMS = {
 	# id : name
@@ -45,9 +44,9 @@ REF_SYS = {
 	1000003: RefSys('Παλαιό Ελληνικό / TM3 Ανατ.Ζώνη', 2, '+proj=tmerc +lat_0=34 +lon_0=3 +k=0.9999 +x_0=200000 +y_0=0 +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +units=m +no_defs'),
 	1000004: RefSys('HTRS07 (λ,φ)', 1, '+proj=longlat +ellps=GRS80 +towgs84=0,0,0 +no_defs'),
 	1000005: RefSys('HTRS07 / TM07', 1, '+proj=etmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=-2000000 +ellps=GRS80 +towgs84=0,0,0 +units=m +no_defs'),
-	1000006: RefSys('ΕΓΣΑ87 (X,Y,Z)', 0, '+proj=geocent +ellps=GRS80 +towgs84=-199.723,74.030,246.018 +no_defs'),
-	1000007: RefSys('Παλαιό Ελληνικό (X,Y,Z)', 2, '+proj=geocent +ellps=bessel +towgs84=456.387,372.620,496.818 +no_defs'),
-	1000008: RefSys('HTRS07 (X,Y,Z)', 1, '+proj=geocent +ellps=GRS80 +towgs84=0,0,0 +no_defs')
+	#1000006: RefSys('ΕΓΣΑ87 (X,Y,Z)', 0, '+proj=geocent +ellps=GRS80 +towgs84=-199.723,74.030,246.018 +no_defs'),
+	#1000007: RefSys('Παλαιό Ελληνικό (X,Y,Z)', 2, '+proj=geocent +ellps=bessel +towgs84=456.387,372.620,496.818 +no_defs'),
+	#1000008: RefSys('HTRS07 (X,Y,Z)', 1, '+proj=geocent +ellps=GRS80 +towgs84=0,0,0 +no_defs')
 }
 
 # mostly used constants below 
@@ -66,17 +65,18 @@ class WorkHorseTransformer(object):
 	'''
 	The workhorse transformer. Transforms from ref. system 1 to ref. system 2.
 	Keyword arguments can be: 
+		General keyworks:
 		-from_srid: the REF_SYS key corresponding to ref. system 1.
 		-to_srid: the REF_SYS key corresponding to ref. system 2.
-		-from_hatt_id: the id of the hatt block (given by OKXE service) if ref. system 1 is a hattblock.
-		-to_hatt_id: the id of the hatt block if ref. system 2 is a hattblock.
-		If from_srid or to_srid is not a hatt reference system
+		Hatt keywords:
+		-from_hatt_id: the id of the 1:50000 hatt block (given by OKXE service) if ref. system 1 is a hattblock.
+		-to_hatt_id: the id of the 1:50000 hatt block if ref. system 2 is a hattblock.
 	'''
 	
 	def __init__(self, **kwargs):
 		self.transformers = []
 		self.log = []
-		
+
 		if 'from_hatt_id' in kwargs:
 			if 'from_srid' not in kwargs:
 				kwargs['from_srid'] = HATT_SRID
@@ -100,7 +100,6 @@ class WorkHorseTransformer(object):
 			raise TransformerError("Malformed parameters.")
 
 	def _compile(self, **kwargs):
-	 	
 		from_srid = kwargs['from_srid']
 		to_srid = kwargs['to_srid']
 
@@ -115,15 +114,20 @@ class WorkHorseTransformer(object):
 
 		srs1 = REF_SYS[from_srid]
 		srs2 = REF_SYS[to_srid]
-
-		self.log.append('transformer: %s --> %s' % (srs1.name, srs2.name))
-
 		# specialize proj4 definition for any of the reference systems that are hatt blocks
 		if from_srid == HATT_SRID:
-			srs1 = RefSys(name = '%s (%s)' % (srs1.name, kwargs['from_hattblock'].name), datum_id = srs1.datum_id, proj4text = kwargs['from_hattblock'].proj4text)
+			srs1 = RefSys(name = '%s (%s)' % (srs1.name, kwargs['from_hattblock'].name), 
+						  datum_id = srs1.datum_id, 
+						  proj4text = kwargs['from_hattblock'].proj4text)
+		
 		if to_srid == HATT_SRID:
-			srs2 = RefSys(name = '%s (%s)' % (srs1.name, kwargs['to_hattblock'].name), datum_id = srs2.datum_id, proj4text = kwargs['to_hattblock'].proj4text)
+			srs2 = RefSys(name = '%s (%s)' % (srs1.name, kwargs['to_hattblock'].name), 
+						  datum_id = srs2.datum_id, 
+						  proj4text = kwargs['to_hattblock'].proj4text)
 	 	
+		# update log
+		self.log.append('transformer: %s --> %s' % (srs1.name, srs2.name))
+
 		# check if from-datum is the old greek, so we can use OKXE transformation
 		if srs1.datum_id == 2 and srs2.datum_id != 2:
 			block = kwargs['from_hattblock']
@@ -131,7 +135,7 @@ class WorkHorseTransformer(object):
 			if from_srid != HATT_SRID:
 				self._compile(from_srid=from_srid, to_srid=HATT_SRID, to_hattblock=block) # proj_transformer
 			# transform hatt to ggrs / greek grid
-			self.transformers.append(OKXETransformer(block, inverse=False))		
+			self.transformers.append(OKXETransformer(block.get_coeffs(), inverse=False))		
 			# call recursively with ggrs / greek grid to srid
 			self._compile(from_srid=TM87_SRID, to_srid=to_srid)
 			return # end
@@ -142,7 +146,7 @@ class WorkHorseTransformer(object):
 			# we need to transform from ggrs/greek grid to hatt so...we call recursively with ggrs / greek grid
 			self._compile(from_srid=from_srid, to_srid=TM87_SRID)
 			# and then transform from ggrs / greek grid to hatt map block
-			self.transformers.append(OKXETransformer(block, inverse=True))
+			self.transformers.append(OKXETransformer(block.get_coeffs(), inverse=True))
 			# if to_srid is not hatt projected but in the old greek datum... i.e. TM03
 			if to_srid != HATT_SRID:
 				self._compile(from_srid=HATT_SRID, to_srid=to_srid, from_hattblock=block)
@@ -167,6 +171,7 @@ class WorkHorseTransformer(object):
 			# and transform to longlat if not TM07
 			self._compile(from_srid=TM07_SRID, to_srid=to_srid)
 			return # end
+		
 		# last and general transformation
 		self.transformers.append(proj_transformer(srs1.proj4text, srs2.proj4text))
 
@@ -205,8 +210,8 @@ class OKXETransformer(object):
 	Transforms in place from Hatt ref system to GGRS87 / GG (inverse=False)
 	or from GGRS87 / GG to Hatt ref system (inverse=True)
 	'''
-	def __init__(self, hattblock, inverse=False):
-		self._coeffs = hattblock.get_coeffs()
+	def __init__(self, coeffs, inverse=False):
+		self._coeffs = coeffs
 		self._inverse = inverse
 		if inverse: # ggrs -> hatt
 			self._scalarfunc = hatt2ggrs.inv
@@ -214,7 +219,7 @@ class OKXETransformer(object):
 			self._scalarfunc = hatt2ggrs.fwd
 				
 	def __call__(self, x, y, z=None):
-		for index, pt in enumerate(izip(x, y)):
+		for index, pt in enumerate(zip(x, y)):
 			x[index], y[index] = self._scalarfunc(self._coeffs, pt[0], pt[1])
 
 		return tuple(filter(lambda array: array is not None, [x, y, z]))
@@ -244,7 +249,7 @@ class HeposTransformer(object):
 			# first apply the approximate tranformation
 			h_xyz = pyproj.transform(self._ggrs_proj4, self._htrs_proj4, x, y, z)
 			x, y = h_xyz[0], h_xyz[1] # we need to interpolate with htrs coords
-			for index, pt in enumerate(izip(x, y)):
+			for index, pt in enumerate(zip(x, y)):
 				de, dn = grid.interpolate(pt[0], pt[1])
 				x[index] -= de / 100.0 # grid file contains cm corrections
 				y[index] -= dn / 100.0
@@ -256,7 +261,7 @@ class HeposTransformer(object):
 			g_xyz = pyproj.transform(self._htrs_proj4, self._ggrs_proj4, x, y, z)
 			# then apply shift correction
 			g_x, g_y = g_xyz[0], g_xyz[1]
-			for index, pt in enumerate(izip(x, y)): #again we need to interpolate with htrs coords
+			for index, pt in enumerate(zip(x, y)): #again we need to interpolate with htrs coords
 				de, dn = grid.interpolate(pt[0], pt[1])
 				g_x[index] += de / 100.0
 				g_y[index] += dn / 100.0

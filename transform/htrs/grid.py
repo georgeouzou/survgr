@@ -21,7 +21,7 @@ class GridInfo(object):
 class GridFile(object):
 
 	def __init__(self, name, dtype='f,f'):
-		with open(name) as f:
+		with open(name,'rb') as f:
 			self.info = GridInfo(f)
 			self.dtype = dtype
 			shape = (self.info.rows, self.info.cols)
@@ -59,7 +59,7 @@ class GridFile(object):
 		# bilinear interpolation
 		num_values = len(cell[0]) # how many values does the cell contain?
 		value = [0] * num_values
-		for i in xrange(num_values):
+		for i in range(num_values):
 			# horizontal interpolations
 			vh = (cell[2][i]-cell[1][i]) * norm_x + cell[1][i]
 			vl = (cell[3][i]-cell[0][i]) * norm_x + cell[0][i]

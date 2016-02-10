@@ -4,11 +4,11 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
-from hatt.models import Hattblock
-from transform import WorkHorseTransformer, DATUMS, REF_SYS, TransformerError
+from .hatt.models import Hattblock
+from .transform import WorkHorseTransformer, DATUMS, REF_SYS, TransformerError
 
 def index(request):
-	q = [{'srid':srid, 'name':rs.name, 'datum': DATUMS[rs.datum_id]}  for srid, rs in REF_SYS.iteritems()]
+	q = [{'srid':srid, 'name':rs.name, 'datum': DATUMS[rs.datum_id]}  for srid, rs in REF_SYS.items()]
 	return render(request, 'transform/index.html', {'ref_systems':q})
 
 def hattblock_info(request, id):
@@ -27,10 +27,11 @@ def hattblock_info(request, id):
 	return json_response(hb)
 
 from shapely.ops import transform as shapely_transform
-from shapely.geometry import asShape
+from shapely.geometry import shape
 from shapely import speedups
 if speedups.available:
 	speedups.enable()
+
 
 @csrf_exempt
 def transform(request):
@@ -46,18 +47,18 @@ def transform(request):
 
 	try:
 		params = data['params']
-		features = data['features']
+		features = data['input']
 	except KeyError as e:
 		return json_response({
 				'status': 'fail',
-				'data':{ e[0]: '%f  is required'}
+				'data':{'%f  is required' % e[0]}
 			}, status=400)
 
 	# # compile transformer
 	horse = WorkHorseTransformer(**params)
 
 	for i, feat in enumerate(features):
-		shapely_geometry = asShape(feat['geometry']) # map to shapely object
+		shapely_geometry = shape(feat['geometry']) # map to shapely object
 		shapely_geometry = shapely_transform(horse, shapely_geometry) # transform feature geometry 
 		feat['geometry'] = shapely_geometry.__geo_interface__ # convert to dictionary geojson interface
 
