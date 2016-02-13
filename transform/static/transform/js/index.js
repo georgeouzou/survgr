@@ -28,17 +28,17 @@ function initBloodhound(){
   };
   
   var engine = new Bloodhound({
-    datumTokenizer: function(obj){
+    datumTokenizer: function (obj){
       return normalize(obj.name).split(/[-.]/g);
     },
-    queryTokenizer: function(query){
+    queryTokenizer: function (query){
       return normalize(query).split(/[-.\s+]/g);
     },
-    identify: function(obj) { return obj.id; },
+    identify: function (obj) { return obj.id; },
     prefetch: {
       url: HATTBLOCK_FEATURES_URL,
       // transforms geojson data and create normalized names to use with autocompletion
-      transform: function(featureCollection){
+      transform: function (featureCollection){
         return $.map(featureCollection.features, function(feat){
           return { id: feat.id, name: feat.properties.name }
         })
@@ -102,12 +102,12 @@ function initMap() {
   map.addInteraction(selectAction);
 
   // on select feature
-  selectAction.getFeatures().on('add', function(e){
+  selectAction.getFeatures().on('add', function (e){
     var feature = e.element;
     $('#selected-feature-name').text('Επιλογή: ' + feature.get('name'));
   });
   // on unselect feature
-  selectAction.getFeatures().on('remove', function(e){
+  selectAction.getFeatures().on('remove', function (e){
     $('#selected-feature-name').text('Επιλογή: ');
   });
 
@@ -140,7 +140,7 @@ function initMap() {
     }
   });
 
-  $('#mapModal').on('shown.bs.modal', function(e) {
+  $('#mapModal').on('shown.bs.modal', function (e) {
     // BUG: this is needed because i use map inside of a modal
     map.updateSize();
     
@@ -154,7 +154,7 @@ function initMap() {
     } 
   });
 
-  $('#mapModal').on('hide.bs.modal', function(e) {
+  $('#mapModal').on('hide.bs.modal', function (e) {
     // update the selected hatt name and hatt id elements
     if (!bound_hatt)
       return;
@@ -203,28 +203,30 @@ function initSridSelector(){
 /*
  * Point Readers
  */
-function readPointsAsTxt(){
+function text2Features(){
   //convert text to geojson interface points
-  points = [];
-
-  var parser = function(line){
-    var words = line.split(); // split by space
+  var parser = function (line){
+    var words = line.split(" "); // split by space
     var id = words[0];
     var x = parseFloat(words[1]);
     var y = parseFloat(words[2]);
     return {
       "type": "Feature",
-      "id" : id,
+      "properties": {"name":id},
       "geometry" : {
         "type": "Point",
         "coordinates": [x, y]
       }
     }
   };
-
-  $('#input-points').split("\n").forEach(function(line){
-
+  features = [];
+  $('#input-points').val().split("\n").forEach(function (line){  
+    features.push(parser(line))
   });
+  return {
+    "type":"FeatureCollection",
+    "features":features
+  }
 }
 
 /*
@@ -235,53 +237,30 @@ $(function() {
   initMap();
   initSridSelector();
 
-
-  // var getParams = function(){
-  //           var params = {
-  //             from_srid:parseInt($('#from_srid').val()),
-  //             to_srid:parseInt($('#to_srid').val()),
-  //             from_hatt_id:parseInt($('#from_hatt_id').val()),
-  //             to_hatt_id:parseInt($('#to_hatt_id').val())
-  //           };
-  //           for (var p in params){
-  //             if (!params[p]){
-  //               delete params[p];
-  //             }
-  //           }
-  //           return params;
-  //         };
-
-  var params = $('#form-params');
-  $('#form-params').submit(function(e){
+  $('#form-params').submit(function (e){
     e.preventDefault();
-    var data = {};
-
-    $(params).serializeArray().forEach(function(pair){
+    var params = {};
+    $('#form-params').serializeArray().forEach(function (pair){
       if (pair.value != -1)
-        data[pair.name] = pair.value;
+        params[pair.name] = parseInt(pair.value);
     });
     
-    JSON.stringify(data);
-    console.log(data);
+    $.ajax({
+      type: 'POST',
+      url: $(this).attr('action'),
+      dataType: 'json', // what to expect from server
+      contentType :'application/json;charset=utf-8', // post data type
+      data: JSON.stringify({
+        "params": params,
+        "input": text2Features()
+        //"input": JSON.parse($('#input-points').val())
+      }),
+    }).done(function (data){
+      $('#output-points').val(JSON.stringify(data.output));
+    }).fail(function (jqXHR){
+      $('#output-points').val(jqXHR.responseText);
+    });
   });
-  // $('#form-params').submit(function(e){
-  //   e.preventDefault();   
-  //   $.ajax({
-  //     type: 'POST',
-  //     url: $(this).attr('action'),
-  //     dataType: 'json',
-  //     contentType: 'application/json;charset=utf-8',
-  //     data: JSON.stringify({
-  //       params:getParams(), 
-  //       geometries:getPoints()
-  //     })
-  //    }).done(function(response){
-  //     ;
-  //     setPoints(response.geometries);
-  //   });
-  // });
-
-
 });
 
 
