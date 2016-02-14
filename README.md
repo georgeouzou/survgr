@@ -9,6 +9,7 @@ It is (will be for the time being) a website / web api for transforming earth po
 * ED50 / UTM (EPSG:4230, EPSG:23034, EPSG:23035)  
 * WGS85 (EPSG:4326)  
 * The new HTRS07 / TM07 using the accurate transformation published by Hepos (http://www.hepos.gr/)  
+
 The project can be run locally:  
 * Make an new python 3 virtual environment
 * Pip install the requirements
