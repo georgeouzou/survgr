@@ -1,0 +1,24 @@
+{
+  "name": "survgr",
+  "version": "0.1.0",
+  "homepage": "https://github.com/georgeouzou/survgr",
+  "authors": [
+    "George Ouzounoudis <geothrock@gmail.com>"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^2.2.0",
+    "bootstrap": "^3.3.6",
+    "ol3": "git://github.com/openlayers/ol3#^3.13.1",
+    "typeahead.js": "^0.11.1",
+    "typeahead.js-bootstrap3.less": "typeahead.js-bootstrap-css#^1.2.1"
+  }
+}

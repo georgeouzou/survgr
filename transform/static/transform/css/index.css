@@ -2,6 +2,11 @@ body {
   font-family: 'Ubuntu';
 }
 
+.panel-transform-to .panel-heading {
+  background-color: #AA9966;
+}
+
+/*Openlayers 3 */
 .map{
   width:100%;
   height:400px;
@@ -9,6 +14,7 @@ body {
   padding:0;
 }
 
-.panel-transform-to .panel-heading {
-  background-color: #AA9966;
+/*Twitter typeahead*/
+span.twitter-typeahead .tt-hint {
+  color: #888
 }
