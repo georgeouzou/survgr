@@ -1,11 +1,11 @@
 {
-  "name": "survgr",
+  "name": "Survgr",
   "version": "0.1.0",
   "homepage": "https://github.com/georgeouzou/survgr",
   "authors": [
     "George Ouzounoudis <geothrock@gmail.com>"
   ],
-  "license": "MIT",
+  "license": "BSD",
   "private": true,
   "ignore": [
     "**/.*",
