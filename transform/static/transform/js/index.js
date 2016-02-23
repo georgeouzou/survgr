@@ -72,7 +72,7 @@ function initMap() {
   // Uses a single map instance enabling the user to select graphically 
   // the hatt block of choice. The map is contained within a modal and 
   // the modal is related/bound on the show event to the calling html 
-  // container class "hatt-selection" 
+  // container class "hatt-selection"
 
   // this is the geojson source used in the map
   var hattblocks = new ol.source.Vector({
@@ -111,10 +111,6 @@ function initMap() {
     $('#selected-feature-name').text('Επιλογή: ');
   });
 
-  // set hatt id element values to default -1 (nothing selected)
-  $('.hatt-id').val(NOT_SELECTED_ID);
-  // related bound hatt container (contains the name and id html elements)
-  
   /*
    * Modal events
    */
@@ -128,7 +124,7 @@ function initMap() {
     selectedFeatures.clear();
     // and select again based on related id value
     var id = parseInt(bound_hatt.find('.hatt-id').val());  
-    if (id != -1){
+    if (id != NOT_SELECTED_ID){
       if (hattblocks.getFeatures().length == 0){
           // CAUTION: the source might not have loaded the features the first time we open the map so...
           hattblocks.on('change', function(){
@@ -187,46 +183,23 @@ function initSridSelector(){
 
     if (fromSrid == HATT_SRID || (isOldGreek(fromSrid) && !isOldGreek(toSrid))) {
       $("#from-hatt").show(ANIM_TIME);
+      $("#from-hatt :input").prop('disabled', false);
     } else {
       $("#from-hatt").hide(ANIM_TIME);
+      $("#from-hatt :input").prop('disabled', true)
     }
 
     if (toSrid == HATT_SRID || (!isOldGreek(fromSrid) && isOldGreek(toSrid))) {
       $("#to-hatt").show(ANIM_TIME);
+      $("#to-hatt :input").prop('disabled', false);
     } else {
       $("#to-hatt").hide(ANIM_TIME);
+      $("#to-hatt :input").prop('disabled', true);
     }
   });
-}
 
-
-/*
- * Point Readers
- */
-function text2Features(){
-  //convert text to geojson interface points
-  var parser = function (line){
-    var words = line.split(" "); // split by space
-    var id = words[0];
-    var x = parseFloat(words[1]);
-    var y = parseFloat(words[2]);
-    return {
-      "type": "Feature",
-      "properties": {"name":id},
-      "geometry" : {
-        "type": "Point",
-        "coordinates": [x, y]
-      }
-    }
-  };
-  features = [];
-  $('#input-points').val().split("\n").forEach(function (line){  
-    features.push(parser(line))
-  });
-  return {
-    "type":"FeatureCollection",
-    "features":features
-  }
+  // select default hatt srid
+  $(".srid-selection").val(HATT_SRID);
 }
 
 /*
@@ -237,29 +210,41 @@ $(function() {
   initMap();
   initSridSelector();
 
+  // set hatt id element values to default -1 (nothing selected)
+  $('.hatt-id').val(NOT_SELECTED_ID);
+
   $('#form-params').submit(function (e){
     e.preventDefault();
-    var params = {};
-    $('#form-params').serializeArray().forEach(function (pair){
-      if (pair.value != -1)
-        params[pair.name] = parseInt(pair.value);
-    });
+    console.log($(this).serialize());
+
+    var fd = new FormData($(this)[0]);
+    fd.append("input", new Blob([$('#input-points').val()], { type: "text/plain"}));
     
     $.ajax({
       type: 'POST',
       url: $(this).attr('action'),
-      dataType: 'json', // what to expect from server
-      contentType :'application/json;charset=utf-8', // post data type
-      data: JSON.stringify({
-        "params": params,
-        "input": text2Features()
-        //"input": JSON.parse($('#input-points').val())
-      }),
+      data: fd,
+      processData: false, // this is not to url-encode the fd object
+      contentType: false // this is how it automatically computes the boundary
     }).done(function (data){
-      $('#output-points').val(JSON.stringify(data.output));
-    }).fail(function (jqXHR){
-      $('#output-points').val(jqXHR.responseText);
+      $('#output-points').val(data);
     });
+    
+    // $.ajax({
+    //   type: 'POST',
+    //   url: $(this).attr('action'),
+    //   dataType: 'json', // what to expect from server
+    //   contentType :'application/json;charset=utf-8', // post data type
+    //   data: JSON.stringify({
+    //     "params": params,
+    //     "input": text2Features()
+    //     //"input": JSON.parse($('#input-points').val())
+    //   }),
+    // }).done(function (data){
+    //   $('#output-points').val(JSON.stringify(data.output));
+    // }).fail(function (jqXHR){
+    //   $('#output-points').val(jqXHR.responseText);
+    // });
   });
 });
 

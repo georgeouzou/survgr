@@ -31,39 +31,56 @@ def hattblock_info(request, id):
 	}
 	return json_response(hb)
 
-
 @csrf_exempt
 def transform(request):
-	#if request.method == "GET": raise Http404
-	#if len(request.body) > 1024 * 250: raise Http404 # 250 kB	
 
-	# first decode json data into a python dict
-	# request body is a bytestring and json loads only decodes unicode
-	try:
-		data = json.loads(request.read().decode("utf-8"))
-	except ValueError as e:
-		return json_response({'status':'error',
-			'message': 'Invalid request: could not parse json data, %s' % str(e)}, status=400)
+	from .drivers import csv_driver
+	from io import TextIOWrapper
+
+	params = {}
+	for n, v in request.POST.items():
+		if n in ['from_srid', 'to_srid', 'from_hatt_id', 'to_hatt_id']:
+			params[n] = int(v)
+
+	horse = WorkHorseTransformer(**params);
+
+	inp = TextIOWrapper(request.FILES['input'].file, encoding='utf-8')
+	out = csv_driver.transform(horse, inp, csv_delimiter=' ', csv_fields=('id', 'x', 'y')) 
+
+	return HttpResponse(out, content_type='text/plain')
+
+
+# @csrf_exempt
+# def transform(request):
+# 	#if request.method == "GET": raise Http404	
+# 	# first decode json data into a python dict
+# 	# request body is a bytestring and json loads only decodes unicode
+# 	try:
+# 		geojson = json.loads(request.read().decode("utf-8"))
+# 	except ValueError as e:
+# 		return json_response({'status':'error',
+# 			'message': 'Invalid request: could not parse json data, %s' % str(e)}, status=400)
 	
-	# secondly get the parameters needed for the transformation and the
-	# feature collection that was provided
-	try:
-		params = data['params']
-		features = data['input']['features']
-	except KeyError as e:
-		return json_response({'status': 'error', 
-			'message':'Invalid request: %s is required' % str(e)}, status=400)
+# 	try:
+# 		params = geojson['params']
+# 		data = geojson['data']
+# 		data_type = data['type'].lower()
+# 	except:
+# 		return json_response({'status': 'error', 
+# 			'message':'Invalid request: see documentation for json data format'}, status=400)
 
-	print(params, features)
-	# ready transformer based on params 
-	horse = WorkHorseTransformer(**params)
 
-	# transform each feature's geometry 
-	for feat in features:
-		feat['geometry'] = shapely_transform(horse, shape(feat['geometry'])).__geo_interface__
+# 	# ready transformer based on params 
+# 	horse = WorkHorseTransformer(**params)
+# 	# secondly get the parameters needed for the transformation and the
+# 	# feature collection that was provided
+	
+# 	# transform each feature's geometry 
+# 	for feat in features:
+# 		feat['geometry'] = shapely_transform(horse, shape(feat['geometry'])).__geo_interface__
 
-	return json_response({'status':'ok', 
-						  'output':{'type':'FeatureCollection', 'features':features}})
+# 	return json_response({'status':'ok', 
+# 						  'output':{'type':'FeatureCollection', 'features':features}})
 
 # utility
 def json_response(data, status=200):

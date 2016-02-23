@@ -1,14 +1,12 @@
 import os, struct
 from grid import GridInfo
 
-# This module converts to binary (grb) the text (grd) files
-# contained in the free software HEPOS TRANSFORM
-# see http://www.hepos.gr/
+# This module converts to binary (grb) the text (grd) files.
 
 folder = os.path.dirname(__file__)
-grb_path = os.path.join(folder, "hepos.grb")
-grd_de_path = os.path.join(folder, "grdfiles", "dE_2km_V1-0.grd")
-grd_dn_path = os.path.join(folder, "grdfiles", "dN_2km_V1-0.grd")
+grb_path = os.path.join(folder, "htrs07.grb")
+grd_de_path = os.path.join(folder, "grdfiles", "east.grd")
+grd_dn_path = os.path.join(folder, "grdfiles", "north.grd")
  
 # grid
 #

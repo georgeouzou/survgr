@@ -7,7 +7,7 @@ from .grid import GridFile
 class HTRSGridFileTest(TestCase):
 
 	def test_check_htrs_grid(self):
-		grid_path = os.path.join(os.path.dirname(__file__), "hepos.grb")
+		grid_path = os.path.join(os.path.dirname(__file__), "htrs07.grb")
 		grid = GridFile(grid_path)
 		
 		# check bounds

@@ -9,15 +9,6 @@ from .hatt import hatt2ggrs
 from .hatt.models import Hattblock
 from .htrs.grid import GridFile
 
-DATUMS = {
-	# id : name
-	0: 'ΕΓΣΑ87',
-	1: 'HTRS07 (Hepos)',
-	2: 'Παλαιό Ελληνικό Datum',
-	3: 'ED50 (Ελλάδα)',
-	4: 'WGS84'
-}
-
 class RefSys(object):
 	'''
 	Utility classed to encapsulate the used in greece reference systems.
@@ -27,8 +18,18 @@ class RefSys(object):
 		self.datum_id = datum_id
 		self.proj4text = proj4text
 		
-# All the reference systems used in the program
-# and each hatt.Hattblock has its own reference system (see Hattblock proj4text property...)
+# All underlying datums used in Greece as the basis for the various reference systems.
+DATUMS = {
+	# id : name
+	0: 'ΕΓΣΑ87',
+	1: 'HTRS07 (Hepos)',
+	2: 'Παλαιό Ελληνικό Datum',
+	3: 'ED50 (Ελλάδα)',
+	4: 'WGS84'
+}
+
+# All the reference systems used in Greece.
+# Each Hattblock has its own reference system (see Hattblock proj4text property...)
 REF_SYS = {
 	2100: RefSys('ΕΓΣΑ87 / ΤΜ87', 0, '+proj=etmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=0 +ellps=GRS80 +towgs84=-199.723,74.030,246.018 +units=m +no_defs'),
 	4121: RefSys('ΕΓΣΑ87 (λ,φ)', 0, '+proj=longlat +ellps=GRS80 +towgs84=-199.723,74.030,246.018 +no_defs'),
@@ -57,51 +58,53 @@ TM87_SRID = 2100
 class TransformerError(Exception):
 	pass
 
-#
-# Transformers are functors that get call  x, y and maybe z sequences as arguments and return x, y, maybe z numpy arrays transformed.
-# If sequences are numpy arrays we have the best performance.
-#
+
 class WorkHorseTransformer(object):
 	'''
-	The workhorse transformer. Transforms from ref. system 1 to ref. system 2.
+	Transforms points from ref. system 1 to ref. system 2 using other sub-transformers:
+		- ProjTransformer
+		- OKXETransformer
+		- HeposTransformer
+	Transformers are functors that get called with x, y and maybe z numpy arrays as arguments 
+	and return x, y, maybe z numpy arrays transformed.
 	Keyword arguments can be: 
-		General keyworks:
+		General params:
 		-from_srid: the REF_SYS key corresponding to ref. system 1.
 		-to_srid: the REF_SYS key corresponding to ref. system 2.
-		Hatt keywords:
+		Hatt params:
 		-from_hatt_id: the id of the 1:50000 hatt block (given by OKXE service) if ref. system 1 is a hattblock.
 		-to_hatt_id: the id of the 1:50000 hatt block if ref. system 2 is a hattblock.
 	'''
 	
-	def __init__(self, **kwargs):
+	def __init__(self, **params):
 		self.transformers = []
 		self.log = []
 
-		if 'from_hatt_id' in kwargs:
-			if 'from_srid' not in kwargs:
-				kwargs['from_srid'] = HATT_SRID
+		if 'from_hatt_id' in params:
+			if 'from_srid' not in params:
+				params['from_srid'] = HATT_SRID
 			try:
-				kwargs['from_hattblock'] = Hattblock.objects.get(id=kwargs['from_hatt_id'])
+				params['from_hattblock'] = Hattblock.objects.get(id=params['from_hatt_id'])
 			except (Hattblock.DoesNotExist, KeyError):
 				raise TransformerError("Malformed parameters.")
 			
-		if 'to_hatt_id' in kwargs:
-			if not 'to_srid' in kwargs:
-				kwargs['to_srid'] = HATT_SRID
+		if 'to_hatt_id' in params:
+			if not 'to_srid' in params:
+				params['to_srid'] = HATT_SRID
 			try:
-				kwargs['to_hattblock'] = Hattblock.objects.get(id=kwargs['to_hatt_id'])	
+				params['to_hattblock'] = Hattblock.objects.get(id=params['to_hatt_id'])	
 			except (Hattblock.DoesNotExist, KeyError):
 				raise TransformerError("Malformed parameters.")
 		
 		try:
-			self._compile(**kwargs)
+			self._compile(**params)
 		except (KeyError, TypeError):
 			# srid numbers wrong, srid not integers, HATT_SRID without from_hattblock/to_hattblock etc..
 			raise TransformerError("Malformed parameters.")
 
-	def _compile(self, **kwargs):
-		from_srid = kwargs['from_srid']
-		to_srid = kwargs['to_srid']
+	def _compile(self, **params):
+		from_srid = params['from_srid']
+		to_srid = params['to_srid']
 
 		# check if from-to ref. systems are the same (except if we are dealing with hatt blocks)
 		# (compile can be recursive so we need this)
@@ -109,31 +112,31 @@ class WorkHorseTransformer(object):
 			if from_srid != HATT_SRID: #and to_srid != HATT_SRID,  if both are NOT hattblocks
 				return
 			else: #if both are hattblocks
-				if kwargs['from_hattblock'].id == kwargs['to_hattblock'].id:
+				if params['from_hattblock'].id == params['to_hattblock'].id:
 					return # end
 
 		srs1 = REF_SYS[from_srid]
 		srs2 = REF_SYS[to_srid]
 		# specialize proj4 definition for any of the reference systems that are hatt blocks
 		if from_srid == HATT_SRID:
-			srs1 = RefSys(name = '%s (%s)' % (srs1.name, kwargs['from_hattblock'].name), 
+			srs1 = RefSys(name = '%s (%s)' % (srs1.name, params['from_hattblock'].name), 
 						  datum_id = srs1.datum_id, 
-						  proj4text = kwargs['from_hattblock'].proj4text)
+						  proj4text = params['from_hattblock'].proj4text)
 		
 		if to_srid == HATT_SRID:
-			srs2 = RefSys(name = '%s (%s)' % (srs1.name, kwargs['to_hattblock'].name), 
+			srs2 = RefSys(name = '%s (%s)' % (srs1.name, params['to_hattblock'].name), 
 						  datum_id = srs2.datum_id, 
-						  proj4text = kwargs['to_hattblock'].proj4text)
+						  proj4text = params['to_hattblock'].proj4text)
 	 	
 		# update log
 		self.log.append('transformer: %s --> %s' % (srs1.name, srs2.name))
 
 		# check if from-datum is the old greek, so we can use OKXE transformation
 		if srs1.datum_id == 2 and srs2.datum_id != 2:
-			block = kwargs['from_hattblock']
+			block = params['from_hattblock']
 			# if not hatt projected ref. sys. but on greek datum... i.e. TM03 --> HATT
 			if from_srid != HATT_SRID:
-				self._compile(from_srid=from_srid, to_srid=HATT_SRID, to_hattblock=block) # proj_transformer
+				self._compile(from_srid=from_srid, to_srid=HATT_SRID, to_hattblock=block) # using ProjTransformer
 			# transform hatt to ggrs / greek grid
 			self.transformers.append(OKXETransformer(block.get_coeffs(), inverse=False))		
 			# call recursively with ggrs / greek grid to srid
@@ -142,7 +145,7 @@ class WorkHorseTransformer(object):
 
 		# check if target-datum is the old greek, so we can use OKXE transformation
 		if srs1.datum_id != 2 and srs2.datum_id == 2:
-			block = kwargs['to_hattblock']
+			block = params['to_hattblock']
 			# we need to transform from ggrs/greek grid to hatt so...we call recursively with ggrs / greek grid
 			self._compile(from_srid=from_srid, to_srid=TM87_SRID)
 			# and then transform from ggrs / greek grid to hatt map block
@@ -173,7 +176,7 @@ class WorkHorseTransformer(object):
 			return # end
 		
 		# last and general transformation
-		self.transformers.append(proj_transformer(srs1.proj4text, srs2.proj4text))
+		self.transformers.append(ProjTransformer(srs1.proj4text, srs2.proj4text))
 
 	def __call__(self, x, y, z=None):
 		# create numpy array to modify in place
@@ -198,7 +201,7 @@ class WorkHorseTransformer(object):
 #
 # Below are the transformers that can be used with the workhorse transformer
 #
-def proj_transformer(from_proj4, to_proj4):
+def ProjTransformer(from_proj4, to_proj4):
     #Returns a callable partial function for general purpose - proj4 based tranformations.
 	p1 = pyproj.Proj(from_proj4)
 	p2 = pyproj.Proj(to_proj4)
@@ -230,7 +233,7 @@ class HeposTransformer(object):
 	Transforms in place from HTRS / TM07 to GGRS87 / GG (inverse=False)
 	or from GGRS87 / GG to HTRS / TM07 (inverse=True)
 	'''
-	grid_path = os.path.join(os.path.dirname(__file__), "htrs", "hepos.grb")
+	grid_path = os.path.join(os.path.dirname(__file__), "htrs", "htrs07.grb")
 
 	def __init__(self, inverse=False):
 		# grid containing the shifts de, dn in cm

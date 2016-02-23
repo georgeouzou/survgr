@@ -14,7 +14,7 @@ To install the project locally:
 * Make a fresh python 3 virtual environment
 * `Pip install requirements.txt` for the back-end dependancies
 * `Bower install` the front-end dependancies
-* Rename the _survgr/local_settings.py.template_ to _local_settings.py_
+* Rename the _survgr/local_settings.py.template_ to _local_settings.py_ and enter a SECRET_KEY setting.
 * `python manage.py migrate` to create an sqlite db with some initial data
 * Run `python ./transform/htrs/grd2bin.py` to compile the hepos binary grid file
 * Run `python manage.py test` for testing
