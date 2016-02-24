@@ -1,4 +1,5 @@
 import json
+from io import TextIOWrapper
 
 from django.http import HttpResponse, Http404
 from django.shortcuts import render
@@ -11,6 +12,7 @@ if speedups.available:
 
 from .hatt.models import Hattblock
 from .transform import WorkHorseTransformer, DATUMS, REF_SYS, TransformerError
+from .drivers import csv_driver
 
 def index(request):
 	q = [{'srid':srid, 'name':rs.name, 'datum': DATUMS[rs.datum_id]}  for srid, rs in REF_SYS.items()]
@@ -33,10 +35,7 @@ def hattblock_info(request, id):
 
 @csrf_exempt
 def transform(request):
-
-	from .drivers import csv_driver
-	from io import TextIOWrapper
-
+	
 	params = {}
 	for n, v in request.POST.items():
 		if n in ['from_srid', 'to_srid', 'from_hatt_id', 'to_hatt_id']:
@@ -44,8 +43,11 @@ def transform(request):
 
 	horse = WorkHorseTransformer(**params);
 
-	inp = TextIOWrapper(request.FILES['input'].file, encoding='utf-8')
-	out = csv_driver.transform(horse, inp, csv_delimiter=' ', csv_fields=('id', 'x', 'y')) 
+	if request.POST['input_type'] == "csv":
+		inp = TextIOWrapper(request.FILES['input'].file, encoding='utf-8')
+		out = csv_driver.transform(horse, inp, 
+			csv_delimiter=request.POST['csv_delimiter'],
+			csv_fields=request.POST['csv_fields'].split(','))
 
 	return HttpResponse(out, content_type='text/plain')
 

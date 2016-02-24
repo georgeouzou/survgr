@@ -3,11 +3,10 @@ from itertools import islice
 from io import StringIO
 
 def transform(transformer, fp, **fmtparams):
-	
 	fieldnames = fmtparams['csv_fields']
-	reader = csv.DictReader(fp, fieldnames=fieldnames, delimiter=fmtparams['csv_delimiter'])
+	reader = csv.DictReader(fp, fieldnames=fieldnames, delimiter=fmtparams['csv_delimiter'], skipinitialspace=True)
 	output = StringIO()
-	writer = csv.DictWriter(output, fieldnames=fieldnames, delimiter=fmtparams['csv_delimiter'])
+	writer = csv.DictWriter(output, fieldnames=fieldnames, extrasaction='ignore', delimiter=fmtparams['csv_delimiter'])
 
 	# chucked reading of points
 	while True:
@@ -15,6 +14,8 @@ def transform(transformer, fp, **fmtparams):
 		chunk = list(islice(it, 0, 20))
 		if not chunk:
 			break
+
+		print(chunk)
 
 		hasz = 'z' in fieldnames
 		if hasz:

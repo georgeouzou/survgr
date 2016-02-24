@@ -104,11 +104,11 @@ function initMap() {
   // on select feature
   selectAction.getFeatures().on('add', function (e){
     var feature = e.element;
-    $('#selected-feature-name').text('Επιλογή: ' + feature.get('name'));
+    $('#selected-feature-name').text('Επιλογή φύλλου χάρτη: ' + feature.get('name'));
   });
   // on unselect feature
   selectAction.getFeatures().on('remove', function (e){
-    $('#selected-feature-name').text('Επιλογή: ');
+    $('#selected-feature-name').text('Επιλογή φύλλου χάρτη: ');
   });
 
   /*
@@ -116,7 +116,7 @@ function initMap() {
    */
   var bound_hatt;
 
-  $('#mapModal').on('show.bs.modal', function (e){
+  $('#map-modal').on('show.bs.modal', function (e){
     // get the related hatt container element and store it to the modal instance
     bound_hatt = $(e.relatedTarget).parents('.hatt-selection');
     // clear previous selected feature if exists
@@ -136,7 +136,7 @@ function initMap() {
     }
   });
 
-  $('#mapModal').on('shown.bs.modal', function (e) {
+  $('#map-modal').on('shown.bs.modal', function (e) {
     // BUG: this is needed because i use map inside of a modal
     map.updateSize();
     
@@ -150,7 +150,7 @@ function initMap() {
     } 
   });
 
-  $('#mapModal').on('hide.bs.modal', function (e) {
+  $('#map-modal').on('hide.bs.modal', function (e) {
     // update the selected hatt name and hatt id elements
     if (!bound_hatt)
       return;
@@ -183,24 +183,25 @@ function initSridSelector(){
 
     if (fromSrid == HATT_SRID || (isOldGreek(fromSrid) && !isOldGreek(toSrid))) {
       $("#from-hatt").show(ANIM_TIME);
-      $("#from-hatt :input").prop('disabled', false);
+      $("#from-hatt input").prop('disabled', false);
     } else {
       $("#from-hatt").hide(ANIM_TIME);
-      $("#from-hatt :input").prop('disabled', true)
+      $("#from-hatt input").prop('disabled', true);
     }
 
     if (toSrid == HATT_SRID || (!isOldGreek(fromSrid) && isOldGreek(toSrid))) {
       $("#to-hatt").show(ANIM_TIME);
-      $("#to-hatt :input").prop('disabled', false);
+      $("#to-hatt input").prop('disabled', false);
     } else {
       $("#to-hatt").hide(ANIM_TIME);
-      $("#to-hatt :input").prop('disabled', true);
+      $("#to-hatt input").prop('disabled', true);
     }
   });
 
-  // select default hatt srid
-  $(".srid-selection").val(HATT_SRID);
+  // select manually default hatt srid on startup
+  $(".srid-selection").val(HATT_SRID).trigger('change');
 }
+
 
 /*
  * Main
@@ -210,6 +211,17 @@ $(function() {
   initMap();
   initSridSelector();
 
+  var ANIM_TIME = 300;
+  $('#input-type input').on('change', function() {
+   if ($('input:checked', '#input-type').val() == 'geojson'){
+    $('.csv-format').hide(ANIM_TIME);
+    $('.csv-format select').prop('disabled', true);
+   } else {
+    $('.csv-format').show(ANIM_TIME);
+    $('.csv-format select').prop('disabled', false);
+   }
+  });
+
   // set hatt id element values to default -1 (nothing selected)
   $('.hatt-id').val(NOT_SELECTED_ID);
 
@@ -218,7 +230,7 @@ $(function() {
     console.log($(this).serialize());
 
     var fd = new FormData($(this)[0]);
-    fd.append("input", new Blob([$('#input-points').val()], { type: "text/plain"}));
+    fd.append("input", new Blob([$('#input-area').val()], { type: "text/plain"}));
     
     $.ajax({
       type: 'POST',
@@ -227,7 +239,7 @@ $(function() {
       processData: false, // this is not to url-encode the fd object
       contentType: false // this is how it automatically computes the boundary
     }).done(function (data){
-      $('#output-points').val(data);
+      $('#output-area').val(data);
     });
     
     // $.ajax({
@@ -238,12 +250,12 @@ $(function() {
     //   data: JSON.stringify({
     //     "params": params,
     //     "input": text2Features()
-    //     //"input": JSON.parse($('#input-points').val())
+    //     //"input": JSON.parse($('#input-area').val())
     //   }),
     // }).done(function (data){
-    //   $('#output-points').val(JSON.stringify(data.output));
+    //   $('#output-area').val(JSON.stringify(data.output));
     // }).fail(function (jqXHR){
-    //   $('#output-points').val(jqXHR.responseText);
+    //   $('#output-area').val(jqXHR.responseText);
     // });
   });
 });

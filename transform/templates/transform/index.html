@@ -60,25 +60,60 @@
                     <input type="text" id="from-hatt-name" class="hatt-name form-control twitter-typeahead" autocomplete="off" placeholder="Εισάγετε όνομα&hellip;" ></input>
                     <input type="hidden" class="hatt-id" name="from_hatt_id"/>
                     <span class="input-group-btn">
-                      <button type="button" class="btn btn-default" data-toggle="modal" data-target="#mapModal">
+                      <button type="button" class="btn btn-default" data-toggle="modal" data-target="#map-modal">
                         <span class="glyphicon glyphicon-map-marker"></span> Επιλογή
                       </button>
                     </span>
                   </div>
                 </div>
-                <p class="help-block"></p>
-                <!--input points-->
+
+                
+                <!--input data-->
                 <div class="form-group">
-                  <label for="input-points" class="form-control-label">Εισαγωγή σημείων:</label>
-                  <textarea id="input-points" class="form-control" rows="10"></textarea>
+                  <label for="input-area" class="form-control-label">Εισαγωγή δεδομένων:</label>
+                  <textarea id="input-area" class="form-control" rows="10"></textarea>
                 </div>
-                 <div class="form-group">
+                
+                <!-- input data options-->
+                <div class="row form-group"> 
+                  <div class="col-xs-4">
+                  <label for="input-type">Τύπος δεδομένων:</label>
+                  <div id="input-type" class="btn-group" role="group" data-toggle="buttons">
+                    <label class="btn btn-primary active"><input type="radio" name="input_type" value="csv"> csv </label>
+                    <label class="btn btn-primary"><input type="radio" name="input_type" value="geojson"> geojson </label>
+                  </div> 
+                  </div>
+                  <div class="col-xs-4 csv-format">
+                    <label for="csv-fields" class="form-control-label">Μορφή:</label>
+                    <select id="csv-fields" name="csv_fields" class="form-control">
+                      <option value="x,y">E,N</option>
+                      <option value="x,y,z">E,N,h</option>
+                      <option value="id,x,y">id,E,N</option>
+                      <option value="id,x,y,z">id,Ε,Ν,h</option>
+                      <option value="x,y">λ,φ</option>
+                      <option value="x,y,z">λ,φ,h</option>
+                      <option value="id,x,y">id,λ,φ</option>
+                      <option value="id,x,y,z">id,λ,φ,h</option>
+                    </select>
+                  </div>
+                  <div class="col-xs-4 csv-format">
+                    <label for="csv-delimiter" class="form-control-label">Διαχωριστικό:</label>
+                    <select id="csv-delimiter" name="csv_delimiter" class="form-control">
+                      <option value=",">Κόμμα (",")</option>
+                      <option value=" ">Κενό (" ")</option>
+                      <option value="\t">Τab ("&#09;")</option>
+                      <option value=";">Ερωτηματικό (";")</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
                   <button id="go" class="btn btn-primary">Μετασχημάτισε</button>
                 </div>
               </div>
-            </div> <!--panel from-->
-          </div> 
-          
+            </div> <!--panel from-->      
+          </div>
+
           <div class="col-sm-6">
             <div class="panel panel-primary panel-transform-to">
               <div class="panel-heading">
@@ -105,16 +140,17 @@
                     <input type="text" id="to-hatt-name" class="hatt-name form-control twitter-typeahead" autocomplete="off" placeholder="Εισάγετε όνομα&hellip;" ></input>
                     <input type="hidden" class="hatt-id" name="to_hatt_id"/>
                     <span class="input-group-btn">
-                      <button type="button" class="btn btn-default" data-toggle="modal" data-target="#mapModal">
+                      <button type="button" class="btn btn-default" data-toggle="modal" data-target="#map-modal">
                         <span class="glyphicon glyphicon-map-marker"></span> Επιλογή
                       </button>
                     </span>
                   </div>
                 </div>
-                <!--output points-->
+
+                <!--output data-->
                 <div class="form-group">
-                  <label for="output-points" class="form-control-label">Αποτελέσματα:</label>
-                  <textarea id="output-points" class="form-control" rows="10"></textarea>
+                  <label for="output-area" class="form-control-label">Αποτελέσματα:</label>
+                  <textarea id="output-area" class="form-control" rows="10"></textarea>
                 </div>
               </div>
             </div>  <!--panel to-->
@@ -126,17 +162,16 @@
     </div> <!--container-->
 
     <!--hattblocks map modal-->
-    <div id="mapModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mapModalLabel">
+    <div id="map-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="selected-feature-name">
       <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
-            <h4 class="modal-title" id="mapModalLabel"></h4>
+            <h4 class="modal-title" id="selected-feature-name">Επιλογή φύλλου χάρτη:</h4>
           </div>
           <div class="modal-body">
-            <h4 id="selected-feature-name">Επιλογή</h4>
             <div class="map" id="map"></div>
           </div>
           <div class="modal-footer">
