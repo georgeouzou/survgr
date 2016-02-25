@@ -201,7 +201,7 @@ function initSelectors(){
     }
   });
 
-  // change visibility of csv format options on input-type radio change
+  //change visibility of csv format options on input-type radio change
   $('#input-type input').on('change', function() {
    if (getInputType() == 'geojson'){
     $('.csv-format').hide(ANIM_TIME);
@@ -224,6 +224,7 @@ function initSelectors(){
    
   // select manually default hatt srid on startup
   $(".srid-selection").val(HATT_SRID).trigger('change');
+  $("#input-type input").trigger('change');
 }
 
 /*

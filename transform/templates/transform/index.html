@@ -96,15 +96,15 @@
                 <!-- input data options-->
                 <div class="row form-group"> 
                   <div class="col-xs-4">
-                  <label for="input-type">Τύπος δεδομένων:</label>
-                  <div id="input-type" class="btn-group" role="group" data-toggle="buttons">
-                    <label class="btn btn-primary active"><input type="radio" name="input_type" value="csv"> csv </label>
-                    <label class="btn btn-primary"><input type="radio" name="input_type" value="geojson"> geojson </label>
-                  </div>
+                    <label for="input-type">Τύπος δεδομένων:</label>
+                    <div id="input-type" class="btn-group" role="group" data-toggle="buttons">
+                      <label class="btn btn-primary active"><input type="radio" name="input_type" value="csv" checked="checked" autocomplete="off"> csv </label>
+                      <label class="btn btn-primary"><input type="radio" name="input_type" value="geojson" autocomplete="off"> geojson </label>
+                    </div>
                   </div>
                   <div class="col-xs-4 csv-format">
                     <label for="csv-fields" class="form-control-label">Μορφή:</label>
-                    <select id="csv-fields" name="csv_fields" class="form-control" disabled="false">
+                    <select id="csv-fields" name="csv_fields" class="form-control">
                       <option value="x,y">E, N</option>
                       <option value="x,y,z">E, N, h</option>
                       <option value="id,x,y">id, E, N</option>
@@ -113,7 +113,7 @@
                   </div>
                   <div class="col-xs-4 csv-format">
                     <label for="csv-delimiter" class="form-control-label">Διαχωριστικό:</label>
-                    <select id="csv-delimiter" name="csv_delimiter" class="form-control" disabled="false">
+                    <select id="csv-delimiter" name="csv_delimiter" class="form-control">
                       <option value=",">Κόμμα (",")</option>
                       <option value=" ">Κενό (" ")</option>
                       <option value="	">Τab ("&#09;")</option>
@@ -177,7 +177,7 @@
       <hr>
       <!-- info -->
       <h3> Τι είναι το SurvGR </h3>
-      <p> To SurvGR αποτελεί μια ιστοσελίδα (και σύντομα web API) για την εύκολη και μαζική μετατροπή συντεταγμένων σημείων αλλά και γεωμετριών (features) GIS μεταξύ των διαφόρων συστημάτων αναφοράς που χρησιμοποιούνται στην Ελλάδα:
+      <p> To SurvGR είναι ένα web service για την εύκολη και μαζική μετατροπή συντεταγμένων σημείων αλλά και γεωμετριών (features) GIS μεταξύ των διαφόρων συστημάτων αναφοράς που χρησιμοποιούνται στην Ελλάδα:
         <ul>
           <li>ΕΓΣΑ87 / TM87 (<a href="http://spatialreference.org/ref/epsg/ggrs87-greek-grid/">EPSG:2100</a> και <a href="http://spatialreference.org/ref/epsg/4121/">EPSG:4121</a>)</li>
           <li>HTRS07 / TM07</li>
@@ -185,7 +185,7 @@
           <li>Παγκόσμιο WGS84 <a href="http://spatialreference.org/ref/epsg/4326/">EPSG:4326</a></li>
           <li>ED50 / UTM (<a href="http://spatialreference.org/ref/epsg/4230/">EPSG:4230</a>,<a href="http://spatialreference.org/ref/epsg/23034/">EPSG:23034</a>,<a href="http://spatialreference.org/ref/epsg/23035/">EPSG:23035</a>) 
         </ul>
-      Η εφαρμογή δεν εφαρμόζει προσεγγιστικούς μετασχηματισμούς. Για τους μετασχηματισμούς πρός και από το Παλαιό Ελληνικό Datum χρησιμοποιούνται οι πολυωνυμικοί συντελεστές που διατίθενται από τον <a href="http://okxe.gr/el/">OKXE</a>. Για τους μετασχηματισμούς από και πρός το HTRS07 χρησιμοποιούνται τα διορθωτικά grids του <a href="http://www.hepos.gr/">Hepos</a>.
+      Η εφαρμογή δεν εφαρμόζει προσεγγιστικούς μετασχηματισμούς. Για τους μετασχηματισμούς πρός και από το Παλαιό Ελληνικό Datum χρησιμοποιούνται οι πολυωνυμικοί συντελεστές που διατίθενται από τον <a href="http://www.okxe.gr/el/">OKXE</a>. Για τους μετασχηματισμούς από και πρός το HTRS07 χρησιμοποιούνται τα διορθωτικά grids του <a href="http://www.hepos.gr/">Hepos</a>.
       </p>
       <h3> Υποστήριξη και ανοιχτός κώδικας </h3>
       <p> Μπορείτε να δείτε και να συμμετάσχετε στον ανοιχτό κώδικα της εφαρμογής με την επίσκεψή σας στην παρακάτω <a href="https://github.com/georgeouzou/survgr"> διεύθυνση</a>. Επίσης, τυχόν σφάλματα και προτροπές για αναβάθμιση της εφαρμογής μπορούν να αναφερθούν <a href="https://github.com/georgeouzou/survgr/issues">εδώ</a></p>.
