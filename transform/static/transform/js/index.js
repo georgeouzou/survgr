@@ -2,6 +2,7 @@
  * Constants
  */
 var NOT_SELECTED_ID = -1;
+var ANIM_TIME = 300;
 
 /*
  * Initializers
@@ -166,18 +167,20 @@ function initMap() {
   });
 }
 
-function initSridSelector(){
+function initSelectors(){
   // visibility of hatt selection html elements is based
   // on the selected srid
   // SRIDS are defined in transform.py
   var HATT_SRID = 1000000;
   var OLD_GREEK_SRIDS = [1000000, 1000001, 1000002, 1000003, 4815];
+  var GEODETIC_SRIDS = [4121,4815,4326,4230,1000004]
+
   function isOldGreek(srid){
     return OLD_GREEK_SRIDS.indexOf(parseInt(srid)) != -1;
   }
 
-  var ANIM_TIME = 300;
   $(".srid-selection").on('change', function(){
+    // hide or show hatt selection
     fromSrid = $("#from-srid").val();
     toSrid = $("#to-srid").val();
 
@@ -198,22 +201,9 @@ function initSridSelector(){
     }
   });
 
-  // select manually default hatt srid on startup
-  $(".srid-selection").val(HATT_SRID).trigger('change');
-}
-
-
-/*
- * Main
- */
-$(function() { 
-  initBloodhound();
-  initMap();
-  initSridSelector();
-
-  var ANIM_TIME = 300;
+  // change visibility of csv format options on input-type radio change
   $('#input-type input').on('change', function() {
-   if ($('input:checked', '#input-type').val() == 'geojson'){
+   if (getInputType() == 'geojson'){
     $('.csv-format').hide(ANIM_TIME);
     $('.csv-format select').prop('disabled', true);
    } else {
@@ -221,6 +211,35 @@ $(function() {
     $('.csv-format select').prop('disabled', false);
    }
   });
+
+  // change labels of csv fields based on srid coordinate type
+  $("#from-srid").on('change', function(){
+    var template = ($.inArray(parseInt($("#from-srid").val()), GEODETIC_SRIDS) != -1) ? 
+      ["λ, φ","λ, φ, h","id, λ, φ","id, λ, φ, h"] : ["Ε, Ν","Ε, Ν, h","id, Ε, Ν","id, Ε, Ν, h"];
+    
+    $("#csv-fields option").each(function(i){
+      this.text = template[i];
+    });
+  });
+   
+  // select manually default hatt srid on startup
+  $(".srid-selection").val(HATT_SRID).trigger('change');
+}
+
+/*
+ *  Utility
+ */
+function getInputType(){
+  return $('#input-type input:checked').val();
+}
+
+/*
+ * Main
+ */
+$(function() { 
+  initBloodhound();
+  initMap();
+  initSelectors();
 
   // set hatt id element values to default -1 (nothing selected)
   $('.hatt-id').val(NOT_SELECTED_ID);

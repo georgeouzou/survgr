@@ -41,15 +41,23 @@ def transform(request):
 		if n in ['from_srid', 'to_srid', 'from_hatt_id', 'to_hatt_id']:
 			params[n] = int(v)
 
-	horse = WorkHorseTransformer(**params);
+	# TODO: Add exception support
+	try:
+		horse = WorkHorseTransformer(**params);
 
-	if request.POST['input_type'] == "csv":
-		inp = TextIOWrapper(request.FILES['input'].file, encoding='utf-8')
-		out = csv_driver.transform(horse, inp, 
-			csv_delimiter=request.POST['csv_delimiter'],
-			csv_fields=request.POST['csv_fields'].split(','))
+		if request.POST['input_type'] == "csv":
+			inp = TextIOWrapper(request.FILES['input'].file, encoding='utf-8')
+			out = csv_driver.transform(horse, inp, 
+				csv_delimiter=request.POST['csv_delimiter'],
+				csv_fields=request.POST['csv_fields'].split(','))
+		else:
+			# TODO: Add geojson support
+			out = "Type not supported yet"
 
-	return HttpResponse(out, content_type='text/plain')
+		return HttpResponse(out, content_type='text/plain')
+	except Exception as e:
+		return HttpResponse(str(e), content_type='text/plain')
+
 
 
 # @csrf_exempt

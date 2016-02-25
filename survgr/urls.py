@@ -6,5 +6,5 @@ import transform.urls
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^transform/', include(transform.urls))
+    url(r'^', include(transform.urls))
 ]
