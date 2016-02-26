@@ -85,33 +85,34 @@
                     </span>
                   </div>
                 </div>
-
-                
                 <!--input data-->
                 <div class="form-group">
                   <label for="input-area" class="form-control-label">Εισαγωγή δεδομένων:</label>
                   <textarea id="input-area" class="form-control" rows="10"></textarea>
                 </div>
-                
                 <!-- input data options-->
                 <div class="row form-group"> 
-                  <div class="col-xs-4">
+                  <div class="col-sm-4">
                     <label for="input-type">Τύπος δεδομένων:</label>
                     <div id="input-type" class="btn-group" role="group" data-toggle="buttons">
                       <label class="btn btn-primary active"><input type="radio" name="input_type" value="csv" checked="checked" autocomplete="off"> csv </label>
                       <label class="btn btn-primary"><input type="radio" name="input_type" value="geojson" autocomplete="off"> geojson </label>
                     </div>
                   </div>
-                  <div class="col-xs-4 csv-format">
+                  <div class="col-sm-4 csv-format">
                     <label for="csv-fields" class="form-control-label">Μορφή:</label>
                     <select id="csv-fields" name="csv_fields" class="form-control">
                       <option value="x,y">E, N</option>
                       <option value="x,y,z">E, N, h</option>
                       <option value="id,x,y">id, E, N</option>
                       <option value="id,x,y,z">id, Ε, Ν, h</option>
+                      <option value="y,x">N, E</option>
+                      <option value="y,x,z">N, E, h</option>
+                      <option value="id,y,x">id, N, E</option>
+                      <option value="id,y,x,z">id, N, E, h</option>
                     </select>
                   </div>
-                  <div class="col-xs-4 csv-format">
+                  <div class="col-sm-4 csv-format">
                     <label for="csv-delimiter" class="form-control-label">Διαχωριστικό:</label>
                     <select id="csv-delimiter" name="csv_delimiter" class="form-control">
                       <option value=",">Κόμμα (",")</option>
@@ -121,7 +122,6 @@
                     </select>
                   </div>
                 </div>
-
                 <div class="form-group">
                   <button id="go" class="btn btn-primary">Μετασχημάτισε</button>
                 </div>
@@ -177,18 +177,26 @@
       <hr>
       <!-- info -->
       <h3> Τι είναι το SurvGR </h3>
-      <p> To SurvGR είναι ένα web service για την εύκολη και μαζική μετατροπή συντεταγμένων σημείων αλλά και γεωμετριών (features) GIS μεταξύ των διαφόρων συστημάτων αναφοράς που χρησιμοποιούνται στην Ελλάδα:
+      <p> To SurvGR είναι ένα web service για την εύκολη και μαζική μετατροπή συντεταγμένων σημείων αλλά και GIS features μεταξύ των διαφόρων συστημάτων αναφοράς που χρησιμοποιούνται στην Ελλάδα:
         <ul>
-          <li>ΕΓΣΑ87 / TM87 (<a href="http://spatialreference.org/ref/epsg/ggrs87-greek-grid/">EPSG:2100</a> και <a href="http://spatialreference.org/ref/epsg/4121/">EPSG:4121</a>)</li>
+          <li>ΕΓΣΑ87 / TM87</li>
           <li>HTRS07 / TM07</li>
-          <li>Παλιό Ελληνικό Datum (<a href="http://spatialreference.org/ref/epsg/4815/">EPSG:4815</a>) και προβολές HATT ή ΤΜ3</li>
-          <li>Παγκόσμιο WGS84 <a href="http://spatialreference.org/ref/epsg/4326/">EPSG:4326</a></li>
-          <li>ED50 / UTM (<a href="http://spatialreference.org/ref/epsg/4230/">EPSG:4230</a>,<a href="http://spatialreference.org/ref/epsg/23034/">EPSG:23034</a>,<a href="http://spatialreference.org/ref/epsg/23035/">EPSG:23035</a>) 
+          <li>Παλιό Ελληνικό Datum και προβολές HATT ή ΤΜ3</li>
+          <li>Παγκόσμιο WGS84</li>
+          <li>ED50 / UTM </li> 
         </ul>
-      Η εφαρμογή δεν εφαρμόζει προσεγγιστικούς μετασχηματισμούς. Για τους μετασχηματισμούς πρός και από το Παλαιό Ελληνικό Datum χρησιμοποιούνται οι πολυωνυμικοί συντελεστές που διατίθενται από τον <a href="http://www.okxe.gr/el/">OKXE</a>. Για τους μετασχηματισμούς από και πρός το HTRS07 χρησιμοποιούνται τα διορθωτικά grids του <a href="http://www.hepos.gr/">Hepos</a>.
+      Η εφαρμογή δεν εφαρμόζει προσεγγιστικούς υπολογισμούς. Για τους μετασχηματισμούς πρός και από το Παλαιό Ελληνικό Datum (προβολές HATT, TM3) χρησιμοποιούνται οι πολυωνυμικοί συντελεστές που διατίθενται από τον <a href="http://www.okxe.gr/el/">OKXE</a> και γίνεται ενδιάμεσος μετασχηματισμός στο ΕΓΣΑ87. Παρομοίως, για τους μετασχηματισμούς από και πρός το HTRS07 χρησιμοποιούνται τα διορθωτικά grids του <a href="http://www.hepos.gr/">Hepos</a>.
+      </p>
+      <h3> Τι δεδομένα υποστηρίζει </h3>
+      <p>
+        Με ένα απλό copy-paste από το αρχείο σας εισάγετε και μετασχηματίστε τα δεδομένα σας.
+        <ul>
+          <li> <strong>CSV</strong>  - Αυτός ο τύπος δίνει την δυνατότητα μετασχηματισμού σημείων. Το κάθε σημείο αναγράφεται σε ξεχωριστή γραμμή. Οι συντεταγμένες του κάθε σημείου είναι διαχωρισμένες με κόμμα/κενό/tab/ερωτηματικό. Μονάδα μέτρησης είναι τα μέτρα για τις προβολικές συντεταγμένες Ε, Ν και τα υψόμετρα h, ενώ οι δεκαδικές μοίρες για τις γεωδαιτικές.</li>
+          <li> <strong>GeoJSON</strong> - Κάνει δυνατή την μετατροπή σημείων, γραμμών, πολυγώνων και GIS features.  Για περισσότερες πληροφορίες: <a href="http://geojson.org/">geojson.org</a></li>
+        </ul>
       </p>
       <h3> Υποστήριξη και ανοιχτός κώδικας </h3>
-      <p> Μπορείτε να δείτε και να συμμετάσχετε στον ανοιχτό κώδικα της εφαρμογής με την επίσκεψή σας στην παρακάτω <a href="https://github.com/georgeouzou/survgr"> διεύθυνση</a>. Επίσης, τυχόν σφάλματα και προτροπές για αναβάθμιση της εφαρμογής μπορούν να αναφερθούν <a href="https://github.com/georgeouzou/survgr/issues">εδώ</a></p>.
+      <p> Μπορείτε να δείτε και να συμμετάσχετε στον open source κώδικα της εφαρμογής με την επίσκεψή σας στην παρακάτω <a href="https://github.com/georgeouzou/survgr"> διεύθυνση</a>. Επίσης, τυχόν σφάλματα και προτροπές για αναβάθμιση της εφαρμογής μπορούν να αναφερθούν <a href="https://github.com/georgeouzou/survgr/issues">εδώ</a>.</p>
       <hr>
     </div> <!--container-->
 

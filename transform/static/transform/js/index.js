@@ -215,7 +215,8 @@ function initSelectors(){
   // change labels of csv fields based on srid coordinate type
   $("#from-srid").on('change', function(){
     var template = ($.inArray(parseInt($("#from-srid").val()), GEODETIC_SRIDS) != -1) ? 
-      ["λ, φ","λ, φ, h","id, λ, φ","id, λ, φ, h"] : ["Ε, Ν","Ε, Ν, h","id, Ε, Ν","id, Ε, Ν, h"];
+      ["λ, φ","λ, φ, h","id, λ, φ","id, λ, φ, h", "φ, λ","φ, λ, h","id, φ, λ","id, φ, λ, h"] : 
+      ["Ε, Ν","Ε, Ν, h","id, Ε, Ν","id, Ε, Ν, h", "N, E", "N, E, h","id, N, E","id, N, E, h",];
     
     $("#csv-fields option").each(function(i){
       this.text = template[i];
@@ -250,7 +251,7 @@ $(function() {
     console.log($(this).serialize());
 
     var fd = new FormData($(this)[0]);
-    fd.append("input", new Blob([$('#input-area').val()], { type: "text/plain"}));
+    fd.append("input", new Blob([$('#input-area').val()], { type: "text/plain;charset=utf-8"}));
     
     $.ajax({
       type: 'POST',

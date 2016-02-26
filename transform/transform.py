@@ -9,7 +9,7 @@ from .hatt import hatt2ggrs
 from .hatt.models import Hattblock
 from .htrs.grid import GridFile
 
-class RefSys(object):
+class ReferenceSystem(object):
 	'''
 	Utility classed to encapsulate the used in greece reference systems.
 	'''
@@ -17,6 +17,9 @@ class RefSys(object):
 		self.name = name
 		self.datum_id = datum_id
 		self.proj4text = proj4text
+
+	def is_longlat(self):
+		return '+proj=longlat' in self.proj4text
 		
 # All underlying datums used in Greece as the basis for the various reference systems.
 DATUMS = {
@@ -31,23 +34,23 @@ DATUMS = {
 # All the reference systems used in Greece.
 # Each Hattblock has its own reference system (see Hattblock proj4text property...)
 REF_SYS = {
-	2100: RefSys('ΕΓΣΑ87 / ΤΜ87', 0, '+proj=etmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=0 +ellps=GRS80 +towgs84=-199.723,74.030,246.018 +units=m +no_defs'),
-	4121: RefSys('ΕΓΣΑ87 (λ,φ)', 0, '+proj=longlat +ellps=GRS80 +towgs84=-199.723,74.030,246.018 +no_defs'),
-	4815: RefSys('Παλαιό Ελληνικό (λ,φ)', 2, '+proj=longlat +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +no_defs'),
-	4326: RefSys('WGS84 (λ,φ)', 4, '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'),
-	4230: RefSys('ED50 (λ,φ)', 3, '+proj=longlat +ellps=intl +towgs84=-61.613,-81.380,-164.182 +no_defs'),
-	23034: RefSys('ΕD50 / UTM 34N', 3, '+proj=utm +zone=34 +ellps=intl +towgs84=-61.613,-81.380,-164.182 +units=m +no_defs'),
-	23035: RefSys('ED50 / UTM 35N', 3, '+proj=utm +zone=35 +ellps=intl +towgs84=-61.613,-81.380,-164.182 +units=m +no_defs '),
+	2100: ReferenceSystem('ΕΓΣΑ87 / ΤΜ87', 0, '+proj=etmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=0 +ellps=GRS80 +towgs84=-199.723,74.030,246.018 +units=m +no_defs'),
+	4121: ReferenceSystem('ΕΓΣΑ87 (λ,φ)', 0, '+proj=longlat +ellps=GRS80 +towgs84=-199.723,74.030,246.018 +no_defs'),
+	4815: ReferenceSystem('Παλαιό Ελληνικό (λ,φ)', 2, '+proj=longlat +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +no_defs'),
+	4326: ReferenceSystem('WGS84 (λ,φ)', 4, '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'),
+	4230: ReferenceSystem('ED50 (λ,φ)', 3, '+proj=longlat +ellps=intl +towgs84=-61.613,-81.380,-164.182 +no_defs'),
+	23034: ReferenceSystem('ΕD50 / UTM 34N', 3, '+proj=utm +zone=34 +ellps=intl +towgs84=-61.613,-81.380,-164.182 +units=m +no_defs'),
+	23035: ReferenceSystem('ED50 / UTM 35N', 3, '+proj=utm +zone=35 +ellps=intl +towgs84=-61.613,-81.380,-164.182 +units=m +no_defs '),
 	# Παλαιό Ελληνικό / Hatt proj4text is general a template, that various hatt map blocks use with specific lat_0 and lon_0
-	1000000: RefSys('Παλαιό Ελληνικό / Hatt', 2, '+proj=aeqd +lat_0=0 +lon_0=0 +x_0=0 +y_0=0 +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +units=m +no_defs'),
-	1000001: RefSys('Παλαιό Ελληνικό / TM3 Δυτ.Ζώνη', 2, '+proj=tmerc +lat_0=34 +lon_0=-3 +k=0.9999 +x_0=200000 +y_0=0 +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +units=m +no_defs'),
-	1000002: RefSys('Παλαιό Ελληνικό / TM3 Κεντ.Ζώνη', 2, '+proj=tmerc +lat_0=34 +lon_0=0 +k=0.9999 +x_0=200000 +y_0=0 +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +units=m +no_defs'),
-	1000003: RefSys('Παλαιό Ελληνικό / TM3 Ανατ.Ζώνη', 2, '+proj=tmerc +lat_0=34 +lon_0=3 +k=0.9999 +x_0=200000 +y_0=0 +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +units=m +no_defs'),
-	1000004: RefSys('HTRS07 (λ,φ)', 1, '+proj=longlat +ellps=GRS80 +towgs84=0,0,0 +no_defs'),
-	1000005: RefSys('HTRS07 / TM07', 1, '+proj=etmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=-2000000 +ellps=GRS80 +towgs84=0,0,0 +units=m +no_defs'),
-	#1000006: RefSys('ΕΓΣΑ87 (X,Y,Z)', 0, '+proj=geocent +ellps=GRS80 +towgs84=-199.723,74.030,246.018 +no_defs'),
-	#1000007: RefSys('Παλαιό Ελληνικό (X,Y,Z)', 2, '+proj=geocent +ellps=bessel +towgs84=456.387,372.620,496.818 +no_defs'),
-	#1000008: RefSys('HTRS07 (X,Y,Z)', 1, '+proj=geocent +ellps=GRS80 +towgs84=0,0,0 +no_defs')
+	1000000: ReferenceSystem('Παλαιό Ελληνικό / Hatt', 2, '+proj=aeqd +lat_0=0 +lon_0=0 +x_0=0 +y_0=0 +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +units=m +no_defs'),
+	1000001: ReferenceSystem('Παλαιό Ελληνικό / TM3 Δυτ.Ζώνη', 2, '+proj=tmerc +lat_0=34 +lon_0=-3 +k=0.9999 +x_0=200000 +y_0=0 +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +units=m +no_defs'),
+	1000002: ReferenceSystem('Παλαιό Ελληνικό / TM3 Κεντ.Ζώνη', 2, '+proj=tmerc +lat_0=34 +lon_0=0 +k=0.9999 +x_0=200000 +y_0=0 +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +units=m +no_defs'),
+	1000003: ReferenceSystem('Παλαιό Ελληνικό / TM3 Ανατ.Ζώνη', 2, '+proj=tmerc +lat_0=34 +lon_0=3 +k=0.9999 +x_0=200000 +y_0=0 +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +units=m +no_defs'),
+	1000004: ReferenceSystem('HTRS07 (λ,φ)', 1, '+proj=longlat +ellps=GRS80 +towgs84=0,0,0 +no_defs'),
+	1000005: ReferenceSystem('HTRS07 / TM07', 1, '+proj=etmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=-2000000 +ellps=GRS80 +towgs84=0,0,0 +units=m +no_defs'),
+	#1000006: ReferenceSystem('ΕΓΣΑ87 (X,Y,Z)', 0, '+proj=geocent +ellps=GRS80 +towgs84=-199.723,74.030,246.018 +no_defs'),
+	#1000007: ReferenceSystem('Παλαιό Ελληνικό (X,Y,Z)', 2, '+proj=geocent +ellps=bessel +towgs84=456.387,372.620,496.818 +no_defs'),
+	#1000008: ReferenceSystem('HTRS07 (X,Y,Z)', 1, '+proj=geocent +ellps=GRS80 +towgs84=0,0,0 +no_defs')
 }
 
 # mostly used constants below 
@@ -79,32 +82,31 @@ class WorkHorseTransformer(object):
 	def __init__(self, **params):
 		self.transformers = []
 		self.log = []
-
+	
+		# add hattblock objects to the parameters, needed in _compile function
 		if 'from_hatt_id' in params:
-			if 'from_srid' not in params:
-				params['from_srid'] = HATT_SRID
+			if 'from_srid' not in params: params['from_srid'] = HATT_SRID
 			try:
 				params['from_hattblock'] = Hattblock.objects.get(id=params['from_hatt_id'])
-			except (Hattblock.DoesNotExist, KeyError):
-				raise TransformerError("Malformed parameters.")
-			
-		if 'to_hatt_id' in params:
-			if not 'to_srid' in params:
-				params['to_srid'] = HATT_SRID
-			try:
-				params['to_hattblock'] = Hattblock.objects.get(id=params['to_hatt_id'])	
-			except (Hattblock.DoesNotExist, KeyError):
-				raise TransformerError("Malformed parameters.")
-		
-		try:
-			self._compile(**params)
-		except (KeyError, TypeError):
-			# srid numbers wrong, srid not integers, HATT_SRID without from_hattblock/to_hattblock etc..
-			raise TransformerError("Malformed parameters.")
+			except Hattblock.DoesNotExist:
+				raise ValueError("Parameter Error: Hatt block with id=%d does not exist" % params['from_hatt_id'])
 
+		if 'to_hatt_id' in params:
+			if 'to_srid' not in params: params['to_srid'] = HATT_SRID
+			try:
+				params['to_hattblock'] = Hattblock.objects.get(id=params['to_hatt_id'])
+			except Hattblock.DoesNotExist:
+				raise ValueError('Parameter Error: Hatt block with id "%d" does not exist' % params['to_hatt_id'])
+
+		# TODO: check for srid numbers wrong, srid not integers, HATT_SRID without from_hattblock/to_hattblock etc..
+		self._compile(**params)
+			
 	def _compile(self, **params):
-		from_srid = params['from_srid']
-		to_srid = params['to_srid']
+		try:
+			from_srid = params['from_srid']
+			to_srid = params['to_srid']
+		except KeyError as e:
+			raise ValueError('Parameter Error: "%s" parameter is required' % e.args[0])
 
 		# check if from-to ref. systems are the same (except if we are dealing with hatt blocks)
 		# (compile can be recursive so we need this)
@@ -119,12 +121,12 @@ class WorkHorseTransformer(object):
 		srs2 = REF_SYS[to_srid]
 		# specialize proj4 definition for any of the reference systems that are hatt blocks
 		if from_srid == HATT_SRID:
-			srs1 = RefSys(name = '%s (%s)' % (srs1.name, params['from_hattblock'].name), 
+			srs1 = ReferenceSystem(name = '%s (%s)' % (srs1.name, params['from_hattblock'].name), 
 						  datum_id = srs1.datum_id, 
 						  proj4text = params['from_hattblock'].proj4text)
 		
 		if to_srid == HATT_SRID:
-			srs2 = RefSys(name = '%s (%s)' % (srs1.name, params['to_hattblock'].name), 
+			srs2 = ReferenceSystem(name = '%s (%s)' % (srs2.name, params['to_hattblock'].name), 
 						  datum_id = srs2.datum_id, 
 						  proj4text = params['to_hattblock'].proj4text)
 	 	

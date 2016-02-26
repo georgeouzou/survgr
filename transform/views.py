@@ -4,15 +4,10 @@ from io import TextIOWrapper
 from django.http import HttpResponse, Http404
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from shapely.ops import transform as shapely_transform
-from shapely.geometry import shape
-from shapely import speedups
-if speedups.available:
-	speedups.enable()
 
 from .hatt.models import Hattblock
-from .transform import WorkHorseTransformer, DATUMS, REF_SYS, TransformerError
-from .drivers import csv_driver
+from .transform import WorkHorseTransformer, DATUMS, REF_SYS
+from .drivers import csv_driver, geojson_driver
 
 def index(request):
 	q = [{'srid':srid, 'name':rs.name, 'datum': DATUMS[rs.datum_id]}  for srid, rs in REF_SYS.items()]
@@ -44,19 +39,18 @@ def transform(request):
 	# TODO: Add exception support
 	try:
 		horse = WorkHorseTransformer(**params);
-
-		if request.POST['input_type'] == "csv":
-			inp = TextIOWrapper(request.FILES['input'].file, encoding='utf-8')
+		input_type = request.POST['input_type']
+		inp = TextIOWrapper(request.FILES['input'].file, encoding='utf-8')
+		if input_type == "csv":
 			out = csv_driver.transform(horse, inp, 
-				csv_delimiter=request.POST['csv_delimiter'],
-				csv_fields=request.POST['csv_fields'].split(','))
-		else:
-			# TODO: Add geojson support
-			out = "Type not supported yet"
-
-		return HttpResponse(out, content_type='text/plain')
+				delimiter=request.POST['csv_delimiter'],
+				fieldnames=request.POST['csv_fields'])
+			return HttpResponse(out, content_type='text/plain;charset=utf-8')
+		elif input_type == "geojson":
+			out = geojson_driver.transform(horse, inp)
+			return HttpResponse(out, content_type='text/plain;charset=utf-8')
 	except Exception as e:
-		return HttpResponse(str(e), content_type='text/plain')
+		return HttpResponse(str(e), content_type='text/plain;charset=utf-8')
 
 
 

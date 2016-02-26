@@ -2,11 +2,12 @@ import csv
 from itertools import islice
 from io import StringIO
 
-def transform(transformer, fp, **fmtparams):
-	fieldnames = fmtparams['csv_fields']
-	reader = csv.DictReader(fp, fieldnames=fieldnames, delimiter=fmtparams['csv_delimiter'], skipinitialspace=True)
+def transform(transformer, fp, fieldnames='x,y', delimiter=','):
+	fieldnames = fieldnames.strip().split(',')
+	reader = csv.DictReader(fp, fieldnames=fieldnames, delimiter=delimiter, skipinitialspace=True)
+	
 	output = StringIO()
-	writer = csv.DictWriter(output, fieldnames=fieldnames, extrasaction='ignore', delimiter=fmtparams['csv_delimiter'])
+	writer = csv.DictWriter(output, fieldnames=fieldnames, extrasaction='ignore', delimiter=delimiter)
 
 	# chucked reading of points
 	while True:
@@ -14,8 +15,6 @@ def transform(transformer, fp, **fmtparams):
 		chunk = list(islice(it, 0, 20))
 		if not chunk:
 			break
-
-		print(chunk)
 
 		hasz = 'z' in fieldnames
 		if hasz:
@@ -26,10 +25,10 @@ def transform(transformer, fp, **fmtparams):
 		coords = zip(*transformer(*zip(*coords)))
 		
 		for pt, c in zip(chunk, coords):
-			pt['x'] = round(c[0],4)
-			pt['y'] = round(c[1],4)
+			pt['x'] = c[0]
+			pt['y'] = c[1]
 			if hasz:
-				pt['z'] = round(c[2], 4)
+				pt['z'] = c[2]
 
 			writer.writerow(pt)
 
