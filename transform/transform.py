@@ -185,10 +185,10 @@ class WorkHorseTransformer(object):
 		# fastest method for proj4 library and modifies in place for the custom methods
 		x = numpy.asarray(x)
 		y = numpy.asarray(y)
-		if z:
+		if z is not None:
 			z = numpy.asarray(z)
 
-		if z:
+		if z is not None:
 			for f in self.transformers:
 				x, y, z = f(x, y, z)
 		else:
