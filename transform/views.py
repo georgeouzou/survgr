@@ -1,7 +1,7 @@
 import json
 from io import TextIOWrapper
 
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
@@ -36,8 +36,11 @@ def transform(request):
 			params[n] = int(v)
 
 	# TODO: Add exception support
-	#try:
-	horse = WorkHorseTransformer(**params);
+	try:
+		horse = WorkHorseTransformer(**params);
+	except ValueError as e:
+		return HttpResponse(str(e), status=404)
+
 	input_type = request.POST['input_type']
 	inp = TextIOWrapper(request.FILES['input'].file, encoding='utf-8')
 	if input_type == "csv":

@@ -6,7 +6,7 @@ from .transform import WorkHorseTransformer
 
 
 class TransformAPITest(TestCase):
-	def test_horse(self):
+	def test_transformer_1(self):
 		params = {
 			'from_srid':1000005,
 			'to_srid': 2100
@@ -16,8 +16,22 @@ class TransformAPITest(TestCase):
 		horse = WorkHorseTransformer(**params)
 		horse(x, y)
 
+	def test_transformer_compile(self):
+		HATT_SRID = 1000000
+		GGRS_SRID = 2100
+		with self.assertRaises(ValueError):
+			horse = WorkHorseTransformer(from_srid=HATT_SRID)
+		with self.assertRaises(ValueError):
+			horse = WorkHorseTransformer(to_srid=HATT_SRID)
+		with self.assertRaises(ValueError):
+			horse = WorkHorseTransformer(from_hatt_id=-10, to_srid=GGRS_SRID)
+		with self.assertRaises(ValueError):
+			horse = WorkHorseTransformer(from_srid=HATT_SRID, to_srid=GGRS_SRID)
+		with self.assertRaises(ValueError):
+			horse = WorkHorseTransformer(from_srid=GGRS_SRID, to_srid=HATT_SRID)
 
-
+		horse = WorkHorseTransformer(from_srid=GGRS_SRID, to_srid=HATT_SRID, to_hatt_id=2)
+	
 	# def test_transform_features(self):
 	# 	params = {
 	# 		'from_srid': 1000005, # HTRS07 geocentric

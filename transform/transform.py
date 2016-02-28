@@ -98,14 +98,19 @@ class WorkHorseTransformer(object):
 			except Hattblock.DoesNotExist:
 				raise ValueError('Parameter Error: Hatt block with id "%d" does not exist' % params['to_hatt_id'])
 	
-		self._compile(**params)
-			
-	def _compile(self, **params):
 		try:
-			from_srid = params['from_srid']
-			to_srid = params['to_srid']
+			self._compile(**params)
 		except KeyError as e:
-			raise ValueError('Parameter Error: "%s" parameter is required' % e.args[0])
+			key = e.args[0]
+			if key == 'from_hattblock':
+				key = 'from_hatt_id'
+			elif key == 'to_hattblock':
+				key = 'to_hatt_id'
+			raise ValueError('Parameter Error: "%s" parameter is required' % key)
+			
+	def _compile(self, **params):	
+		from_srid = params['from_srid']
+		to_srid = params['to_srid']
 
 		# check if from-to ref. systems are the same (except if we are dealing with hatt blocks)
 		# (compile can be recursive so we need this)
