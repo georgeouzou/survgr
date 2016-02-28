@@ -84,7 +84,8 @@ function initMap() {
   var view = new ol.View({
       projection: 'EPSG:3857', //spherical merc 
       center: ol.proj.transform([25,38.4],'EPSG:4326','EPSG:3857'),
-      zoom: 6
+      zoom: 6,
+      maxZoom: 10
   });
   var map = new ol.Map({
     layers:[
@@ -138,16 +139,19 @@ function initMap() {
   });
 
   $('#map-modal').on('shown.bs.modal', function (e) {
-    // BUG: this is needed because i use map inside of a modal
+    // BUG: this is needed because i use the map inside of a modal
     map.updateSize();
-    
+    // pan view to the selected feature
     if (selectAction.getFeatures().getLength() > 0){
+      // get xmin, ymin, xmax, ymax of selected feature
+      var extent = selectAction.getFeatures().item(0).getGeometry().getExtent(); 
+      var xy = [(extent[2] + extent[0])/2, (extent[3] + extent[1])/2];
       var pan = ol.animation.pan({
-        duration: 1000,
-        source: (view.getCenter())
+        duration: 3*ANIM_TIME,
+        source: view.getCenter()
       });
       map.beforeRender(pan);
-      view.setCenter(ol.proj.transform([25,38.4],'EPSG:4326','EPSG:3857'));
+      view.setCenter(xy);
     } 
   });
 
@@ -261,23 +265,9 @@ $(function() {
       contentType: false // this is how it automatically computes the boundary
     }).done(function (data){
       $('#output-area').val(data);
+    }).fail(function (jqXHR) {
+      $('#output-area').val(jqXHR.responseText);
     });
-    
-    // $.ajax({
-    //   type: 'POST',
-    //   url: $(this).attr('action'),
-    //   dataType: 'json', // what to expect from server
-    //   contentType :'application/json;charset=utf-8', // post data type
-    //   data: JSON.stringify({
-    //     "params": params,
-    //     "input": text2Features()
-    //     //"input": JSON.parse($('#input-area').val())
-    //   }),
-    // }).done(function (data){
-    //   $('#output-area').val(JSON.stringify(data.output));
-    // }).fail(function (jqXHR){
-    //   $('#output-area').val(jqXHR.responseText);
-    // });
   });
 });
 
