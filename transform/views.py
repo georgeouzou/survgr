@@ -30,7 +30,6 @@ def hattblock_info(request, id):
 
 @csrf_exempt
 def transform(request):
-	
 	params = {}
 	for n, v in request.POST.items():
 		if n in ['from_srid', 'to_srid', 'from_hatt_id', 'to_hatt_id']:

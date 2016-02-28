@@ -3,6 +3,9 @@
  */
 var NOT_SELECTED_ID = -1;
 var ANIM_TIME = 300;
+var HATT_SRID = 1000000;
+var OLD_GREEK_SRIDS = [1000000, 1000001, 1000002, 1000003, 4815];
+var GEODETIC_SRIDS = [4121,4815,4326,4230,1000004];
 
 /*
  * Initializers
@@ -175,9 +178,7 @@ function initSelectors(){
   // visibility of hatt selection html elements is based
   // on the selected srid
   // SRIDS are defined in transform.py
-  var HATT_SRID = 1000000;
-  var OLD_GREEK_SRIDS = [1000000, 1000001, 1000002, 1000003, 4815];
-  var GEODETIC_SRIDS = [4121,4815,4326,4230,1000004]
+  
 
   function isOldGreek(srid){
     return OLD_GREEK_SRIDS.indexOf(parseInt(srid)) != -1;
@@ -239,6 +240,17 @@ function getInputType(){
   return $('#input-type input:checked').val();
 }
 
+function validateInput(){
+  fromSrid = $("#from-srid").val();
+  toSrid = $("#to-srid").val();
+  if ((fromSrid == HATT_SRID && $("#from-hatt .hatt-id").val() == -1) || 
+    (toSrid == HATT_SRID && $("#to-hatt .hatt-id").val() == -1)) {
+    $('#output-area').val("Παρακαλώ επιλέξτε φύλλο χάρτη HATT.");
+    return false;
+  }
+  return true;
+}
+
 /*
  * Main
  */
@@ -252,6 +264,7 @@ $(function() {
 
   $('#form-params').submit(function (e){
     e.preventDefault();
+    if (!validateInput()) return;
     console.log($(this).serialize());
 
     var fd = new FormData($(this)[0]);

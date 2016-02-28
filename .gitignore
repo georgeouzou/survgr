@@ -3,4 +3,5 @@
 local_settings.py
 __pycache__
 *.pyc
-bower_components
+/bower_components
+/static

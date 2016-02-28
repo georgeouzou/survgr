@@ -97,8 +97,7 @@ class WorkHorseTransformer(object):
 				params['to_hattblock'] = Hattblock.objects.get(id=params['to_hatt_id'])
 			except Hattblock.DoesNotExist:
 				raise ValueError('Parameter Error: Hatt block with id "%d" does not exist' % params['to_hatt_id'])
-
-		# TODO: check for srid numbers wrong, srid not integers, HATT_SRID without from_hattblock/to_hattblock etc..
+	
 		self._compile(**params)
 			
 	def _compile(self, **params):
