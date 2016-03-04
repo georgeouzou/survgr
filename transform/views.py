@@ -29,6 +29,18 @@ def hattblock_info(request, id):
 	return json_response(hb)
 
 @csrf_exempt
+def transform_steps(request):
+	params = {}
+	for n, v in request.POST.items():
+		if n in ['from_srid', 'to_srid', 'from_hatt_id', 'to_hatt_id']:
+			params[n] = int(v)
+	try:
+		horse = WorkHorseTransformer(**params)
+		return HttpResponse(horse.log_str())
+	except ValueError as e:
+		return HttpResponse(str(e), status=404)
+
+@csrf_exempt
 def transform(request):
 	params = {}
 	for n, v in request.POST.items():
@@ -37,7 +49,7 @@ def transform(request):
 
 	# TODO: Add exception support
 	try:
-		horse = WorkHorseTransformer(**params);
+		horse = WorkHorseTransformer(**params)
 	except ValueError as e:
 		return HttpResponse(str(e), status=404)
 
@@ -52,8 +64,9 @@ def transform(request):
 		elif input_type == "geojson":
 			out = geojson_driver.transform(horse, inp)
 			return HttpResponse(out, content_type='text/plain;charset=utf-8')
-	except Exception:
-		return HttpResponse('Bad data', status=404)
+	except Exception as e:
+	 	print(e)
+	 	return HttpResponse('Bad data', status=404)
 
 
 # utility

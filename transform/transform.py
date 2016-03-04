@@ -127,15 +127,12 @@ class WorkHorseTransformer(object):
 		if from_srid == HATT_SRID:
 			srs1 = ReferenceSystem(name = '%s (%s)' % (srs1.name, params['from_hattblock'].name), 
 						  datum_id = srs1.datum_id, 
-						  proj4text = params['from_hattblock'].proj4text)
-		
+						  proj4text = params['from_hattblock'].proj4text)		
 		if to_srid == HATT_SRID:
 			srs2 = ReferenceSystem(name = '%s (%s)' % (srs2.name, params['to_hattblock'].name), 
 						  datum_id = srs2.datum_id, 
 						  proj4text = params['to_hattblock'].proj4text)
 	 	
-		# update log
-		self.log.append('transformer: %s --> %s' % (srs1.name, srs2.name))
 
 		# check if from-datum is the old greek, so we can use OKXE transformation
 		if srs1.datum_id == 2 and srs2.datum_id != 2:
@@ -144,7 +141,8 @@ class WorkHorseTransformer(object):
 			if from_srid != HATT_SRID:
 				self._compile(from_srid=from_srid, to_srid=HATT_SRID, to_hattblock=block) # using ProjTransformer
 			# transform hatt to ggrs / greek grid
-			self.transformers.append(OKXETransformer(block.get_coeffs(), inverse=False))		
+			self.transformers.append(OKXETransformer(block.get_coeffs(), inverse=False))
+			self.log.append('%s (%s) --(OKXE)--> %s' % (REF_SYS[HATT_SRID].name, block.name, REF_SYS[TM87_SRID].name))
 			# call recursively with ggrs / greek grid to srid
 			self._compile(from_srid=TM87_SRID, to_srid=to_srid)
 			return # end
@@ -156,6 +154,7 @@ class WorkHorseTransformer(object):
 			self._compile(from_srid=from_srid, to_srid=TM87_SRID)
 			# and then transform from ggrs / greek grid to hatt map block
 			self.transformers.append(OKXETransformer(block.get_coeffs(), inverse=True))
+			self.log.append('%s --(OKXE)--> %s (%s)' % (REF_SYS[TM87_SRID].name, REF_SYS[HATT_SRID].name, block.name))
 			# if to_srid is not hatt projected but in the old greek datum... i.e. TM03
 			if to_srid != HATT_SRID:
 				self._compile(from_srid=HATT_SRID, to_srid=to_srid, from_hattblock=block)
@@ -167,6 +166,7 @@ class WorkHorseTransformer(object):
 			self._compile(from_srid=from_srid, to_srid=TM07_SRID)
 			# HTRS/TM07 --> GGRS/Greek Grid
 			self.transformers.append(HeposTransformer(inverse=False))
+			self.log.append('%s --(Hepos)--> %s' % (REF_SYS[TM07_SRID].name, REF_SYS[TM87_SRID].name))
 			# call recursively with ggrs / greek grid
 			self._compile(from_srid=TM87_SRID, to_srid=to_srid)
 			return # end
@@ -177,12 +177,15 @@ class WorkHorseTransformer(object):
 			self._compile(from_srid=from_srid, to_srid=TM87_SRID)
 			# then use Hepos transformation : GGRS87/GG --> HTRS / TM07
 			self.transformers.append(HeposTransformer(inverse=True))
+			# update log
+			self.log.append('%s --(Hepos)--> %s' % (REF_SYS[TM87_SRID].name, REF_SYS[TM07_SRID].name))
 			# and transform to longlat if not TM07
 			self._compile(from_srid=TM07_SRID, to_srid=to_srid)
 			return # end
 		
 		# last and general transformation
 		self.transformers.append(ProjTransformer(srs1.proj4text, srs2.proj4text))
+		self.log.append('%s --> %s' % (srs1.name, srs2.name))
 
 	def __call__(self, x, y, z=None):
 		# create numpy array to modify in place
@@ -201,7 +204,7 @@ class WorkHorseTransformer(object):
 		
 		return tuple(filter(lambda array: array is not None, [x, y, z]))
 
-	def log(self):
+	def log_str(self):
 		return '\n'.join(list(self.log))
 
 #

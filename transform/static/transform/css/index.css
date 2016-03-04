@@ -6,6 +6,11 @@ body {
   background-color: #AA9966;
 }
 
+.alert.alert-success  {
+  background-color: #AA9966;
+  border-color: #998855
+}
+
 /*Openlayers 3 */
 .map{
   width:100%;
@@ -18,3 +23,4 @@ body {
 span.twitter-typeahead .tt-hint {
   color: #888
 }
+
