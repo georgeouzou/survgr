@@ -4,7 +4,6 @@ from django.test import TestCase
 
 from .transform import WorkHorseTransformer
 
-
 class TransformAPITest(TestCase):
 	def test_transformer_1(self):
 		params = {

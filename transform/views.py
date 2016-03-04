@@ -1,7 +1,7 @@
 import json
 from io import TextIOWrapper
 
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
@@ -41,18 +41,19 @@ def transform(request):
 	except ValueError as e:
 		return HttpResponse(str(e), status=404)
 
-	input_type = request.POST['input_type']
-	inp = TextIOWrapper(request.FILES['input'].file, encoding='utf-8')
-	if input_type == "csv":
-		out = csv_driver.transform(horse, inp, 
-			delimiter=request.POST['csv_delimiter'],
-			fieldnames=request.POST['csv_fields'])
-		return HttpResponse(out, content_type='text/plain;charset=utf-8')
-	elif input_type == "geojson":
-		out = geojson_driver.transform(horse, inp)
-		return HttpResponse(out, content_type='text/plain;charset=utf-8')
-	#except Exception as e:
-		#return HttpResponse(str(e), content_type='text/plain;charset=utf-8')
+	try:
+		input_type = request.POST['input_type']
+		inp = TextIOWrapper(request.FILES['input'].file, encoding='utf-8')
+		if input_type == "csv":
+			out = csv_driver.transform(horse, inp, 
+				delimiter=request.POST['csv_delimiter'],
+				fieldnames=request.POST['csv_fields'])
+			return HttpResponse(out, content_type='text/plain;charset=utf-8')
+		elif input_type == "geojson":
+			out = geojson_driver.transform(horse, inp)
+			return HttpResponse(out, content_type='text/plain;charset=utf-8')
+	except Exception:
+		return HttpResponse('Bad data', status=404)
 
 
 # utility
