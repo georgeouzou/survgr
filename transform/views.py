@@ -38,6 +38,7 @@ def transform(request):
 	# TODO: Add exception support
 	try:
 		horse = WorkHorseTransformer(**params)
+		print(horse.log_str())
 	except ValueError as e:
 		return HttpResponse(str(e), status=404)
 
@@ -53,7 +54,6 @@ def transform(request):
 			out = geojson_driver.transform(horse, inp)
 			return HttpResponse(out, content_type='text/plain;charset=utf-8')
 	except Exception as e:
-	 	print(e)
 	 	return HttpResponse('Bad data', status=404)
 
 

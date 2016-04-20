@@ -24,6 +24,17 @@
   </head>
 
   <body>
+    <!--facebook like plugin-->
+    <div id="fb-root"></div>
+    <script>(function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.5";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+    </script>
+
     <!--hattblocks map modal-->
     <div id="map-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="selected-feature-name">
       <div class="modal-dialog modal-lg" role="document">
@@ -200,6 +211,11 @@
       </p>
       <h3> Υποστήριξη και ανοιχτός κώδικας </h3>
       <p> Μπορείτε να δείτε και να συμμετάσχετε στον open source κώδικα της εφαρμογής με την επίσκεψή σας στην παρακάτω <a href="https://github.com/georgeouzou/survgr"> διεύθυνση</a>. Επίσης, τυχόν σφάλματα και προτροπές για αναβάθμιση της εφαρμογής μπορούν να αναφερθούν <a href="https://github.com/georgeouzou/survgr/issues">εδώ</a>.</p>
+      <hr>
+
+      <!--facebook-plugin-->
+      <div class="fb-like" data-href="http://georgeouzou.pythonanywhere.com/" data-width="50" data-layout="button_count" data-action="like" data-show-faces="true" data-share="true">
+      </div>
       <hr>
     </div> <!--container-->
 
