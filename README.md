@@ -1,6 +1,7 @@
 # survgr  
 A django project for transforming coordinates between the various Coordinate Systems used in Greece.  
-  
+You can try the app at https://survgr.herokuapp.com/ 
+
 It is (will be for the time being) a website / web api for transforming earth point coordinates and other geometries between:  
 * [GGRS87 / TM87 (EPSG:2100 and EPSG:4121)](http://spatialreference.org/ref/epsg/ggrs87-greek-grid/)
 * [Old Greek Datum (EPSG:4815)](http://spatialreference.org/ref/epsg/4815/)  
@@ -13,9 +14,9 @@ It is (will be for the time being) a website / web api for transforming earth po
 Prerequisites:
 * You need to have python3 and virtualenv setup for backend
 
-To install the project locally:  
+To install and run the project locally:  
 * Make a fresh python 3 virtual environment
-* `Pip install requirements.txt` for the back-end dependancies
+* `Pip install requirements.txt` for the back-end dependencies
 * `python manage.py migrate` to create an sqlite db with some initial data
 * Run `python manage.py test` for testing
 * Run `python manage.py runserver` to run the server locally
