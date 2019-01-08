@@ -5,4 +5,5 @@ __pycache__
 *.pyc
 /bower_components
 /static
+/staticfiles
 .vs
