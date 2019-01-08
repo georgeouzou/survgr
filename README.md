@@ -17,6 +17,5 @@ To install the project locally:
 * Make a fresh python 3 virtual environment
 * `Pip install requirements.txt` for the back-end dependancies
 * `python manage.py migrate` to create an sqlite db with some initial data
-* Run `python ./transform/htrs/grd2bin.py` to compile the hepos binary grid file
 * Run `python manage.py test` for testing
 * Run `python manage.py runserver` to run the server locally
