@@ -1,1 +1,0 @@
-web: gunicorn survgr.wsgi —-log-file -
