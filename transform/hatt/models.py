@@ -1,4 +1,4 @@
-from django.contrib.gis.db import models
+from django.db import models
 
 class Hattblock(models.Model):
 	'''
@@ -8,10 +8,7 @@ class Hattblock(models.Model):
 	name = models.CharField(max_length=25)
 	center_lon = models.FloatField() # center of the hatt block used to create projection
 	center_lat = models.FloatField()
-	geometry = models.PolygonField(srid=4815) # SRID:4815 = Greek Athens
-
-	# override default objects manager to GIS objects manager 
-	objects = models.GeoManager()
+	geometry = models.CharField(max_length=255)
 
 	# utility func create projection proj4 string
 	@property

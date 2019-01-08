@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 import os, json
 
 from django.db import migrations
-from django.contrib.gis.geos import GEOSGeometry
 
 def load(apps, schema_editor):
 	Hattblock = apps.get_model("transform", "Hattblock")
@@ -13,7 +12,7 @@ def load(apps, schema_editor):
 	cur_dir = os.path.dirname(__file__) #/migrations
 	transform_dir = os.path.split(cur_dir)[0] #/transform
 
-	with open(os.path.join(transform_dir, 'hatt', 'hattblocks15.json'),'r') as fd:
+	with open(os.path.join(transform_dir, 'hatt', 'hattblocks15.json'),'r', encoding="utf8") as fd:
 		hattblocks = []
 		coeffs = []
 		for chunk in json.load(fd):
@@ -22,8 +21,9 @@ def load(apps, schema_editor):
 				name=chunk['name'],
 				center_lon=chunk['cx'],
 				center_lat=chunk['cy'],
-				geometry=GEOSGeometry(json.dumps(chunk['geom']))
+				geometry=json.dumps(chunk['geom'])
 			)
+			
 			hattblocks.append(hb)
 			for ctype, cvalue in chunk['okxe_coeffs'].items():
 				coeffs.append(OKXECoefficient(block=hb,type=ctype,value=cvalue))

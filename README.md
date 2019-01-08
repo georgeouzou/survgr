@@ -12,7 +12,6 @@ It is (will be for the time being) a website / web api for transforming earth po
 
 Prerequisites:
 * You need to have python3 and virtualenv setup for backend
-* You also need to have npm and bower installed for frontend
 
 To install the project locally:  
 * Make a fresh python 3 virtual environment

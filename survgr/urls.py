@@ -1,10 +1,10 @@
 """survgr URL Configuration"""
-from django.conf.urls import include, url
+from django.urls import include, path
 from django.contrib import admin
 
 import transform.urls
 
 urlpatterns = [
-    url(r'^admin/', include(admin.site.urls)),
-    url(r'^', include(transform.urls))
+    path('admin/', admin.site.urls),
+    path('', include('transform.urls'))
 ]
