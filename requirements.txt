@@ -2,7 +2,9 @@ Django==2.1.5
 geojson==2.4.1
 gunicorn==19.9.0
 numpy==1.15.4
+psycopg2==2.7.6.1
 pyproj==1.9.6
+python-dotenv==0.10.1
 pytz==2018.9
 Shapely==1.6.4.post1
 whitenoise==4.1.2
