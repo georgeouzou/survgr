@@ -12,7 +12,7 @@ It is (will be for the time being) a website / web api for transforming earth po
 * The new HTRS07 / TM07 using the accurate transformation published by [Hepos](http://www.hepos.gr/)  
 
 Prerequisites:
-* You need to have python3 and virtualenv setup for backend
+* You need to have python 3.8 and virtualenv setup for backend
 
 To install and run the project locally:  
 * Make a fresh python 3 virtual environment
