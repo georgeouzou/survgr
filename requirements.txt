@@ -11,3 +11,4 @@ python-dotenv==0.19.2
 Shapely==1.8.0
 sqlparse==0.4.2
 whitenoise==6.0.0
+psycopg2-binary
