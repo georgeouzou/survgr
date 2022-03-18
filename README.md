@@ -16,10 +16,11 @@ Prerequisites:
 
 To install and run the project locally:  
 * Make a fresh python 3 virtual environment
-* `Pip install requirements.txt` for the back-end dependencies
+* `pip install -r requirements.txt` for the back-end dependencies
 * Add a simple text file named ".env" with some environment values for
   - DJANGO_SECRET_KEY=addasecretkeyhere
   - DATABASE_URL=sqlite:///survgr.db
 * `python manage.py migrate` to create an sqlite db with some initial data
 * Run `python manage.py test` for testing
+* Run `python manage.py collectstatic` 
 * Run `python manage.py runserver` to run the server locally

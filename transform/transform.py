@@ -2,7 +2,7 @@
 import os
 from functools import partial
 
-import pyproj
+import pyproj # TODO: update pyproj.transform as it is now deprecated
 import numpy
 
 from .hatt import hatt2ggrs
