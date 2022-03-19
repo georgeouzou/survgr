@@ -274,10 +274,15 @@ $(function() {
       type: 'POST',
       url: $(this).attr('action'),
       data: fd,
+      dataType: "json",
       processData: false, // this is not to url-encode the fd object
       contentType: false // this is how it automatically computes the boundary
-    }).done(function (data){
-      $('#output-area').val(data);
+    }).done(function (json_output){
+      if (json_output.type == "csv") {
+        $('#output-area').val(json_output.result);
+      } else if (json_output.type == "geojson") {
+        $('#output-area').val(JSON.stringify(json_output.result));
+      }
     }).fail(function (jqXHR) {
       $('#output-area').val(jqXHR.responseText);
     });

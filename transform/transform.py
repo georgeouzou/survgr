@@ -33,6 +33,8 @@ DATUMS = {
 
 # All the reference systems used in Greece.
 # Each Hattblock has its own reference system (see Hattblock proj4text property...)
+# All +towgs84 dx,dy,dz are taken from Fotiou book
+# going from ed50->wgs84->egsa87 == ed50->egsa87
 REF_SYS = {
 	2100: ReferenceSystem('ΕΓΣΑ87 / ΤΜ87', 0, '+proj=etmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=0 +ellps=GRS80 +towgs84=-199.723,74.030,246.018 +units=m +no_defs'),
 	4121: ReferenceSystem('ΕΓΣΑ87 (λ,φ)', 0, '+proj=longlat +ellps=GRS80 +towgs84=-199.723,74.030,246.018 +no_defs'),

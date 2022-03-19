@@ -37,8 +37,8 @@ def transform(request):
 
 	# TODO: Add exception support
 	try:
-		horse = WorkHorseTransformer(**params)
-		print(horse.log_str())
+		transformer = WorkHorseTransformer(**params)
+		print(transformer.log_str())
 	except ValueError as e:
 		return HttpResponse(str(e), status=404)
 
@@ -46,16 +46,23 @@ def transform(request):
 		input_type = request.POST['input_type']
 		inp = TextIOWrapper(request.FILES['input'].file, encoding='utf-8')
 		if input_type == "csv":
-			out = csv_driver.transform(horse, inp, 
+			csv_result = csv_driver.transform(transformer, inp, 
 				delimiter=request.POST['csv_delimiter'],
 				fieldnames=request.POST['csv_fields'])
-			return HttpResponse(out, content_type='text/plain;charset=utf-8')
+			return json_response({
+				"type": "csv", 
+				"result": csv_result.read(), 
+				"accuracy": ""
+			})
 		elif input_type == "geojson":
-			out = geojson_driver.transform(horse, inp)
-			return HttpResponse(out, content_type='text/plain;charset=utf-8')
+			gj_result = geojson_driver.transform(transformer, inp)
+			return json_response({
+				"type": "geojson", 
+				"result": gj_result, 
+				"accuracy": ""
+			})
 	except Exception as e:
-	 	return HttpResponse('Bad data', status=404)
-
+		return HttpResponse('Bad data', status=404)
 
 # utility
 def json_response(data, status=200):

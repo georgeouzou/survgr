@@ -1,5 +1,3 @@
-from io import StringIO
-
 import geojson
 from shapely.ops import transform as shapely_transform
 from shapely.geometry import shape
@@ -22,9 +20,6 @@ def transform(transformer, fp):
 	else: #point, linestring, polygon, multis, geometry collection
 		js = shapely_transform(transformer, shape(js)).__geo_interface__
 
-	output = StringIO()
-	geojson.dump(js, output)
-	output.seek(0)
-	return output
+	return js
 
 	
