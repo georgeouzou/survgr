@@ -167,15 +167,22 @@
                   <label for="output-area" class="form-control-label">Αποτελέσματα:</label>
                   <textarea id="output-area" class="form-control" rows="10"></textarea>
                 </div>
+                <!--
+                <div class="form-group">
+                  <label for="output-accuracy-area" class="form-control-label">Ακρίβεια υπολογισμών:</label>
+                  <textarea id="output-accuracy-area" class="form-control" rows="3"></textarea>
+                </div>
+                -->
                 <div id="output-alert-area" class="form-group">
                   <!--generate alert based on the results-->
                 </div>
               </div>
             </div>  <!--panel to-->
           </div>
-        </div> <!--row-->
-
+        </div> <!--row-->   
       </form>
+      <!--accuracy results area-->
+      <div id="output-accuracy-area"></div>
 
       <hr>
       <!-- info -->
@@ -184,11 +191,11 @@
         <ul>
           <li>ΕΓΣΑ87 / TM87</li>
           <li>HTRS07 / TM07</li>
-          <li>Παλιό Ελληνικό Datum και προβολές HATT ή ΤΜ3</li>
+          <li>Παλιό Ελληνικό Datum και προβολές HATT ή ΤΜ3 (Όπως είναι εφαρμοσμένο από τη ΓΥΣ και όχι από ΤΥΥΓ)</li>
           <li>Παγκόσμιο WGS84</li>
           <li>ED50 / UTM </li> 
         </ul>
-      Η εφαρμογή δεν εφαρμόζει προσεγγιστικούς υπολογισμούς. Για τους μετασχηματισμούς πρός και από το Παλαιό Ελληνικό Datum (προβολές HATT, TM3) χρησιμοποιούνται οι πολυωνυμικοί συντελεστές που διατίθενται από τον <a href="http://www.okxe.gr/el/">OKXE</a> και γίνεται ενδιάμεσος μετασχηματισμός στο ΕΓΣΑ87. Παρομοίως, για τους μετασχηματισμούς από και πρός το HTRS07 χρησιμοποιούνται τα διορθωτικά grids του <a href="http://www.hepos.gr/">Hepos</a>.
+      Για τους μετασχηματισμούς πρός και από το Παλαιό Ελληνικό Datum (προβολές HATT, TM3) χρησιμοποιούνται οι πολυωνυμικοί συντελεστές που διατίθενται από τον <a href="http://www.okxe.gr/el/">OKXE</a> και γίνεται ενδιάμεσος μετασχηματισμός στο ΕΓΣΑ87. Παρομοίως, για τους μετασχηματισμούς από και πρός το HTRS07 χρησιμοποιούνται τα διορθωτικά grids του <a href="http://www.hepos.gr/">Hepos</a>.
       </p>
       <h3> Τι δεδομένα υποστηρίζει </h3>
       <p>

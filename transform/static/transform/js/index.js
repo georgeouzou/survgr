@@ -251,6 +251,21 @@ function validateInput(){
   return true;
 }
 
+function clearOutputAccuracyArea()
+{
+  $('#output-accuracy-area').hide(ANIM_TIME);
+}
+
+function fillOutputAccuracyArea(transform_steps) 
+{
+  var steps = transform_steps.map(function (i) { return "<li>"+String(i)+"</li>"; });
+  $('#output-accuracy-area').hide(ANIM_TIME, function() {
+    $('#output-accuracy-area').empty();
+    $('#output-accuracy-area').append("<h3>Βήματα και ακρίβειες υπολογισμών:</h3><ul>" + steps.join('') + "</ul>");
+    $('#output-accuracy-area').show(ANIM_TIME);
+  });
+}
+
 /*
  * Main
  */
@@ -264,6 +279,7 @@ $(function() {
 
   $('#form-params').submit(function (e){
     e.preventDefault();
+    
     if (!validateInput()) return;
     console.log($(this).serialize());
 
@@ -283,8 +299,10 @@ $(function() {
       } else if (json_output.type == "geojson") {
         $('#output-area').val(JSON.stringify(json_output.result));
       }
+      fillOutputAccuracyArea(json_output.steps)
     }).fail(function (jqXHR) {
       $('#output-area').val(jqXHR.responseText);
+      clearOutputAccuracyArea();
     });
   });
 });

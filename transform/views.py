@@ -52,14 +52,14 @@ def transform(request):
 			return json_response({
 				"type": "csv", 
 				"result": csv_result.read(), 
-				"accuracy": ""
+				"steps": transformer.transformation_steps,
 			})
 		elif input_type == "geojson":
 			gj_result = geojson_driver.transform(transformer, inp)
 			return json_response({
 				"type": "geojson", 
 				"result": gj_result, 
-				"accuracy": ""
+				"steps": transformer.transformation_steps,
 			})
 	except Exception as e:
 		return HttpResponse('Bad data', status=404)
