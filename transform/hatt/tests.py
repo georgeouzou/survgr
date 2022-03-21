@@ -39,26 +39,31 @@ class OKXETransformTest(TestCase):
 
 class HattBlockTest(TestCase):
 
-	def test_coefficients(self):
-		hb = Hattblock.objects.get(name='Άθως')
-		coeffs = [497146.35, 0.9996218, 0.0004028, -1.70E-010, 2.60E-010, 2.70E-010,\
-		 4455299.91, -0.0003894, 0.99961, 1.60E-010, 1.30E-010, -2.70E-010]
+    def test_ids(self):
+        hb = Hattblock.objects.get(id=1)
+        self.assertEqual(hb.name, "Άβδηρα")
+        hb = Hattblock.objects.get(id=126)
+        self.assertEqual(hb.name, "Ίος")
+        hb = Hattblock.objects.get(id=241)
+        self.assertEqual(hb.name, "Νέον-Καρλοβάσιον")
 
-		for i,j in zip(coeffs, hb.get_coeffs()):
-			self.assertEqual(i, j)
+    def test_coefficients(self):
+        hb = Hattblock.objects.get(name='Άθως')
+        coeffs = [497146.35, 0.9996218, 0.0004028, -1.70E-010, 2.60E-010, 2.70E-010,\
+            4455299.91, -0.0003894, 0.99961, 1.60E-010, 1.30E-010, -2.70E-010]
+        for i,j in zip(coeffs, hb.get_coeffs()):
+            self.assertEqual(i, j)
 
-		hb = Hattblock.objects.get(name='Ερυθραί')
-		coeffs = [453315.02, 0.9996023, 0.0057615, -2.01E-009, 2.70E-010, -6.00E-011,\
-		 4233504.49, -0.005829, 0.9996627, -1.10E-009, 5.10E-010, -2.36E-009]
+        hb = Hattblock.objects.get(name='Ερυθραί')
+        coeffs = [453315.02, 0.9996023, 0.0057615, -2.01E-009, 2.70E-010, -6.00E-011,\
+            4233504.49, -0.005829, 0.9996627, -1.10E-009, 5.10E-010, -2.36E-009]
+        for i,j in zip(coeffs, hb.get_coeffs()):
+            self.assertEqual(i, j)
 
-		for i,j in zip(coeffs, hb.get_coeffs()):
-			self.assertEqual(i, j)
-
-		hb = Hattblock.objects.get(name='Ψαχνά')
-		coeffs = [453637.6, 0.9996193, 0.0058377, -6.50E-010, 5.90E-010, -1.00E-011,\
-		 4288980.93, -0.0058421, 0.9996147, 2.40E-010, -5.10E-010, -1.53E-009]
-
-		for i,j in zip(coeffs, hb.get_coeffs()):
-			self.assertEqual(i, j)
+        hb = Hattblock.objects.get(name='Ψαχνά')
+        coeffs = [453637.6, 0.9996193, 0.0058377, -6.50E-010, 5.90E-010, -1.00E-011,\
+            4288980.93, -0.0058421, 0.9996147, 2.40E-010, -5.10E-010, -1.53E-009]
+        for i,j in zip(coeffs, hb.get_coeffs()):
+            self.assertEqual(i, j)
 
 

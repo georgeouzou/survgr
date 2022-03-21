@@ -50,9 +50,6 @@ REF_SYS = {
 	1000003: ReferenceSystem('Παλαιό Ελληνικό / TM3 Ανατ.Ζώνη', 2, '+proj=tmerc +lat_0=34 +lon_0=3 +k=0.9999 +x_0=200000 +y_0=0 +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +units=m +no_defs'),
 	1000004: ReferenceSystem('HTRS07 (λ,φ)', 1, '+proj=longlat +ellps=GRS80 +towgs84=0,0,0 +no_defs'),
 	1000005: ReferenceSystem('HTRS07 / TM07', 1, '+proj=etmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=-2000000 +ellps=GRS80 +towgs84=0,0,0 +units=m +no_defs'),
-	#1000006: ReferenceSystem('ΕΓΣΑ87 (X,Y,Z)', 0, '+proj=geocent +ellps=GRS80 +towgs84=-199.723,74.030,246.018 +no_defs'),
-	#1000007: ReferenceSystem('Παλαιό Ελληνικό (X,Y,Z)', 2, '+proj=geocent +ellps=bessel +towgs84=456.387,372.620,496.818 +no_defs'),
-	#1000008: ReferenceSystem('HTRS07 (X,Y,Z)', 1, '+proj=geocent +ellps=GRS80 +towgs84=0,0,0 +no_defs')
 }
 
 # mostly used constants below 
@@ -62,7 +59,6 @@ TM87_SRID = 2100
 
 class TransformerError(Exception):
 	pass
-
 
 class WorkHorseTransformer(object):
 	'''
@@ -269,7 +265,7 @@ class OKXETransformer(object):
 	Transforms in place from Hatt ref system to GGRS87 / GG (inverse=False)
 	or from GGRS87 / GG to Hatt ref system (inverse=True)
 	'''
-	def __init__(self, coeffs, inverse=False):
+	def __init__(self, coeffs, inverse):
 		self._coeffs = coeffs
 		self._inverse = inverse
 		if inverse: # ggrs -> hatt
@@ -291,12 +287,12 @@ class HeposTransformer(object):
 	'''
 	grid_path = os.path.join(os.path.dirname(__file__), "htrs", "htrs07.grb")
 
-	def __init__(self, inverse=False):
+	def __init__(self, inverse):
 		# grid containing the shifts de, dn in cm
 		self._grid = GridFile(self.grid_path)
 
 		# extended better ggrs - htrs 7 param. transformation provided by Hepos service
-	    # overriding the proj4text of ggrs/gg shown in REF_SYS
+            # overriding the proj4text of ggrs/gg shown in REF_SYS
 		self._ggrs_proj4 = pyproj.Proj('+proj=etmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=0\
 		 +ellps=GRS80 +towgs84=-203.437,73.461,243.594,-0.17,-0.06,-0.151,0.294 +units=m +no_defs')
 		self._htrs_proj4 = pyproj.Proj(REF_SYS[TM07_SRID].proj4text)

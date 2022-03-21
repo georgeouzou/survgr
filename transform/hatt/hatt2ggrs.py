@@ -55,7 +55,7 @@ def inv(coeffs, x, y):
 	x0, y0 = 0, 0
 
 	iters = 0
-	convergence = 0.001
+	convergence = 0.001 # stop when 1 mm
 	while iters < 10:
 		a = coeffs[1] + coeffs[3]*x0
 		b = coeffs[2] + coeffs[4]*y0 + coeffs[5]*x0
