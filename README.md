@@ -1,6 +1,6 @@
 # survgr  
 A django project for transforming coordinates between the various Coordinate Systems used in Greece.  
-You can try the app at https://survgr.herokuapp.com/ 
+You can try the app at https://www.survo.gr
 
 It is (will be for the time being) a website / web api for transforming earth point coordinates and other geometries between:  
 * [GGRS87 / TM87 (EPSG:2100 and EPSG:4121)](http://spatialreference.org/ref/epsg/ggrs87-greek-grid/)

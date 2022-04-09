@@ -31,7 +31,8 @@ DEBUG = False
 ALLOWED_HOSTS = [
 	'localhost',
 	'127.0.0.1',
-	'survgr.herokuapp.com'
+	'survgr.herokuapp.com',
+	'survo.gr'
 ]
 
 # Application definition
