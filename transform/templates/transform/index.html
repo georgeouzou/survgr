@@ -3,9 +3,10 @@
 <!DOCTYPE HTML>
 <html lang="el-GR">
 <head>
-    <title>SurvoGR</title>
+    <title>Μετατροπή Συντεταγμένων Online | SurvoGR</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Δωρεάν web service για εύκολη και μαζική μετατροπή συντεταγμένων σημείων μεταξύ των διαφόρων ελληνικών συστημάτων αναφοράς.">
     <!--jQuery-->
     <script src="//code.jquery.com/jquery-2.2.0.min.js"></script>
     <!--Open Layers 3-->
@@ -46,7 +47,7 @@
     
     <div class="container">
       <div class="page-header">
-        <h1>SurvoGR  <small>μετασχηματισμός συντεταγμένων</small></h1>
+        <h1>SurvoGR  <small>μετασχηματισμός-μετατροπή συντεταγμένων online</small></h1>
       </div>
 
       {% regroup ref_systems|dictsortreversed:"datum" by datum as datums %}
@@ -56,7 +57,7 @@
           <div class="col-sm-6">
             <div class="panel panel-primary panel-transform-from">
               <div class="panel-heading">
-                <h1 class="panel-title">Μετασχηματισμός Από:</h1>
+                <h2 class="panel-title">Μετασχηματισμός Από:</h2>
               </div>
               <div class="panel-body">
                 <!--From Reference system selection -->
@@ -132,7 +133,7 @@
           <div class="col-sm-6">
             <div class="panel panel-primary panel-transform-to">
               <div class="panel-heading">
-                <h1 class="panel-title">Μετασχηματισμός Πρός:</h1>
+                <h2 class="panel-title">Μετασχηματισμός Πρός:</h2>
               </div>
               <div class="panel-body">
                 <!--To Reference system selection -->
