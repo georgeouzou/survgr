@@ -290,19 +290,25 @@ class HeposTransformer(object):
 	def __init__(self, inverse):
 		# grid containing the shifts de, dn in cm
 		self._grid = GridFile(self.grid_path)
-
-		# extended better ggrs - htrs 7 param. transformation provided by Hepos service
-            # overriding the proj4text of ggrs/gg shown in REF_SYS
-		self._ggrs_proj4 = pyproj.Proj('+proj=etmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=0\
-		 +ellps=GRS80 +towgs84=-203.437,73.461,243.594,-0.17,-0.06,-0.151,0.294 +units=m +no_defs')
-		self._htrs_proj4 = pyproj.Proj(REF_SYS[TM07_SRID].proj4text)
 		self._inverse = inverse
+		# extended better ggrs - htrs 7 param. transformation provided by Hepos service
+		self._htrs_to_ggrs_approx = pyproj.Transformer.from_pipeline(
+			'''
+			+proj=pipeline
+			+step +inv +proj=tmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=-2000000 +ellps=GRS80 +units=m 
+			+step +proj=cart
+			+step +proj=helmert +convention=coordinate_frame 
+				+x=203.437 +y=-73.461 +z=-243.594 
+				+rx=-0.170 +ry=-0.060 +rz=-0.151 +s=-0.294
+			+step +inv +proj=cart
+			+step +proj=tmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=0 +ellps=GRS80 +units=m 
+			''')
 
 	def __call__(self, x, y, z=None):
 		grid = self._grid
 		if self._inverse: #ggrs -> htrs
 			# first apply the approximate tranformation
-			h_xyz = pyproj.transform(self._ggrs_proj4, self._htrs_proj4, x, y, z)
+			h_xyz = self._htrs_to_ggrs_approx.transform(x, y, z, direction=pyproj.enums.TransformDirection.INVERSE)
 			x, y = h_xyz[0], h_xyz[1] # we need to interpolate with htrs coords
 			for index, pt in enumerate(zip(x, y)):
 				de, dn = grid.interpolate(pt[0], pt[1])
@@ -313,7 +319,7 @@ class HeposTransformer(object):
 
 		else: # htrs -> ggrs
 			# first apply the approximate transformation
-			g_xyz = pyproj.transform(self._htrs_proj4, self._ggrs_proj4, x, y, z)
+			g_xyz = self._htrs_to_ggrs_approx.transform(x, y, z, direction=pyproj.enums.TransformDirection.FORWARD)
 			# then apply shift correction
 			g_x, g_y = g_xyz[0], g_xyz[1]
 			for index, pt in enumerate(zip(x, y)): #again we need to interpolate with htrs coords

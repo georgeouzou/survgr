@@ -15,6 +15,7 @@ def decdeg2dms(dd):
     return (degrees,minutes,seconds)
 
 class TransformAPITest(TestCase):
+
     def test_transformer_from_htrs07_tm07_to_hgrs87_tm87(self):
         # fwd
         params = {
@@ -22,13 +23,13 @@ class TransformAPITest(TestCase):
             'to_srid': 2100,     # hgrs87 tm87
         }
         t = WorkHorseTransformer(**params)
-        E = [566446.108]
-        N = [2529618.096]
-        h = [51.610]
+        E = [566446.108, 525000.011]
+        N = [2529618.096, 2650967.938]
+        h = [51.610, 172.591]
         Et, Nt, ht = t(E, N, h)
-        self.assertEqual(round(Et[0], 3), 566296.538)
-        self.assertEqual(round(Nt[0], 3), 4529332.307)
-        self.assertEqual(round(ht[0], 3), 6.501)
+        self.assertEqual([round(v, 3) for v in Et], [566296.537, 524849.996])
+        self.assertEqual([round(v, 3) for v in Nt], [4529332.307, 4650682.000])
+        self.assertEqual([round(v, 3) for v in ht], [6.501, 123.000])
 
         # inverse
         params = {
@@ -36,13 +37,13 @@ class TransformAPITest(TestCase):
             'to_srid':1000005, # htrs07 tm07
         }
         t = WorkHorseTransformer(**params)
-        E = [566296.538]
-        N = [4529332.307]
-        h = [6.501]
+        E = [566296.537, 524849.996]
+        N = [4529332.307, 4650682.000]
+        h = [6.501, 123.000]
         Et, Nt, ht = t(E, N, h)
-        self.assertEqual(round(Et[0], 3), 566446.108)
-        self.assertEqual(round(Nt[0], 3), 2529618.096)
-        self.assertEqual(round(ht[0], 3), 51.610)
+        self.assertEqual([round(v, 3) for v in Et], [566446.108, 525000.011])
+        self.assertEqual([round(v, 3) for v in Nt], [2529618.096, 2650967.938])
+        self.assertEqual([round(v, 3) for v in ht], [51.610, 172.591])
 
     def test_transformer_between_old_greek_and_old_greek_tm3(self):
         # fotiou 10.6
@@ -219,7 +220,7 @@ class TransformAPITest(TestCase):
 
         params = {
             'from_srid': 1000000, # hatt
-            'to_srid': 4326,      # hgrs87, tm87
+            'to_srid': 4326,      # wgs84
             'from_hatt_id': '27' # Alexandria
         }
         t = WorkHorseTransformer(**params)
