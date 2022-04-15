@@ -106,6 +106,10 @@ class WorkHorseTransformer(object):
 			elif key == 'to_hattblock':
 				key = 'to_hatt_id'
 			raise ValueError('Parameter Error: "%s" parameter is required' % key)
+
+		# if any key error happens this will throw above
+		self.from_refsys = REF_SYS[params['from_srid']]
+		self.to_refsys = REF_SYS[params['to_srid']]
 			
 	def _compute_tranform_accuracy(self, refsys1, refsys2):
 
@@ -244,7 +248,7 @@ class WorkHorseTransformer(object):
 		else:
 			for f in self.transformers:
 				x, y  = f(x, y)
-		
+
 		return tuple(filter(lambda array: array is not None, [x, y, z]))
 
 	def log_str(self):

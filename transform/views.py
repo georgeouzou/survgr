@@ -46,7 +46,13 @@ def transform(request):
 		input_type = request.POST['input_type']
 		inp = TextIOWrapper(request.FILES['input'].file, encoding='utf-8')
 		if input_type == "csv":
+			#decimal degrees need 9 decimals for ~1mm accuracy, meters need 3
+			#so xy will either be degrees or meters and z will be meters
+			#http://wiki.gis.com/wiki/index.php/Decimal_degrees
+			xy_decimals = 9 if transformer.to_refsys.is_longlat() else 3
+			z_decimals = 3
 			csv_result = csv_driver.transform(transformer, inp, 
+			    (xy_decimals, xy_decimals, z_decimals),
 				delimiter=request.POST['csv_delimiter'],
 				fieldnames=request.POST['csv_fields'])
 			return json_response({

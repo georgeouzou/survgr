@@ -1,34 +1,33 @@
 import csv
+import numpy as np
 from itertools import islice
 from io import StringIO
 
-def transform(transformer, fp, fieldnames='x,y', delimiter=','):
+def transform(transformer, fp, decimals=(3,3,3), fieldnames='x,y', delimiter=','):
 	fieldnames = fieldnames.strip().split(',')
 	reader = csv.DictReader(fp, fieldnames=fieldnames, delimiter=delimiter, skipinitialspace=True)
 	
 	output = StringIO()
 	writer = csv.DictWriter(output, fieldnames=fieldnames, extrasaction='ignore', delimiter=delimiter)
 
-	# chucked reading of points
-	while True:
-		it = iter(reader)
-		chunk = list(islice(it, 0, 20))
-		if not chunk:
-			break
+	hasz = 'z' in fieldnames
+	decx, decy, decz = decimals
 
-		hasz = 'z' in fieldnames
+	# reading points in chunks of 32
+	while chunk := list(islice(reader, 0, 32)):
 		if hasz:
-			coords = ((float(pt['x']), float(pt['y']), float(pt['z'])) for pt in chunk)
+			coords = [(float(pt['x']), float(pt['y']), float(pt['z'])) for pt in chunk]
 		else:
-			coords = ((float(pt['x']), float(pt['y'])) for pt in chunk)
+			coords = [(float(pt['x']), float(pt['y'])) for pt in chunk]
 
 		coords = zip(*transformer(*zip(*coords)))
 		
+		# replace x,y,z in chunk with transformed values
 		for pt, c in zip(chunk, coords):
-			pt['x'] = c[0]
-			pt['y'] = c[1]
+			pt['x'] = np.format_float_positional(c[0], decx)
+			pt['y'] = np.format_float_positional(c[1], decy)
 			if hasz:
-				pt['z'] = c[2]
+				pt['z'] = np.format_float_positional(c[2], decz)
 
 			writer.writerow(pt)
 
