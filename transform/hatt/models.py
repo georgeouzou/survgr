@@ -9,6 +9,7 @@ class Hattblock(models.Model):
 	center_lon = models.FloatField() # center of the hatt block used to create projection
 	center_lat = models.FloatField()
 	geometry = models.CharField(max_length=255)
+	okxe_id = models.PositiveIntegerField()
 
 	# utility func create projection proj4 string
 	@property
