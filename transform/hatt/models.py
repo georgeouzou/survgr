@@ -24,7 +24,6 @@ class Hattblock(models.Model):
 class OKXECoefficient(models.Model):
 	'''
     Tranformation polynomial coefficients provided by OKXE service. 
-    (http://www.okxe.gr/el/)
     '''
 	block = models.ForeignKey(Hattblock,on_delete=models.CASCADE)
 	type = models.CharField(max_length=3) # can be from A0...A5 or B0...B5

@@ -1,7 +1,7 @@
 """ 
 The functions below transform projected coordinates of a point
 between the Old Greek datum and the GGRS87 datum using the
-published polynomial coefficients of OKXE (http://www.okxe.gr/el/)
+published polynomial coefficients of OKXE
 Old Greek datum:
 	epsg: (http://spatialreference.org/ref/epsg/4815/)
 	projection: Azimuthal Equidistant (Hatt map blocks)

@@ -5,11 +5,11 @@ You can try the app at https://www.survo.gr
 It is (will be for the time being) a website / web api for transforming earth point coordinates and other geometries between:  
 * [GGRS87 / TM87 (EPSG:2100 and EPSG:4121)](http://spatialreference.org/ref/epsg/ggrs87-greek-grid/)
 * [Old Greek Datum (EPSG:4815)](http://spatialreference.org/ref/epsg/4815/)  
-* Various HATT projections with respect to the Old Greek Datum  using the published coefficients by [OKXE](http://www.okxe.gr/el/)  
+* Various HATT projections with respect to the Old Greek Datum  using the published coefficients by OKXE
 * TM3 zone projections with respect to the Old Greek Datum  
 * ED50 / UTM (EPSG:4230, EPSG:23034, EPSG:23035) 
 * WGS84 (EPSG:4326)  
-* The new HTRS07 / TM07 using the accurate transformation published by [Hepos](http://www.hepos.gr/)  
+* The new HTRS07 / TM07 using the accurate transformation published by [Hepos](https://www.ktimatologio.gr/el/page/geohorika/elliniko-systima-entopismoy-hepos)
 
 Prerequisites:
 * You need to have python 3.8 and virtualenv setup for backend
