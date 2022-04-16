@@ -70,6 +70,38 @@ function initBloodhound(){
   });
 }
 
+const geometryStyle = new ol.style.Style({
+    fill: new ol.style.Fill({
+        color: 'rgba(255, 255, 255, 0.6)',
+    }),
+    stroke: new ol.style.Stroke({
+        color: '#319FD3',
+        width: 1,
+    }),
+});
+
+const geometrySelectedStyle = new ol.style.Style({
+    fill: new ol.style.Fill({
+        color: 'rgba(255, 255, 255, 0.8)',
+    }),
+    stroke: new ol.style.Stroke({
+        color: '#319FD3',
+        width: 3,
+    }),
+});
+
+const labelStyle = new ol.style.Style({
+    text: new ol.style.Text({
+        font: '13px Calibri,sans-serif',
+        fill: new ol.style.Fill({
+            color: '#000',
+        }),
+    }),
+});
+
+const featureStyle = [geometryStyle, labelStyle];
+const featureSelectedStyle = [geometrySelectedStyle, labelStyle];
+
 function initMap() {
     
   // Map initialization.
@@ -96,24 +128,38 @@ function initMap() {
         source: new ol.source.OSM()
       }),
       new ol.layer.Vector({
-        source: hattblocks
+        source: hattblocks,
+        style: function (feature, resolution) {
+            labelStyle
+                .getText()
+                .setText(getHattblockLabel(feature, resolution));
+            return featureStyle;
+        },
       }),
     ],
     target: "map",
     view: view
   });
 
-  selectAction = new ol.interaction.Select();
+  selectAction = new ol.interaction.Select({
+      style: function (feature, resolution) {
+          labelStyle
+              .getText()
+              .setText(getHattblockLabel(feature, resolution));
+          return featureSelectedStyle;
+      }
+  });
   map.addInteraction(selectAction);
 
   // on select feature
   selectAction.getFeatures().on('add', function (e){
-    var feature = e.element;
-    $('#selected-feature-name').text('Επιλογή φύλλου χάρτη: ' + feature.get('name'));
+    let feature = e.element;
+    let name = feature.get('name');
+    $('#selected-feature-name').html('Επιλογή φύλλου χάρτη: ' + name);
   });
   // on unselect feature
   selectAction.getFeatures().on('remove', function (e){
-    $('#selected-feature-name').text('Επιλογή φύλλου χάρτη: ');
+    $('#selected-feature-name').html('Επιλογή φύλλου χάρτη: ');
   });
 
   /*
@@ -236,6 +282,46 @@ function initSelectors(){
 /*
  *  Utility
  */
+function decdeg2dms(dd) {
+    let is_positive = dd >= 0;
+    dd = Math.abs(dd);
+    let seconds = dd*3600.0;
+    let minutes = Math.floor(seconds/60.0);
+    seconds = seconds % 60.0
+    let degrees = Math.floor(minutes/60.0)
+    minutes = minutes % 60.0
+    let sign = is_positive ? '' :  '-';
+    return [sign,degrees,minutes,seconds];
+}
+
+function getHattblockLabel(feature, resolution) {
+    let name = feature.get('name');
+    let okxe_id = feature.get('okxe_id');
+
+    if (resolution > 400) {
+        return [`#${okxe_id}`, ''];
+    }
+
+    let phi = feature.get('cy');
+    let lambda = feature.get('cx');
+    let [sign_phi, d_phi, m_phi, s_phi] = decdeg2dms(phi);
+    let [sign_lambda, d_lambda, m_lambda, s_lambda] = decdeg2dms(lambda);
+
+
+    let info1 = ` Φo ${sign_phi}${d_phi}\u00B0${m_phi}`;
+    let info2 = ` Λo ${sign_lambda}${d_lambda}\u00B0${m_lambda}'`;
+
+    return [
+        `#${okxe_id}`, '',
+        '\n', '',
+        ` ${name}`, '',
+        '\n', '',
+        info1, 'italic 11px Calibri, sans-serif',
+        '\n', '',
+        info2, 'italic 11px Calibri, sans-serif',
+    ];
+}
+
 function getInputType(){
   return $('#input-type input:checked').val();
 }
@@ -307,7 +393,3 @@ $(function() {
   });
 });
 
-
-       
-
-          

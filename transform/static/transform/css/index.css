@@ -24,3 +24,6 @@ span.twitter-typeahead .tt-hint {
   color: #888
 }
 
+.btn-default {
+  text-transform: none;
+}

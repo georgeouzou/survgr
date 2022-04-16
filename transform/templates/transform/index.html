@@ -11,7 +11,7 @@
     <script src="//code.jquery.com/jquery-2.2.0.min.js"></script>
     <!--Open Layers 3-->
     <link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/css/ol.css">
-    <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/build/ol.js"></script>
+    <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v6.14.0/build/ol.js"></script>
     <!--Bootstrap 3-->
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
     <link href="//maxcdn.bootstrapcdn.com/bootswatch/3.3.6/lumen/bootstrap.min.css" rel="stylesheet">
@@ -75,13 +75,13 @@
                 </div>
                 <!--From Hattblock selection-->
                 <div id="from-hatt" class="hatt-selection form-group">
-                  <label for="from-hatt-name" class="form-control-label">Φύλλο χάρτη ΓΥΣ 1:50.000:</label>
+                  <label for="from-hatt-name" class="form-control-label">Φύλλο χάρτη ΓΥΣ κλίμακας 1:50000 (15'×15'):</label>
                   <div class="input-group">
-                    <input type="text" id="from-hatt-name" class="hatt-name form-control twitter-typeahead" autocomplete="off" placeholder="Εισάγετε όνομα&hellip;" ></input>
+                    <input type="text" id="from-hatt-name" class="hatt-name form-control twitter-typeahead" autocomplete="off" placeholder="Εισάγετε όνομα, ή &hellip;"></input>
                     <input type="hidden" class="hatt-id" name="from_hatt_id"/>
                     <span class="input-group-btn">
                       <button type="button" class="btn btn-default" data-toggle="modal" data-target="#map-modal">
-                        <span class="glyphicon glyphicon-map-marker"></span> Επιλογή
+                        <span class="glyphicon glyphicon-map-marker"></span> Επιλογή από χάρτη
                       </button>
                     </span>
                   </div>
@@ -151,13 +151,13 @@
                 </div>
                 <!--To Hattblock selection-->
                 <div id="to-hatt" class="hatt-selection form-group">
-                  <label for="to-hatt-name" class="form-control-label">Φύλλο χάρτη ΓΥΣ 1:50.000:</label>
+                  <label for="to-hatt-name" class="form-control-label">Φύλλο χάρτη ΓΥΣ κλίμακας 1:50000 (15'×15'):</label>
                   <div class="input-group">
-                    <input type="text" id="to-hatt-name" class="hatt-name form-control twitter-typeahead" autocomplete="off" placeholder="Εισάγετε όνομα&hellip;" ></input>
+                      <input type="text" id="to-hatt-name" class="hatt-name form-control twitter-typeahead" autocomplete="off" placeholder="Εισάγετε όνομα, ή &hellip;"></input>
                     <input type="hidden" class="hatt-id" name="to_hatt_id"/>
                     <span class="input-group-btn">
                       <button type="button" class="btn btn-default" data-toggle="modal" data-target="#map-modal">
-                        <span class="glyphicon glyphicon-map-marker"></span> Επιλογή
+                        <span class="glyphicon glyphicon-map-marker"></span> Επιλογή από χάρτη
                       </button>
                     </span>
                   </div>
