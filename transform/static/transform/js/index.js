@@ -124,8 +124,6 @@ function initMap() {
       maxZoom: 10
   });
 
-
-
   let only_blocks_layer = new ol.layer.VectorImage({
       source: hattblocks,
       maxZoom: 7,
@@ -143,6 +141,9 @@ function initMap() {
       },
   });
 
+
+  var default_interactions_list = ol.interaction.defaults({altShiftDragRotate:false, pinchRotate:false});
+
   var map = new ol.Map({
     layers:[
       new ol.layer.Tile({
@@ -152,7 +153,8 @@ function initMap() {
       detailed_blocks_layer,
     ],
     target: "map",
-    view: view
+    view: view,
+    interactions: default_interactions_list,
   });
 
   selectAction = new ol.interaction.Select({
