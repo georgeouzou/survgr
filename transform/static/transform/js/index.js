@@ -126,7 +126,7 @@ function initMap() {
 
 
 
-  let only_blocks_layer = new ol.layer.Vector({
+  let only_blocks_layer = new ol.layer.VectorImage({
       source: hattblocks,
       maxZoom: 7,
   });
