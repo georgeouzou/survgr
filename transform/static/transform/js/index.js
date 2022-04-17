@@ -96,6 +96,7 @@ const labelStyle = new ol.style.Style({
         fill: new ol.style.Fill({
             color: '#000',
         }),
+        overflow: true,
     }),
 });
 
@@ -122,20 +123,33 @@ function initMap() {
       zoom: 6,
       maxZoom: 10
   });
+
+
+
+  let only_blocks_layer = new ol.layer.Vector({
+      source: hattblocks,
+      maxZoom: 7,
+  });
+
+  let detailed_blocks_layer = new ol.layer.Vector({
+      source: hattblocks,
+      minZoom: 7,
+      declutter: true,
+      style: function (feature, resolution) {
+          labelStyle
+              .getText()
+              .setText(getHattblockLabel(feature, resolution));
+          return featureStyle;
+      },
+  });
+
   var map = new ol.Map({
     layers:[
       new ol.layer.Tile({
         source: new ol.source.OSM()
       }),
-      new ol.layer.Vector({
-        source: hattblocks,
-        style: function (feature, resolution) {
-            labelStyle
-                .getText()
-                .setText(getHattblockLabel(feature, resolution));
-            return featureStyle;
-        },
-      }),
+      only_blocks_layer,
+      detailed_blocks_layer,
     ],
     target: "map",
     view: view
