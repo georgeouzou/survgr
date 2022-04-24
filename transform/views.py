@@ -10,7 +10,7 @@ from .transform import WorkHorseTransformer, DATUMS, REF_SYS
 from .drivers import csv_driver, geojson_driver
 
 def index(request):
-	q = [{'srid':srid, 'name':rs.name, 'datum': DATUMS[rs.datum_id]}  for srid, rs in REF_SYS.items()]
+	q = [{'srid':srid, 'name':rs.name, 'datum': DATUMS[rs.datum]}  for srid, rs in REF_SYS.items()]
 	return render(request, 'transform/index.html', {'ref_systems':q})
 
 def hattblock_info(request, id):

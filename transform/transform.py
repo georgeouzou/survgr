@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import enum
 from functools import partial
 
 import pyproj # TODO: update pyproj.transform as it is now deprecated
@@ -9,47 +10,55 @@ from .hatt import hatt2ggrs
 from .hatt.models import Hattblock
 from .htrs.grid import GridFile
 
+@enum.unique
+class Datum(enum.Enum):
+	HGRS87 = 0
+	HTRS07 = 1
+	OLD_GREEK= 2
+	ED50 = 3
+	WGS84 = 4
+
+# All underlying datums used in Greece as the basis for the various reference systems.
+DATUMS = {
+	# id : name
+	Datum.HGRS87:		'ΕΓΣΑ87',
+	Datum.HTRS07: 		'HTRS07 (Hepos)',
+	Datum.OLD_GREEK:	'Παλαιό Ελληνικό Datum (Νέο Bessel)',
+	Datum.ED50:			'ED50 (Ελλάδα)',
+	Datum.WGS84:		'WGS84',
+}
+
 class ReferenceSystem(object):
 	'''
 	Utility classed to encapsulate the used in greece reference systems.
 	'''
-	def __init__(self, name, datum_id, proj4text):
+	def __init__(self, name, datum, proj4text):
 		self.name = name
-		self.datum_id = datum_id
+		self.datum = datum
 		self.proj4text = proj4text
 
 	def is_longlat(self):
 		return '+proj=longlat' in self.proj4text
 		
-# All underlying datums used in Greece as the basis for the various reference systems.
-DATUMS = {
-	# id : name
-	0: 'ΕΓΣΑ87',
-	1: 'HTRS07 (Hepos)',
-	2: 'Παλαιό Ελληνικό Datum (Νέο Bessel)',
-	3: 'ED50 (Ελλάδα)',
-	4: 'WGS84'
-}
-
 # All the reference systems used in Greece.
 # Each Hattblock has its own reference system (see Hattblock proj4text property...)
 # All +towgs84 dx,dy,dz are taken from Fotiou book
 # going from ed50->wgs84->egsa87 == ed50->egsa87
 REF_SYS = {
-	2100: ReferenceSystem('ΕΓΣΑ87 / ΤΜ87', 0, '+proj=etmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=0 +ellps=GRS80 +towgs84=-199.723,74.030,246.018 +units=m +no_defs'),
-	4121: ReferenceSystem('ΕΓΣΑ87 (λ,φ)', 0, '+proj=longlat +ellps=GRS80 +towgs84=-199.723,74.030,246.018 +no_defs'),
-	4815: ReferenceSystem('Παλαιό Ελληνικό (λ,φ)', 2, '+proj=longlat +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +no_defs'),
-	4326: ReferenceSystem('WGS84 (λ,φ)', 4, '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'),
-	4230: ReferenceSystem('ED50 (λ,φ)', 3, '+proj=longlat +ellps=intl +towgs84=-61.613,-81.380,-164.182 +no_defs'),
-	23034: ReferenceSystem('ΕD50 / UTM 34N', 3, '+proj=utm +zone=34 +ellps=intl +towgs84=-61.613,-81.380,-164.182 +units=m +no_defs'),
-	23035: ReferenceSystem('ED50 / UTM 35N', 3, '+proj=utm +zone=35 +ellps=intl +towgs84=-61.613,-81.380,-164.182 +units=m +no_defs '),
+	2100: ReferenceSystem('ΕΓΣΑ87 / ΤΜ87', Datum.HGRS87, '+proj=etmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=0 +ellps=GRS80 +towgs84=-199.723,74.030,246.018 +units=m +no_defs'),
+	4121: ReferenceSystem('ΕΓΣΑ87 (λ,φ)', Datum.HGRS87, '+proj=longlat +ellps=GRS80 +towgs84=-199.723,74.030,246.018 +no_defs'),
+	4815: ReferenceSystem('Παλαιό Ελληνικό (λ,φ)', Datum.OLD_GREEK, '+proj=longlat +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +no_defs'),
+	4326: ReferenceSystem('WGS84 (λ,φ)', Datum.WGS84, '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'),
+	4230: ReferenceSystem('ED50 (λ,φ)', Datum.ED50, '+proj=longlat +ellps=intl +towgs84=-61.613,-81.380,-164.182 +no_defs'),
+	23034: ReferenceSystem('ΕD50 / UTM 34N', Datum.ED50, '+proj=utm +zone=34 +ellps=intl +towgs84=-61.613,-81.380,-164.182 +units=m +no_defs'),
+	23035: ReferenceSystem('ED50 / UTM 35N', Datum.ED50, '+proj=utm +zone=35 +ellps=intl +towgs84=-61.613,-81.380,-164.182 +units=m +no_defs '),
 	# Παλαιό Ελληνικό / Hatt proj4text is general a template, that various hatt map blocks use with specific lat_0 and lon_0
-	1000000: ReferenceSystem('Παλαιό Ελληνικό / Hatt', 2, '+proj=aeqd +lat_0=0 +lon_0=0 +x_0=0 +y_0=0 +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +units=m +no_defs'),
-	1000001: ReferenceSystem('Παλαιό Ελληνικό / TM3 Δυτ.Ζώνη', 2, '+proj=tmerc +lat_0=34 +lon_0=-3 +k=0.9999 +x_0=200000 +y_0=0 +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +units=m +no_defs'),
-	1000002: ReferenceSystem('Παλαιό Ελληνικό / TM3 Κεντ.Ζώνη', 2, '+proj=tmerc +lat_0=34 +lon_0=0 +k=0.9999 +x_0=200000 +y_0=0 +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +units=m +no_defs'),
-	1000003: ReferenceSystem('Παλαιό Ελληνικό / TM3 Ανατ.Ζώνη', 2, '+proj=tmerc +lat_0=34 +lon_0=3 +k=0.9999 +x_0=200000 +y_0=0 +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +units=m +no_defs'),
-	1000004: ReferenceSystem('HTRS07 (λ,φ)', 1, '+proj=longlat +ellps=GRS80 +towgs84=0,0,0 +no_defs'),
-	1000005: ReferenceSystem('HTRS07 / TM07', 1, '+proj=etmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=-2000000 +ellps=GRS80 +towgs84=0,0,0 +units=m +no_defs'),
+	1000000: ReferenceSystem('Παλαιό Ελληνικό / Hatt', Datum.OLD_GREEK, '+proj=aeqd +lat_0=0 +lon_0=0 +x_0=0 +y_0=0 +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +units=m +no_defs'),
+	1000001: ReferenceSystem('Παλαιό Ελληνικό / TM3 Δυτ.Ζώνη', Datum.OLD_GREEK, '+proj=tmerc +lat_0=34 +lon_0=-3 +k=0.9999 +x_0=200000 +y_0=0 +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +units=m +no_defs'),
+	1000002: ReferenceSystem('Παλαιό Ελληνικό / TM3 Κεντ.Ζώνη', Datum.OLD_GREEK, '+proj=tmerc +lat_0=34 +lon_0=0 +k=0.9999 +x_0=200000 +y_0=0 +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +units=m +no_defs'),
+	1000003: ReferenceSystem('Παλαιό Ελληνικό / TM3 Ανατ.Ζώνη', Datum.OLD_GREEK, '+proj=tmerc +lat_0=34 +lon_0=3 +k=0.9999 +x_0=200000 +y_0=0 +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +units=m +no_defs'),
+	1000004: ReferenceSystem('HTRS07 (λ,φ)', Datum.HTRS07, '+proj=longlat +ellps=GRS80 +towgs84=0,0,0 +no_defs'),
+	1000005: ReferenceSystem('HTRS07 / TM07', Datum.HTRS07, '+proj=etmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=-2000000 +ellps=GRS80 +towgs84=0,0,0 +units=m +no_defs'),
 }
 
 # mostly used constants below 
@@ -121,25 +130,25 @@ class WorkHorseTransformer(object):
 		#)
 		middle_text = "%s -> %s" % (refsys1.name, refsys2.name)
 
-		if refsys1.datum_id == refsys2.datum_id:
+		if refsys1.datum == refsys2.datum:
 			# this is a simple project / unproject case
 			return "Μετατροπή %s. Ακρίβεια: ∞ (ίδιο datum)" % (middle_text)
 		else:
 			# this is a datum change
-			ggrs_htrs = (refsys1.datum_id == 0 and refsys2.datum_id == 1) 
-			ggrs_htrs |= (refsys1.datum_id == 1 and refsys2.datum_id == 0)
+			ggrs_htrs = (refsys1.datum == Datum.HGRS87 and refsys2.datum == Datum.HTRS07)
+			ggrs_htrs |= (refsys1.datum == Datum.HTRS07 and refsys2.datum == Datum.HGRS87)
 
-			ggrs_oldgreek = (refsys1.datum_id == 0 and refsys2.datum_id == 2) 
-			ggrs_oldgreek |= (refsys1.datum_id == 2 and refsys2.datum_id == 0)
+			ggrs_oldgreek = (refsys1.datum == Datum.HGRS87 and refsys2.datum == Datum.OLD_GREEK)
+			ggrs_oldgreek |= (refsys1.datum == Datum.OLD_GREEK and refsys2.datum == Datum.HGRS87)
 
-			ggrs_ed50 = (refsys1.datum_id == 0 and refsys2.datum_id == 3) 
-			ggrs_ed50 |= (refsys1.datum_id == 3 and refsys2.datum_id == 0)
+			ggrs_ed50 = (refsys1.datum == Datum.HGRS87 and refsys2.datum == Datum.ED50)
+			ggrs_ed50 |= (refsys1.datum == Datum.ED50 and refsys2.datum == Datum.HGRS87)
  			
-			ggrs_wgs84 = (refsys1.datum_id == 0 and refsys2.datum_id == 4)
-			ggrs_wgs84 |= (refsys1.datum_id == 4 and refsys2.datum_id == 0)
+			ggrs_wgs84 = (refsys1.datum == Datum.HGRS87 and refsys2.datum == Datum.WGS84)
+			ggrs_wgs84 |= (refsys1.datum == Datum.WGS84 and refsys2.datum == Datum.HGRS87)
 
-			ed50_wgs84 = (refsys1.datum_id == 3 and refsys2.datum_id == 4)
-			ed50_wgs84 |= (refsys1.datum_id == 4 and refsys2.datum_id == 3)
+			ed50_wgs84 = (refsys1.datum == Datum.ED50 and refsys2.datum == Datum.WGS84)
+			ed50_wgs84 |= (refsys1.datum == Datum.WGS84 and refsys2.datum == Datum.ED50)
 			
 			if ggrs_htrs:
 				return "Μετασχηματισμός %s μέσω διορθωτικών grid του Hepos. Ακρίβεια Οριζόντια ~ 0.05 m, Υψομετρική > 1 m" % (middle_text)
@@ -169,15 +178,15 @@ class WorkHorseTransformer(object):
 		# specialize proj4 definition for any of the reference systems that are hatt blocks
 		if from_srid == HATT_SRID:
 			srs1 = ReferenceSystem(name = '%s (%s)' % (srs1.name, params['from_hattblock'].name), 
-						  datum_id = srs1.datum_id, 
-						  proj4text = params['from_hattblock'].proj4text)		
+						  datum = srs1.datum,
+						  proj4text = params['from_hattblock'].proj4text)
 		if to_srid == HATT_SRID:
-			srs2 = ReferenceSystem(name = '%s (%s)' % (srs2.name, params['to_hattblock'].name), 
-						  datum_id = srs2.datum_id, 
+			srs2 = ReferenceSystem(name = '%s (%s)' % (srs2.name, params['to_hattblock'].name),
+						  datum = srs2.datum,
 						  proj4text = params['to_hattblock'].proj4text)
 	 	
 		# check if from-datum is the old greek, so we can use OKXE transformation
-		if srs1.datum_id == 2 and srs2.datum_id != 2:
+		if srs1.datum == Datum.OLD_GREEK and srs2.datum != Datum.OLD_GREEK:
 			block = params['from_hattblock']
 			# if not hatt projected ref. sys. but on greek datum... i.e. TM03 --> HATT
 			if from_srid != HATT_SRID:
@@ -191,7 +200,7 @@ class WorkHorseTransformer(object):
 			return # end
 
 		# check if target-datum is the old greek, so we can use OKXE transformation
-		if srs1.datum_id != 2 and srs2.datum_id == 2:
+		if srs1.datum != Datum.OLD_GREEK and srs2.datum == Datum.OLD_GREEK:
 			block = params['to_hattblock']
 			# we need to transform from ggrs/greek grid to hatt so...we call recursively with ggrs / greek grid
 			self._compile(from_srid=from_srid, to_srid=TM87_SRID)
@@ -205,7 +214,7 @@ class WorkHorseTransformer(object):
 			return # end
 		
 		# check if from-datum is htrs, so we can use Hepos transformation
-		if srs1.datum_id == 1 and srs2.datum_id != 1:
+		if srs1.datum == Datum.HTRS07 and srs2.datum != Datum.HTRS07:
 			# transform to TM07 projection if in HTRS datum
 			self._compile(from_srid=from_srid, to_srid=TM07_SRID)
 			# HTRS/TM07 --> GGRS/Greek Grid
@@ -217,7 +226,7 @@ class WorkHorseTransformer(object):
 			return # end
 
 		# check if target-datum is htrs 
-		if srs1.datum_id != 1 and srs2.datum_id == 1:
+		if srs1.datum != Datum.HTRS07 and srs2.datum == Datum.HTRS07:
 			# transform from anywhere to greek grid
 			self._compile(from_srid=from_srid, to_srid=TM87_SRID)
 			# then use Hepos transformation : GGRS87/GG --> HTRS / TM07
