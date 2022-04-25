@@ -1,6 +1,6 @@
 from django.test import TestCase
 from pyproj.transformer import Transformer
-from . import SimilarityTransformation2D, PolynomialTransformation2D
+from . import SimilarityTransformation2D, PolynomialTransformation2D, AffineTransformation2D
 import numpy as np
 import math
 
@@ -90,3 +90,38 @@ class PolynomialTransformation2DTest(Transformation2DTest):
 	def test_errors(self):
 		with self.assertRaises(AssertionError):
 			t = PolynomialTransformation2D(self.hatt[0:4,:], self.tm3[0:5,:])
+
+class AffineTransformation2DTest(Transformation2DTest):
+
+	def test_fit_tm3_approx_tm3(self):
+		t = AffineTransformation2D(self.tm3_approx, self.tm3)
+		Tx, Ty, a1, a2, b1, b2 = t.get_parameters()
+
+		rot_x = -math.atan(b1/a1)
+		rot_y = math.atan(a2/b2)
+		scale_x = math.sqrt(a1*a1+b1*b1)
+		scale_y = math.sqrt(a2*a2+b2*b2)
+
+		rot_x = math.degrees(rot_x)*3600.0 #convert to sec
+		rot_y = math.degrees(rot_y)*3600.0 #convert to sec
+		scale_x = (1.0-scale_x)*1000000 #convert to ppm,
+		scale_y = (1.0-scale_y)*1000000 #convert to ppm,
+
+		self.assertEqual(round(Tx, 3), -162.072)
+		self.assertEqual(round(Ty, 3), 329.616)
+		self.assertEqual(round(rot_x, 5), -26.88051)
+		self.assertEqual(round(rot_y, 5), 44.13100)
+		self.assertEqual(round(scale_x, 3), -34.448)
+		self.assertEqual(round(scale_y, 3), 468.542)
+
+		transformed = t(self.tm3_approx)
+		self.assertTrue(np.all(np.less(self.tm3-transformed, 0.1*np.ones(transformed.shape))))
+
+	def test_fit_hatt_tm3(self):
+		t = AffineTransformation2D(self.hatt, self.tm3)
+		transformed = t(self.hatt)
+		self.assertTrue(np.all(np.less(self.tm3-transformed, 0.1*np.ones(transformed.shape))))
+
+	def test_errors(self):
+		with self.assertRaises(AssertionError):
+			t = AffineTransformation2D(self.hatt[0:4,:], self.tm3[0:5,:])
