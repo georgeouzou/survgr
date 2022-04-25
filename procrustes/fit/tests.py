@@ -58,3 +58,20 @@ class SimilarityTransformation2DTest(TestCase):
 		self.assertEqual(round(Ty, 4), 187.9988)
 		self.assertEqual(round(rotation, 5),-32.62638)
 		self.assertEqual(round(scale, 3), 282.301)
+
+	def test_errors(self):
+		hatt = np.array([
+			[-2053.94, -1260.15],
+			[-1967.90, -1392.66],
+			[-1923.54, -1574.84],
+		])
+
+		tm3 = np.array([
+			[159888.702, 736744.476],
+			[159973.964, 736611.664],
+			[159781.925, 736626.378],
+			[160312.523, 736406.113],
+		])
+
+		with self.assertRaises(AssertionError):
+			t = SimilarityTransformation2D(hatt, tm3)

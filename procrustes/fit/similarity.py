@@ -11,7 +11,7 @@ class SimilarityTransformation2D:
 	def __init__(self, source_coords, target_coords):
 		assert(source_coords.shape[1] == 2) # x,y
 		assert(target_coords.shape[1] == 2) # x,y
-		assert(target_coords.shape[0] == target_coords.shape[0])
+		assert(target_coords.shape[0] == source_coords.shape[0])
 
 		self.source_coords = source_coords
 		self.target_coords = target_coords

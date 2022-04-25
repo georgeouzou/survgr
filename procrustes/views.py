@@ -32,7 +32,7 @@ def upload_reference(request):
 
 			tr = fit.SimilarityTransformation2D(source_coords, target_coords)
 			transformed_coords = tr(source_coords)
-			print(transformed_coords)
+
 			result = {
 				"input": {
 					"cs_source": {
