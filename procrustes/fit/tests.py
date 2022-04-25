@@ -1,12 +1,12 @@
 from django.test import TestCase
 from pyproj.transformer import Transformer
-from . import SimilarityTransformation2D
+from . import SimilarityTransformation2D, PolynomialTransformation2D
 import numpy as np
 import math
 
-class SimilarityTransformation2DTest(TestCase):
-
-	def test_fit(self):
+class Transformation2DTest(TestCase):
+	@classmethod
+	def setUpTestData(cls):
 		hatt = np.array([
 			[-2053.94, -1260.15],
 			[-1967.90, -1392.66],
@@ -46,7 +46,14 @@ class SimilarityTransformation2DTest(TestCase):
 		tm3_approx = pipe.transform(hatt[:, 0], hatt[:, 1])
 		tm3_approx = np.array(tm3_approx).transpose()
 
-		t = SimilarityTransformation2D(tm3_approx, tm3)
+		cls.hatt = hatt
+		cls.tm3_approx = tm3_approx
+		cls.tm3 = tm3
+
+class SimilarityTransformation2DTest(Transformation2DTest):
+
+	def test_fit_tm3_approx_tm3(self):
+		t = SimilarityTransformation2D(self.tm3_approx, self.tm3)
 		Tx, Ty, c, d = t.get_parameters()
 
 		rotation = math.atan(d/c)
@@ -59,19 +66,27 @@ class SimilarityTransformation2DTest(TestCase):
 		self.assertEqual(round(rotation, 5),-32.62638)
 		self.assertEqual(round(scale, 3), 282.301)
 
+	def test_fit_hatt_tm3(self):
+		t = SimilarityTransformation2D(self.hatt, self.tm3)
+		transformed = t(self.hatt)
+		self.assertTrue(np.all(np.less(self.tm3-transformed, np.ones(transformed.shape))))
+
 	def test_errors(self):
-		hatt = np.array([
-			[-2053.94, -1260.15],
-			[-1967.90, -1392.66],
-			[-1923.54, -1574.84],
-		])
-
-		tm3 = np.array([
-			[159888.702, 736744.476],
-			[159973.964, 736611.664],
-			[159781.925, 736626.378],
-			[160312.523, 736406.113],
-		])
-
 		with self.assertRaises(AssertionError):
-			t = SimilarityTransformation2D(hatt, tm3)
+			t = SimilarityTransformation2D(self.hatt[0:4,:], self.tm3[0:5,:])
+
+class PolynomialTransformation2DTest(Transformation2DTest):
+
+	def test_fit_tm3_approx_tm3(self):
+		t = PolynomialTransformation2D(self.tm3_approx, self.tm3)
+		transformed = t(self.tm3_approx)
+		self.assertTrue(np.all(np.less(self.tm3-transformed, np.ones(transformed.shape))))
+
+	def test_fit_hatt_tm3(self):
+		t = PolynomialTransformation2D(self.hatt, self.tm3)
+		transformed = t(self.hatt)
+		self.assertTrue(np.all(np.less(self.tm3-transformed, np.ones(transformed.shape))))
+
+	def test_errors(self):
+		with self.assertRaises(AssertionError):
+			t = PolynomialTransformation2D(self.hatt[0:4,:], self.tm3[0:5,:])
