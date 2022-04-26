@@ -22,11 +22,17 @@
             <form id="form_input" method="post" action="{% url 'upload_reference' %}" enctype="multipart/form-data">
                 <div class="pt-3 pb-3">
                     {% csrf_token %}
-                    <label class="form-label" for="{{ form.points.id_for_label }}">
-                        {{ form.points.label }}:
+                    <label class="form-label" for="{{ form.reference_points.id_for_label }}">
+                        {{ form.reference_points.label }}:
                     </label>
                     <div class="pb-3">
-                        {{ form.points }}
+                        {{ form.reference_points }}
+                    </div>
+                    <label class="form-label" for="{{ form.validation_points.id_for_label }}">
+                        {{ form.validation_points.label }}:
+                    </label>
+                    <div class="pb-3">
+                        {{ form.validation_points }}
                     </div>
                     <label class="form-label" for="{{ form.transformation_type.id_for_label }}">
                         {{ form.transformation_type.label }}:

@@ -16,7 +16,7 @@ class PolynomialTransformation2D:
 		return self.fitted_params
 
 	def _compute_A_matrix(self, coords):
-		num_xy = self.num_coords
+		num_xy = coords.shape[0]
 		x = coords[:, 0].reshape(num_xy, 1)
 		y = coords[:, 1].reshape(num_xy, 1)
 

@@ -27,7 +27,7 @@ def upload_reference(request):
 	if request.method == 'POST':
 		form_data = ReferencePointsForm(request.POST, request.FILES)
 		if form_data.is_valid():
-			f = io.TextIOWrapper(form_data.cleaned_data['points'], encoding='utf-8')
+			f = io.TextIOWrapper(form_data.cleaned_data['reference_points'], encoding='utf-8')
 			source_coords, target_coords = _read_reference_points(f)
 
 			transf_type = TransformationType(int(form_data.cleaned_data['transformation_type']))
@@ -38,7 +38,27 @@ def upload_reference(request):
 			else:
 				tr = fit.PolynomialTransformation2D(source_coords, target_coords)
 
-			transformed_coords = tr(source_coords)
+			residuals = target_coords-tr(source_coords)
+			transformation_statistics = {
+				"min": round(np.min(residuals), 3),
+				"max": round(np.max(residuals), 3),
+				"mean": round(np.mean(residuals), 3),
+				"std": round(np.std(residuals), 3),
+			}
+
+			has_validation = form_data.cleaned_data['validation_points'] is not None
+			if has_validation:
+				f = io.TextIOWrapper(form_data.cleaned_data['validation_points'], encoding='utf-8')
+				val_source_coords, val_target_coords = _read_reference_points(f)
+				val_residuals = val_target_coords-tr(val_source_coords)
+				validation_statistics = {
+					"min": round(np.min(val_residuals), 3),
+					"max": round(np.max(val_residuals), 3),
+					"mean": round(np.mean(val_residuals), 3),
+					"std": round(np.std(val_residuals), 3),
+				}
+			else:
+				validation_statistics = None
 
 			result = {
 				"input": {
@@ -51,16 +71,18 @@ def upload_reference(request):
 						"units": "meters",
 					},
 				},
-				"output": {
-					"cs_transformed": {
-						"coords": transformed_coords.tolist(),
-						"units": "meters",
-					},
-					"fitted_params": tr.get_parameters().tolist(),
+				"transformation": {
+					"type": transf_type.name,
+					"statistics": transformation_statistics,
+					"fitted_parameters": tr.get_parameters().tolist(),
 				},
-				"transformation_type": transf_type.name,
-				"residual_fitting": "none",
 			}
+
+			if has_validation:
+				result["validation"] = {
+					"statistics": validation_statistics,
+				}
+
 			return json_response(result)
 
 	return index(request)

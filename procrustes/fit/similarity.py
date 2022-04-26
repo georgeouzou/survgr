@@ -21,7 +21,7 @@ class SimilarityTransformation2D:
 		return self.fitted_params
 
 	def _compute_A_matrix(self, coords):
-		num_xy = self.num_coords
+		num_xy = coords.shape[0]
 
 		Ai0 = np.concatenate([
 				np.ones((num_xy,1)),

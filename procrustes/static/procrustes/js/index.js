@@ -94,9 +94,61 @@ $('#form_input').submit(function(event) {
             yaxis: { title: "Covariance" },
         }
         Plotly.newPlot("output_cov_plot", data, layout, {staticPlot:true});
-        */
         $("#output_transformation_params").append(generateReferenceCoordinateTable(json_output));
-
+        */
+        console.log(json_output);
+        transformation = json_output.transformation;
+        $("#output_transformation_params").append(
+            `<table class='table'>
+                <thead>
+                    <tr>
+                        <th>${transformation.type} Transformation Statistics</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Min: ${transformation.statistics.min}</td>
+                    </tr>
+                    <tr>
+                        <td>Max: ${transformation.statistics.max}</td>
+                    </tr>
+                    <tr>
+                        <td>Mean: ${transformation.statistics.mean}</td>
+                    </tr>
+                    <tr>
+                        <td>Std: ${transformation.statistics.std}</td>
+                    </tr>
+                </tbody>
+             </table>
+             `
+        );
+        if ("validation" in json_output) {
+            validation = json_output.validation
+            $("#output_transformation_params").append(
+                `<table class='table'>
+                    <thead>
+                        <tr>
+                            <th>Validation Statistics</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Min: ${validation.statistics.min}</td>
+                        </tr>
+                        <tr>
+                            <td>Max: ${validation.statistics.max}</td>
+                        </tr>
+                        <tr>
+                            <td>Mean: ${validation.statistics.mean}</td>
+                        </tr>
+                        <tr>
+                            <td>Std: ${validation.statistics.std}</td>
+                        </tr>
+                    </tbody>
+                 </table>
+                 `
+            );
+        }
     }).fail(function (jqXHR) {
     });
 

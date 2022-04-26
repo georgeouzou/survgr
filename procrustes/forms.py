@@ -9,8 +9,15 @@ class TransformationType(enum.Enum):
 
 
 class ReferencePointsForm(forms.Form):
-	points = forms.FileField(
+	reference_points = forms.FileField(
 		label='Reference Points',
+		widget=forms.FileInput(
+			attrs={'class': 'form-control'},
+		)
+	)
+	validation_points = forms.FileField(
+		label='Validation Points',
+		required=False,
 		widget=forms.FileInput(
 			attrs={'class': 'form-control'},
 		)
