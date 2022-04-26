@@ -54,6 +54,9 @@ function generateReferenceCoordinateTable(result) {
 
 $('#form_input').submit(function(event) {
     event.preventDefault();
+    $('#output_cov_plot').empty();
+    $('#output_transformation_params').empty();
+
     var fd = new FormData($(this)[0]);
     $.ajax({
         type: 'POST',
@@ -92,12 +95,9 @@ $('#form_input').submit(function(event) {
         }
         Plotly.newPlot("output_cov_plot", data, layout, {staticPlot:true});
         */
-
         $("#output_transformation_params").append(generateReferenceCoordinateTable(json_output));
 
     }).fail(function (jqXHR) {
-        $('#output_cov_plot').empty();
-        $('#output_transformation_params').empty();
     });
 
 });

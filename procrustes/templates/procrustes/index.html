@@ -25,8 +25,15 @@
                     <label class="form-label" for="{{ form.points.id_for_label }}">
                         {{ form.points.label }}:
                     </label>
-                    <input class="form-control" type="file"
-                           name="{{ form.points.html_name }}" id="{{ form.points.id_for_label }}" required>
+                    <div class="pb-3">
+                        {{ form.points }}
+                    </div>
+                    <label class="form-label" for="{{ form.transformation_type.id_for_label }}">
+                        {{ form.transformation_type.label }}:
+                    </label>
+                    <div class="pb-3">
+                        {{ form.transformation_type }}
+                    </div>
                 </div>
                 <div class="pb-3">
                     <button class="btn btn-primary">Submit</button>

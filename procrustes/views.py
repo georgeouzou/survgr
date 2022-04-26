@@ -4,7 +4,7 @@ import csv
 import numpy as np
 from django.shortcuts import render
 from django.http import HttpResponse
-from .forms import ReferencePointsForm
+from .forms import ReferencePointsForm, TransformationType
 from . import fit
 
 # utility
@@ -25,12 +25,19 @@ def _read_reference_points(fp):
 
 def upload_reference(request):
 	if request.method == 'POST':
-		ref_points = ReferencePointsForm(request.POST, request.FILES)
-		if ref_points.is_valid():
-			f = io.TextIOWrapper(request.FILES['points'], encoding='utf-8')
+		form_data = ReferencePointsForm(request.POST, request.FILES)
+		if form_data.is_valid():
+			f = io.TextIOWrapper(form_data.cleaned_data['points'], encoding='utf-8')
 			source_coords, target_coords = _read_reference_points(f)
 
-			tr = fit.SimilarityTransformation2D(source_coords, target_coords)
+			transf_type = TransformationType(int(form_data.cleaned_data['transformation_type']))
+			if transf_type == TransformationType.Similarity:
+				tr = fit.SimilarityTransformation2D(source_coords, target_coords)
+			elif transf_type == TransformationType.Affine:
+				tr = fit.AffineTransformation2D(source_coords, target_coords)
+			else:
+				tr = fit.PolynomialTransformation2D(source_coords, target_coords)
+
 			transformed_coords = tr(source_coords)
 
 			result = {
@@ -48,9 +55,10 @@ def upload_reference(request):
 					"cs_transformed": {
 						"coords": transformed_coords.tolist(),
 						"units": "meters",
-					}
+					},
+					"fitted_params": tr.get_parameters().tolist(),
 				},
-				"transformation_type": "similarity",
+				"transformation_type": transf_type.name,
 				"residual_fitting": "none",
 			}
 			return json_response(result)
