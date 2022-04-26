@@ -47,8 +47,9 @@ class AffineTransformation2D:
 		L = np.concatenate([self.target_coords[:, 0], self.target_coords[:, 1]]).reshape(num_coords*2, 1)
 		A = self._compute_A_matrix(centered_source_coords)
 
-		fitted_params = np.linalg.inv(A.transpose() @ A) @ (A.transpose() @ L)
+		fitted_params, _, rank, _ = np.linalg.lstsq(A, L, rcond=None)
 		fitted_params = fitted_params.flatten()
+
 		Tx, Ty, a1, a2, b1, b2 = fitted_params
 		Tx = Tx - a1*source_centroid[0] - a2*source_centroid[1]
 		Ty = Ty - b1*source_centroid[0] - b2*source_centroid[1]

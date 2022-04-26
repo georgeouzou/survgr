@@ -1,4 +1,3 @@
-import math
 import enum
 import numpy as np
 
@@ -51,8 +50,9 @@ class SimilarityTransformation2D:
 		L = np.concatenate([self.target_coords[:, 0], self.target_coords[:, 1]]).reshape(num_coords*2, 1)
 		A = self._compute_A_matrix(centered_source_coords)
 
-		fitted_params = np.linalg.inv(A.transpose() @ A) @ (A.transpose() @ L)
+		fitted_params, _, rank, _ = np.linalg.lstsq(A, L, rcond=None)
 		fitted_params = fitted_params.flatten()
+
 		Tx = fitted_params[0]
 		Ty = fitted_params[1]
 		c = fitted_params[2]

@@ -80,12 +80,12 @@ class PolynomialTransformation2DTest(Transformation2DTest):
 	def test_fit_tm3_approx_tm3(self):
 		t = PolynomialTransformation2D(self.tm3_approx, self.tm3)
 		transformed = t(self.tm3_approx)
-		self.assertTrue(np.all(np.less(self.tm3-transformed, np.ones(transformed.shape))))
+		self.assertTrue(np.all(np.less(self.tm3-transformed, 0.1*np.ones(transformed.shape))))
 
 	def test_fit_hatt_tm3(self):
 		t = PolynomialTransformation2D(self.hatt, self.tm3)
 		transformed = t(self.hatt)
-		self.assertTrue(np.all(np.less(self.tm3-transformed, np.ones(transformed.shape))))
+		self.assertTrue(np.all(np.less(self.tm3-transformed, 0.1*np.ones(transformed.shape))))
 
 	def test_errors(self):
 		with self.assertRaises(AssertionError):
@@ -110,7 +110,7 @@ class AffineTransformation2DTest(Transformation2DTest):
 		self.assertEqual(round(Tx, 3), -162.072)
 		self.assertEqual(round(Ty, 3), 329.616)
 		self.assertEqual(round(rot_x, 5), -26.88051)
-		self.assertEqual(round(rot_y, 5), 44.13100)
+		self.assertEqual(round(rot_y, 5), 44.13099)
 		self.assertEqual(round(scale_x, 3), -34.448)
 		self.assertEqual(round(scale_y, 3), 468.542)
 
