@@ -38,13 +38,15 @@ def upload_reference(request):
 			else:
 				tr = fit.PolynomialTransformation2D(source_coords, target_coords)
 
+			collocation = fit.Collocation(source_coords, target_coords, tr)
+
 			tr_stats = fit.ResidualStatistics(source_coords, target_coords, tr)
 
 			has_validation = form_data.cleaned_data['validation_points'] is not None
 			if has_validation:
 				f = io.TextIOWrapper(form_data.cleaned_data['validation_points'], encoding='utf-8')
 				val_source_coords, val_target_coords = _read_reference_points(f)
-				val_stats = fit.ResidualStatistics(val_source_coords, val_target_coords, tr)
+				val_stats = fit.ResidualStatistics(val_source_coords, val_target_coords, collocation)
 			else:
 				validation_statistics = None
 
@@ -63,6 +65,11 @@ def upload_reference(request):
 					"type": transf_type.name,
 					"statistics": tr_stats.__dict__,
 					"fitted_parameters": tr.get_parameters().tolist(),
+				},
+				"collocation": {
+					"distance_intervals": collocation.cov_func.distance_intervals.tolist(),
+					"empirical_cov": collocation.cov_func.empirical_cov.tolist(),
+					"fitted_cov": collocation.cov_func.fitted_cov.tolist(),
 				},
 			}
 

@@ -79,9 +79,39 @@ function generateStatisticsTable(name, statistics) {
         </tbody>
     `;
 
-    console.log(table);
     return table;
 }
+
+function generateCovariancePlot(collocation_data) {
+    let intervals = collocation_data.distance_intervals;
+    let empiricalCov = collocation_data.empirical_cov;
+    let fittedCov = collocation_data.fitted_cov;
+
+    let data = [
+        {
+            x: intervals,
+            y: empiricalCov,
+            mode: "lines+markers",
+            type: "scatter",
+            name: "empirical",
+        },
+        {
+            x: intervals,
+            y: fittedCov,
+            mode: "lines",
+            type: "scatter",
+            name: "sinc fitted",
+        },
+    ];
+
+    let layout = {
+        title: "Covariance Function",
+        xaxis: { title: "Distance" },
+        yaxis: { title: "Covariance" },
+    }
+    Plotly.newPlot("output_cov_plot", data, layout, {staticPlot:true});
+}
+
 
 $('#form_input').submit(function(event) {
     event.preventDefault();
@@ -97,37 +127,8 @@ $('#form_input').submit(function(event) {
         processData: false,
         contentType: false,
     }).done(function (json_output){
-        /*
-        intervals = json_output.output.intervals;
-        empirical_covs = json_output.output.empirical_covs;
-        fitted_covs = json_output.output.fitted_covs;
-
-        let data = [
-            {
-                x: intervals,
-                y: empirical_covs,
-                mode: "lines+markers",
-                type: "scatter",
-                name: "empirical",
-            },
-            {
-                x: intervals,
-                y: fitted_covs,
-                mode: "lines",
-                type: "scatter",
-                name: "sinc fitted",
-            },
-        ];
-
-        let layout = {
-            title: "Covariance Function",
-            xaxis: { title: "Distance" },
-            yaxis: { title: "Covariance" },
-        }
-        Plotly.newPlot("output_cov_plot", data, layout, {staticPlot:true});
-        $("#output_transformation_params").append(generateReferenceCoordinateTable(json_output));
-        */
-        console.log(json_output);
+        generateCovariancePlot(json_output.collocation);
+        //$("#output_transformation_params").append(generateReferenceCoordinateTable(json_output));
         transformation = json_output.transformation;
         $("#output_transformation_params").append(
             generateStatisticsTable(`${transformation.type} Transformation Statistics`, transformation.statistics)
