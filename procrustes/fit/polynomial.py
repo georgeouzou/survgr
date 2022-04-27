@@ -10,7 +10,7 @@ class PolynomialTransformation2D:
 		self.source_coords = source_coords
 		self.target_coords = target_coords
 		self.num_coords = source_coords.shape[0]
-		self.fitted_params = self._fit()
+		self.fitted_params, self.rank_deficiency = self._fit()
 
 	def get_parameters(self):
 		return self.fitted_params
@@ -74,7 +74,7 @@ class PolynomialTransformation2D:
 		fitted_params = fitted_params.flatten()
 		fitted_params = self._decentralize_params(fitted_params, *source_centroid)
 
-		return fitted_params
+		return (fitted_params, rank < 12)
 
 	def __call__(self, coords):
 		assert(coords.shape[1] == 2) # x,y

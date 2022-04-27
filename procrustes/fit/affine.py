@@ -10,7 +10,7 @@ class AffineTransformation2D:
 		self.source_coords = source_coords
 		self.target_coords = target_coords
 		self.num_coords = source_coords.shape[0]
-		self.fitted_params = self._fit()
+		self.fitted_params, self.rank_deficiency = self._fit()
 
 	def get_parameters(self):
 		return self.fitted_params
@@ -53,7 +53,7 @@ class AffineTransformation2D:
 		Tx, Ty, a1, a2, b1, b2 = fitted_params
 		Tx = Tx - a1*source_centroid[0] - a2*source_centroid[1]
 		Ty = Ty - b1*source_centroid[0] - b2*source_centroid[1]
-		return np.array([Tx, Ty, a1, a2, b1, b2])
+		return (np.array([Tx, Ty, a1, a2, b1, b2]), rank < 6)
 
 	def __call__(self, coords):
 		assert(coords.shape[1] == 2) # x,y

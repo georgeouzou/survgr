@@ -15,7 +15,7 @@ class SimilarityTransformation2D:
 		self.source_coords = source_coords
 		self.target_coords = target_coords
 		self.num_coords = source_coords.shape[0]
-		self.fitted_params = self._fit()
+		self.fitted_params, self.rank_deficiency = self._fit()
 
 	def get_parameters(self):
 		return self.fitted_params
@@ -59,7 +59,7 @@ class SimilarityTransformation2D:
 		d = fitted_params[3]
 		Tx = Tx - c*source_centroid[0] - d*source_centroid[1]
 		Ty = Ty + d*source_centroid[0] - c*source_centroid[1]
-		return np.array([Tx, Ty, c, d])
+		return (np.array([Tx, Ty, c, d]), rank < 4)
 
 	def __call__(self, coords):
 		assert(coords.shape[1] == 2) # x,y

@@ -71,6 +71,12 @@ class SimilarityTransformation2DTest(Transformation2DTest):
 		transformed = t(self.hatt)
 		self.assertTrue(np.all(np.less(self.tm3-transformed, np.ones(transformed.shape))))
 
+	def test_rank_deficiency(self):
+		t = SimilarityTransformation2D(self.hatt[0:1, :], self.tm3[0:1, :]) # 2 xy, 4 params
+		self.assertTrue(t.rank_deficiency == True)
+		t = SimilarityTransformation2D(self.hatt[0:2, :], self.tm3[0:2, :]) # 4 xy, 4 params
+		self.assertTrue(t.rank_deficiency == False)
+
 	def test_errors(self):
 		with self.assertRaises(AssertionError):
 			t = SimilarityTransformation2D(self.hatt[0:4,:], self.tm3[0:5,:])
@@ -86,6 +92,12 @@ class PolynomialTransformation2DTest(Transformation2DTest):
 		t = PolynomialTransformation2D(self.hatt, self.tm3)
 		transformed = t(self.hatt)
 		self.assertTrue(np.all(np.less(self.tm3-transformed, 0.1*np.ones(transformed.shape))))
+
+	def test_rank_deficiency(self):
+		t = PolynomialTransformation2D(self.hatt[0:5, :], self.tm3[0:5, :]) # 10 xy, 12 params
+		self.assertTrue(t.rank_deficiency == True)
+		t = PolynomialTransformation2D(self.hatt[0:6, :], self.tm3[0:6, :]) # 12 xy, 12 params
+		self.assertTrue(t.rank_deficiency == False)
 
 	def test_errors(self):
 		with self.assertRaises(AssertionError):
@@ -121,6 +133,12 @@ class AffineTransformation2DTest(Transformation2DTest):
 		t = AffineTransformation2D(self.hatt, self.tm3)
 		transformed = t(self.hatt)
 		self.assertTrue(np.all(np.less(self.tm3-transformed, 0.1*np.ones(transformed.shape))))
+
+	def test_rank_deficiency(self):
+		t = AffineTransformation2D(self.hatt[0:2, :], self.tm3[0:2, :]) # 4 xy, 6 params
+		self.assertTrue(t.rank_deficiency == True)
+		t = AffineTransformation2D(self.hatt[0:3, :], self.tm3[0:3, :]) # 6 xy, 12 params
+		self.assertTrue(t.rank_deficiency == False)
 
 	def test_errors(self):
 		with self.assertRaises(AssertionError):
