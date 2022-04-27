@@ -52,6 +52,37 @@ function generateReferenceCoordinateTable(result) {
     return table;
 }
 
+function generateStatisticsTable(name, statistics) {
+
+    let table = document.createElement("table");
+    $(table).addClass("table");
+
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>${name}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Min: ${statistics.min.toFixed(3)}</td>
+            </tr>
+            <tr>
+                <td>Max: ${statistics.max.toFixed(3)}</td>
+            </tr>
+            <tr>
+                <td>Mean: ${statistics.mean.toFixed(3)}</td>
+            </tr>
+            <tr>
+                <td>Std: ${statistics.std.toFixed(3)}</td>
+            </tr>
+        </tbody>
+    `;
+
+    console.log(table);
+    return table;
+}
+
 $('#form_input').submit(function(event) {
     event.preventDefault();
     $('#output_cov_plot').empty();
@@ -99,54 +130,12 @@ $('#form_input').submit(function(event) {
         console.log(json_output);
         transformation = json_output.transformation;
         $("#output_transformation_params").append(
-            `<table class='table'>
-                <thead>
-                    <tr>
-                        <th>${transformation.type} Transformation Statistics</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Min: ${transformation.statistics.min}</td>
-                    </tr>
-                    <tr>
-                        <td>Max: ${transformation.statistics.max}</td>
-                    </tr>
-                    <tr>
-                        <td>Mean: ${transformation.statistics.mean}</td>
-                    </tr>
-                    <tr>
-                        <td>Std: ${transformation.statistics.std}</td>
-                    </tr>
-                </tbody>
-             </table>
-             `
+            generateStatisticsTable(`${transformation.type} Transformation Statistics`, transformation.statistics)
         );
         if ("validation" in json_output) {
             validation = json_output.validation
             $("#output_transformation_params").append(
-                `<table class='table'>
-                    <thead>
-                        <tr>
-                            <th>Validation Statistics</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Min: ${validation.statistics.min}</td>
-                        </tr>
-                        <tr>
-                            <td>Max: ${validation.statistics.max}</td>
-                        </tr>
-                        <tr>
-                            <td>Mean: ${validation.statistics.mean}</td>
-                        </tr>
-                        <tr>
-                            <td>Std: ${validation.statistics.std}</td>
-                        </tr>
-                    </tbody>
-                 </table>
-                 `
+                generateStatisticsTable(`Validation Statistics`, validation.statistics)
             );
         }
     }).fail(function (jqXHR) {
