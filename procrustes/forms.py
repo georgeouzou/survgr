@@ -28,8 +28,9 @@ class ReferencePointsForm(forms.Form):
 			(TransformationType.Affine.value, TransformationType.Affine.name),
 			(TransformationType.Polynomial.value, TransformationType.Polynomial.name),
 		],
+		initial = TransformationType.Similarity.value,
 		label = 'Transformation Type',
-		widget=forms.Select(
-			attrs={'class': 'form-control'},
+		widget=forms.RadioSelect(
+			attrs={'class': 'btn-check'},
 		)
 	)

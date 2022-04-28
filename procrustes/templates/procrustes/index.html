@@ -34,11 +34,18 @@
                     <div class="pb-3">
                         {{ form.validation_points }}
                     </div>
-                    <label class="form-label" for="{{ form.transformation_type.id_for_label }}">
+                    <label class="form-label" for="id_transformation_type">
                         {{ form.transformation_type.label }}:
                     </label>
                     <div class="pb-3">
-                        {{ form.transformation_type }}
+                        <div class="btn-group" role="group" id="id_transformation_type">
+                        {% for radio in form.transformation_type %}
+                            {{ radio.tag }}
+                            <label class="btn btn-outline-primary" for="{{ radio.id_for_label }}">
+                                {{ radio.choice_label }}
+                            </label>
+                        {% endfor %}
+                        </div>
                     </div>
                 </div>
                 <div class="pb-3">
