@@ -86,7 +86,6 @@ def upload_reference(request):
 				if has_residual_correction:
 					result["collocation"]["validation_statistics"] = val_stats_rescor.__dict__
 
-			print(result)
 			return json_response(result)
 
 	return index(request)
