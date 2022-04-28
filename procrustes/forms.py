@@ -7,6 +7,11 @@ class TransformationType(enum.Enum):
 	Affine = 1
 	Polynomial = 2
 
+@enum.unique
+class ResidualCorrectionType(enum.Enum):
+	NoCorrection = 0
+	Collocation = 1
+	Hausbrandt = 2
 
 class ReferencePointsForm(forms.Form):
 	reference_points = forms.FileField(
@@ -34,3 +39,16 @@ class ReferencePointsForm(forms.Form):
 			attrs={'class': 'btn-check'},
 		)
 	)
+	residual_correction_type = forms.ChoiceField(
+		choices=[
+			(ResidualCorrectionType.NoCorrection.value, 'None'),
+			(ResidualCorrectionType.Collocation.value, ResidualCorrectionType.Collocation.name),
+			(ResidualCorrectionType.Hausbrandt.value, ResidualCorrectionType.Hausbrandt.name),
+		],
+		initial = ResidualCorrectionType.NoCorrection.value,
+		label = 'Residual Correction Type',
+		widget=forms.RadioSelect(
+			attrs={'class': 'btn-check'},
+		)
+	)
+

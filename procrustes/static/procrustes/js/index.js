@@ -127,17 +127,29 @@ $('#form_input').submit(function(event) {
         processData: false,
         contentType: false,
     }).done(function (json_output){
-        generate_covariance_plot(json_output.collocation);
-        //$("#output_transformation_params").append(generate_reference_coordinate_table(json_output));
-        transformation = json_output.transformation;
-        $("#output_transformation_params").append(
-            generate_statistics_table(`${transformation.type} Transformation Statistics`, transformation.statistics)
-        );
-        if ("validation" in json_output) {
-            validation = json_output.validation
+        {
+            let transformation = json_output.transformation;
             $("#output_transformation_params").append(
-                generate_statistics_table(`Validation Statistics`, validation.statistics)
+                generate_statistics_table(`${transformation.type} Transformation Reference Statistics`, transformation.statistics)
             );
+        }
+        {
+            let transformation = json_output.transformation;
+            if ("validation_statistics" in transformation) {
+                $("#output_transformation_params").append(
+                    generate_statistics_table(`${transformation.type} Transformation Validation Statistics`, transformation.validation_statistics)
+                );
+            }
+        }
+
+        if ("collocation" in json_output) {
+            let collocation = json_output.collocation;
+            generate_covariance_plot(collocation);
+            if ("validation_statistics" in collocation) {
+                $("#output_transformation_params").append(
+                    generate_statistics_table(`Collocation Validation Statistics`, collocation.validation_statistics)
+                );
+            }
         }
     }).fail(function (jqXHR) {
     });

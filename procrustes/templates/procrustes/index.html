@@ -10,7 +10,9 @@
     <!--Bootstrap 5-->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
-    <!--<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.1.3/dist/lumen/bootstrap.min.css">-->
+    <!--
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.1.3/dist/lumen/bootstrap.min.css">
+    -->
     <!--Plotly-->
     <script src="https://cdn.plot.ly/plotly-2.11.1.min.js"></script>
 </head>
@@ -40,6 +42,19 @@
                     <div class="pb-3">
                         <div class="btn-group" role="group" id="id_transformation_type">
                         {% for radio in form.transformation_type %}
+                            {{ radio.tag }}
+                            <label class="btn btn-outline-primary" for="{{ radio.id_for_label }}">
+                                {{ radio.choice_label }}
+                            </label>
+                        {% endfor %}
+                        </div>
+                    </div>
+                    <label class="form-label" for="id_residual_correction_type">
+                        {{ form.residual_correction_type.label }}:
+                    </label>
+                    <div class="pb-3">
+                        <div class="btn-group" role="group" id="id_residual_correction_type">
+                        {% for radio in form.residual_correction_type %}
                             {{ radio.tag }}
                             <label class="btn btn-outline-primary" for="{{ radio.id_for_label }}">
                                 {{ radio.choice_label }}
