@@ -1,46 +1,46 @@
-function generateReferenceCoordinateTable(result) {
+function generate_reference_coordinate_table(result) {
 
-    let sourceCoords = result.input.cs_source.coords; // arrays with [x,y]
-    let targetCoords = result.input.cs_target.coords;
-    let transfCoords = result.output.cs_transformed.coords;
+    let source_coords = result.input.cs_source.coords; // arrays with [x,y]
+    let target_coords = result.input.cs_target.coords;
+    let transf_coords = result.output.cs_transformed.coords;
 
-    let tableHead = document.createElement("thead");
+    let table_head = document.createElement("thead");
     {
-        let coordinateSystemsRow = document.createElement("tr");
-        let coordsTypeRow = document.createElement("tr");
+        let coordinate_systems_row = document.createElement("tr");
+        let coords_type_row = document.createElement("tr");
         ["Source", "Target", "Transformed"].forEach(function (desc) {
             let c = document.createElement("th");
             c.textContent = desc;
             $(c).attr("colspan", "2");
-            $(coordinateSystemsRow).append(c);
+            $(coordinate_systems_row).append(c);
 
             let x = document.createElement("th");
             let y = document.createElement("th");
             x.textContent = "X (m)";
             y.textContent = "Y (m)";
-            $(coordsTypeRow).append([x, y]);
+            $(coords_type_row).append([x, y]);
         });
-        $(tableHead).append([coordinateSystemsRow, coordsTypeRow]);
+        $(table_head).append([coordinate_systems_row, coords_type_row]);
     }
 
-    let tableBody = document.createElement("tbody");
-    if (sourceCoords.length == targetCoords.length && sourceCoords.length == transfCoords.length) {
-        for (let i = 0; i < sourceCoords.length; ++i) {
+    let table_body = document.createElement("tbody");
+    if (source_coords.length == target_coords.length && source_coords.length == transf_coords.length) {
+        for (let i = 0; i < source_coords.length; ++i) {
             let source_x = document.createElement("td");
             let source_y = document.createElement("td");
             let target_x = document.createElement("td");
             let target_y = document.createElement("td");
             let transformed_x = document.createElement("td");
             let transformed_y = document.createElement("td");
-            source_x.textContent = sourceCoords[i][0].toFixed(3);
-            source_y.textContent = sourceCoords[i][1].toFixed(3);
-            target_x.textContent = targetCoords[i][0].toFixed(3);
-            target_y.textContent = targetCoords[i][1].toFixed(3);
-            transformed_x.textContent = transfCoords[i][0].toFixed(3);
-            transformed_y.textContent = transfCoords[i][1].toFixed(3);
-            let bodyRow = document.createElement("tr");
-            $(bodyRow).append([source_x, source_y, target_x, target_y, transformed_x, transformed_y]);
-            $(tableBody).append(bodyRow);
+            source_x.textContent = source_coords[i][0].toFixed(3);
+            source_y.textContent = source_coords[i][1].toFixed(3);
+            target_x.textContent = target_coords[i][0].toFixed(3);
+            target_y.textContent = target_coords[i][1].toFixed(3);
+            transformed_x.textContent = transf_coords[i][0].toFixed(3);
+            transformed_y.textContent = transf_coords[i][1].toFixed(3);
+            let body_row = document.createElement("tr");
+            $(body_row).append([source_x, source_y, target_x, target_y, transformed_x, transformed_y]);
+            $(table_body).append(body_row);
         }
     }
 
@@ -52,7 +52,7 @@ function generateReferenceCoordinateTable(result) {
     return table;
 }
 
-function generateStatisticsTable(name, statistics) {
+function generate_statistics_table(name, statistics) {
 
     let table = document.createElement("table");
     $(table).addClass("table");
@@ -82,22 +82,22 @@ function generateStatisticsTable(name, statistics) {
     return table;
 }
 
-function generateCovariancePlot(collocation_data) {
+function generate_covariance_plot(collocation_data) {
     let intervals = collocation_data.distance_intervals;
-    let empiricalCov = collocation_data.empirical_cov;
-    let fittedCov = collocation_data.fitted_cov;
+    let empirical_cov = collocation_data.empirical_cov;
+    let fitted_cov = collocation_data.fitted_cov;
 
     let data = [
         {
             x: intervals,
-            y: empiricalCov,
+            y: empirical_cov,
             mode: "lines+markers",
             type: "scatter",
             name: "empirical",
         },
         {
             x: intervals,
-            y: fittedCov,
+            y: fitted_cov,
             mode: "lines",
             type: "scatter",
             name: "sinc fitted",
@@ -127,16 +127,16 @@ $('#form_input').submit(function(event) {
         processData: false,
         contentType: false,
     }).done(function (json_output){
-        generateCovariancePlot(json_output.collocation);
-        //$("#output_transformation_params").append(generateReferenceCoordinateTable(json_output));
+        generate_covariance_plot(json_output.collocation);
+        //$("#output_transformation_params").append(generate_reference_coordinate_table(json_output));
         transformation = json_output.transformation;
         $("#output_transformation_params").append(
-            generateStatisticsTable(`${transformation.type} Transformation Statistics`, transformation.statistics)
+            generate_statistics_table(`${transformation.type} Transformation Statistics`, transformation.statistics)
         );
         if ("validation" in json_output) {
             validation = json_output.validation
             $("#output_transformation_params").append(
-                generateStatisticsTable(`Validation Statistics`, validation.statistics)
+                generate_statistics_table(`Validation Statistics`, validation.statistics)
             );
         }
     }).fail(function (jqXHR) {
