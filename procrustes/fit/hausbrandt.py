@@ -22,7 +22,8 @@ class HausbrandtCorrection:
 
 		D = spatial.distance.cdist(coords, self.source_coords, metric='sqeuclidean')
 		D = np.maximum(D, 10e-6) # minimum distance^2 between points: 1 mm ^ 2
-		weights = 10e6 / D; # normalize squared distances to km^2 for better numerical stability
+		# weights are computed as 1/d^2, but lets normalize weights (distances) to km^2 for better numerical stability
+		weights = 10e6 / D
 
 		sum_w = np.sum(weights, axis=1).reshape(weights.shape[0], 1)
 		delta = weights @ self.residuals

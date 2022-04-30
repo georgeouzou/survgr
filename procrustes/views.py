@@ -42,9 +42,13 @@ def upload_reference(request):
 
 			rescor_type = ResidualCorrectionType(int(form_data.cleaned_data['residual_correction_type']))
 			has_residual_correction = rescor_type != ResidualCorrectionType.NoCorrection
+
 			if rescor_type == ResidualCorrectionType.Collocation:
 				cov_function_type = CovarianceFunctionType(int(form_data.cleaned_data['cov_function_type']))
 				rescor = Collocation(source_coords, target_coords, tr, cov_function_type)
+			elif rescor_type == ResidualCorrectionType.Hausbrandt:
+				rescor = HausbrandtCorrection(source_coords, target_coords, tr)
+
 
 			has_validation = form_data.cleaned_data['validation_points'] is not None
 			if has_validation:
@@ -74,7 +78,7 @@ def upload_reference(request):
 				},
 			}
 
-			if has_residual_correction:
+			if has_residual_correction and rescor_type == ResidualCorrectionType.Collocation:
 				collocation = rescor
 				result["collocation"] = {
 					"distance_intervals": collocation.cov_func.distance_intervals.tolist(),
@@ -85,7 +89,9 @@ def upload_reference(request):
 			if has_validation:
 				result["transformation"]["validation_statistics"] = val_stats.__dict__
 				if has_residual_correction:
-					result["collocation"]["validation_statistics"] = val_stats_rescor.__dict__
+					result["residual_correction"] = {
+						"validation_statistics": val_stats_rescor.__dict__
+					}
 
 			return json_response(result)
 

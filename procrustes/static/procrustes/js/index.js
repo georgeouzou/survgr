@@ -145,12 +145,15 @@ $('#form_input').submit(function(event) {
         if ("collocation" in json_output) {
             let collocation = json_output.collocation;
             generate_covariance_plot(collocation);
-            if ("validation_statistics" in collocation) {
+        }
+        if ("residual_correction" in json_output) {
+            if ("validation_statistics" in json_output.residual_correction) {
                 $("#output_transformation_params").append(
-                    generate_statistics_table(`Collocation Validation Statistics`, collocation.validation_statistics)
+                    generate_statistics_table(`Correction Validation Statistics`, json_output.residual_correction.validation_statistics)
                 );
             }
         }
+
     }).fail(function (jqXHR) {
     });
 
