@@ -12,6 +12,19 @@ from .types import CovarianceFunctionType
 # covariances in cm^2
 # signals in cm
 
+# References
+# ----------
+# 1) Ampatzidis, Dimitrios & Melachroinos, Stavros. (2017).
+# The connection of an old geodetic datum with a new one using Least Squares Collocation: The Greek case.
+# Contribution to Geophysics and Geodesy. 47. 2017. 10.1515/congeo-2017-0003.
+#
+# 2) You, Rey-Jer & Hwang, Hwa-Wei. (2006).
+# Coordinate Transformation between Two Geodetic Datums of Taiwan by Least-Squares Collocation.
+# Journal of Surveying Engineering-asce - J SURV ENG-ASCE. 132. 10.1061/(ASCE)0733-9453(2006)132:2(64).
+#
+# 3) Edward M. Mikhail & F. Ackermann (1976)
+# Observations and Least Squares
+
 @dataclass
 class PairwiseDistance:
 	p0_idx: int
@@ -134,9 +147,14 @@ class Collocation:
 		assert(source_coords.shape[1] == 2)
 		assert(target_coords.shape[1] == 2)
 
+		signals = target_coords-initial_transf(source_coords)
+		signals *= 100 # residuals to cm
+		signal_mean_avg = np.mean(signals) # in cm
+		signals -= signal_mean_avg
+
 		self.source_coords = source_coords # maybe we dont need to store these
-		self.signals = target_coords-initial_transf(source_coords)
-		self.signals *= 100 # residuals to cm
+		self.signals = signals
+		self.signal_mean_avg = signal_mean_avg
 		self.cov_func = self._fit_empirical_covariance_func(self.signals, self.source_coords, cov_function_type)
 		self.initial_transf = initial_transf
 
@@ -161,7 +179,6 @@ class Collocation:
 
 	def __call__(self, coords):
 		assert(coords.shape[1] == 2)
-		num_xy = coords.shape[0]
 
 		C0 = self.cov_func.empirical_cov[0]
 		Cxx = _compute_covariance_matrix(self.source_coords, self.source_coords, C0, self.cov_func)
@@ -171,8 +188,10 @@ class Collocation:
 		init_coords = self.initial_transf(coords)
 		S = np.concatenate([self.signals[:, 0], self.signals[:, 1]]).reshape(num_signals, 1)
 		S = Cyx @ np.linalg.inv(Cxx) @ S
+		S += self.signal_mean_avg
 		S /= 100.0 # back to meters
 
+		num_xy = coords.shape[0]
 		x0 = np.concatenate([init_coords[:, 0], init_coords[:, 1]]).reshape(num_xy*2, 1)
 		x = x0 + S
 		return np.concatenate([x[0:num_xy], x[num_xy:2*num_xy]], axis=1)
