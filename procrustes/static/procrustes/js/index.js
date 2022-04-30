@@ -106,8 +106,8 @@ function generate_covariance_plot(collocation_data) {
 
     let layout = {
         title: "Covariance Function",
-        xaxis: { title: "Distance" },
-        yaxis: { title: "Covariance" },
+        xaxis: { title: "Distance (km)" },
+        yaxis: { title: "Covariance (cm<sup>2</sup>)" },
     }
     Plotly.newPlot("output_cov_plot", data, layout, {staticPlot:true});
 }

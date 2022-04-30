@@ -4,8 +4,8 @@ import csv
 import numpy as np
 from django.shortcuts import render
 from django.http import HttpResponse
-from .forms import ReferencePointsForm, TransformationType, ResidualCorrectionType
-from . import fit
+from .forms import ReferencePointsForm
+from .fit import *
 
 # utility
 def json_response(data, status=200):
@@ -32,26 +32,27 @@ def upload_reference(request):
 
 			transf_type = TransformationType(int(form_data.cleaned_data['transformation_type']))
 			if transf_type == TransformationType.Similarity:
-				tr = fit.SimilarityTransformation2D(source_coords, target_coords)
+				tr = SimilarityTransformation2D(source_coords, target_coords)
 			elif transf_type == TransformationType.Affine:
-				tr = fit.AffineTransformation2D(source_coords, target_coords)
+				tr = AffineTransformation2D(source_coords, target_coords)
 			else:
-				tr = fit.PolynomialTransformation2D(source_coords, target_coords)
+				tr = PolynomialTransformation2D(source_coords, target_coords)
 
-			tr_stats = fit.ResidualStatistics(source_coords, target_coords, tr)
+			tr_stats = ResidualStatistics(source_coords, target_coords, tr)
 
 			rescor_type = ResidualCorrectionType(int(form_data.cleaned_data['residual_correction_type']))
 			has_residual_correction = rescor_type != ResidualCorrectionType.NoCorrection
 			if rescor_type == ResidualCorrectionType.Collocation:
-				rescor = fit.Collocation(source_coords, target_coords, tr)
+				cov_function_type = CovarianceFunctionType(int(form_data.cleaned_data['cov_function_type']))
+				rescor = Collocation(source_coords, target_coords, tr, cov_function_type)
 
 			has_validation = form_data.cleaned_data['validation_points'] is not None
 			if has_validation:
 				f = io.TextIOWrapper(form_data.cleaned_data['validation_points'], encoding='utf-8')
 				val_source_coords, val_target_coords = _read_reference_points(f)
-				val_stats = fit.ResidualStatistics(val_source_coords, val_target_coords, tr)
+				val_stats = ResidualStatistics(val_source_coords, val_target_coords, tr)
 				if has_residual_correction:
-					val_stats_rescor = fit.ResidualStatistics(val_source_coords, val_target_coords, rescor)
+					val_stats_rescor = ResidualStatistics(val_source_coords, val_target_coords, rescor)
 			else:
 				validation_statistics = None
 

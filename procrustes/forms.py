@@ -1,17 +1,5 @@
 from django import forms
-import enum
-
-@enum.unique
-class TransformationType(enum.Enum):
-	Similarity = 0
-	Affine = 1
-	Polynomial = 2
-
-@enum.unique
-class ResidualCorrectionType(enum.Enum):
-	NoCorrection = 0
-	Collocation = 1
-	Hausbrandt = 2
+from .fit import TransformationType, ResidualCorrectionType, CovarianceFunctionType
 
 class ReferencePointsForm(forms.Form):
 	reference_points = forms.FileField(
@@ -51,4 +39,16 @@ class ReferencePointsForm(forms.Form):
 			attrs={'class': 'btn-check'},
 		)
 	)
-
+	cov_function_type = forms.ChoiceField(
+		choices=[
+			(CovarianceFunctionType.CardinalSine.value, 'Cardinal Sine'),
+			(CovarianceFunctionType.Gaussian.value, CovarianceFunctionType.Gaussian.name),
+			(CovarianceFunctionType.Exponential.value, CovarianceFunctionType.Exponential.name),
+			(CovarianceFunctionType.Spline.value, CovarianceFunctionType.Spline.name),
+		],
+		initial = CovarianceFunctionType.CardinalSine.value,
+		label = 'Covariance Function Type',
+		widget=forms.RadioSelect(
+			attrs={'class': 'btn-check'},
+		)
+	)

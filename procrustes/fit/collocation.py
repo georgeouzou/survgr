@@ -3,6 +3,14 @@ import itertools
 from dataclasses import dataclass
 import numpy as np
 from scipy import optimize
+from scipy.interpolate import UnivariateSpline
+from .types import CovarianceFunctionType
+
+# for numerical stability
+# coords in m
+# distances in km
+# covariances in cm^2
+# signals in cm
 
 @dataclass
 class PairwiseDistance:
@@ -21,6 +29,7 @@ def _compute_paiwise_distances(coords):
 			p0 = coords[i]
 			p1 = coords[j]
 			d = np.linalg.norm(p1-p0)
+			d /= 1000.0 # to km
 			dists.append(PairwiseDistance(i, j, d))
 	return dists
 
@@ -53,6 +62,7 @@ def _compute_covariance_matrix(new_coords, ref_coords, C0, cov_func):
 			p0 = new_coords[i]
 			p1 = ref_coords[j]
 			d = np.linalg.norm(p1-p0)
+			d /= 1000.0 # to km
 			if d == 0.0:
 				C[i][j] = C0
 			else:
@@ -73,33 +83,64 @@ def _compute_distance_interval(dists):
 	return double_delta
 
 class CovarianceFunction:
+	# input: distances in km
+	# output: covariances in cm^2
 
-	def __init__(self, distance_intervals, empirical_cov):
-		C0 = empirical_cov[0]
-		sinc_func = lambda x, k: C0*(k/x) * np.sin(x/k)
-		popt, _ = optimize.curve_fit(sinc_func, distance_intervals, empirical_cov)
-		fitted_sinc = lambda x: sinc_func(x, *popt)
+	def __init__(self, distance_intervals, empirical_cov, func_type):
+		if func_type == CovarianceFunctionType.CardinalSine:
+			self._func = self._init_sinc(distance_intervals, empirical_cov)
+		elif func_type == CovarianceFunctionType.Gaussian:
+			self._func = self._init_gaussian(distance_intervals, empirical_cov)
+		elif func_type == CovarianceFunctionType.Exponential:
+			self._func = self._init_exp(distance_intervals, empirical_cov)
+		else:
+			self._func = self._init_spline(distance_intervals, empirical_cov)
 
 		self.distance_intervals =  distance_intervals
 		self.empirical_cov = empirical_cov
-		self.fitted_cov = fitted_sinc(distance_intervals)
-		self._func = fitted_sinc
+		self.fitted_cov = self._func(distance_intervals)
+
+	def _init_sinc(self, distance_intervals, empirical_cov):
+		C0 = empirical_cov[0]
+		func = lambda x, k: C0*(k/x) * np.sin(x/k)
+		popt, _ = optimize.curve_fit(func, distance_intervals, empirical_cov)
+		fitted = lambda x: func(x, *popt)
+		return fitted
+
+	def _init_gaussian(self, distance_intervals, empirical_cov):
+		C0 = empirical_cov[0]
+		func = lambda x, k: C0*np.exp(-np.power(k, 2)*np.power(x, 2))
+		popt, _ = optimize.curve_fit(func, distance_intervals, empirical_cov)
+		fitted = lambda x: func(x, *popt)
+		return fitted
+
+	def _init_exp(self, distance_intervals, empirical_cov):
+		C0 = empirical_cov[0]
+		func = lambda x, k: C0*np.exp(-x*k)
+		popt, _ = optimize.curve_fit(func, distance_intervals, empirical_cov)
+		fitted = lambda x: func(x, *popt)
+		return fitted
+
+	def _init_spline(self, distance_intervals, empirical_cov):
+		fitted = UnivariateSpline(distance_intervals, empirical_cov, s=100.0, ext='const')
+		return fitted
 
 	def __call__(self, dist):
 		return self._func(dist)
 
 class Collocation:
 
-	def __init__(self, source_coords, target_coords, initial_transf):
+	def __init__(self, source_coords, target_coords, initial_transf, cov_function_type):
 		assert(source_coords.shape[1] == 2)
 		assert(target_coords.shape[1] == 2)
 
 		self.source_coords = source_coords # maybe we dont need to store these
-		self.signals = target_coords-initial_transf(source_coords) # residuals
-		self.cov_func = self._fit_empirical_covariance_func(self.signals, self.source_coords)
+		self.signals = target_coords-initial_transf(source_coords)
+		self.signals *= 100 # residuals to cm
+		self.cov_func = self._fit_empirical_covariance_func(self.signals, self.source_coords, cov_function_type)
 		self.initial_transf = initial_transf
 
-	def _fit_empirical_covariance_func(self, signals, coords):
+	def _fit_empirical_covariance_func(self, signals, coords, cov_function_type):
 		pairwise_dists = _compute_paiwise_distances(coords)
 		pairwise_dists.sort(key=lambda x: x.dist)
 
@@ -109,13 +150,13 @@ class Collocation:
 		for k, g in itertools.groupby(pairwise_dists, lambda d: int(d.dist/double_delta)+1 if d.dist != 0.0 else 0):
 			groups.append(list(g))
 
-		# for double_delta = 200 -> 0, 200, 400, 600
-		# distance_intervals will be 100, 300, 500...
-		# clamp 0 to a small value so that curve will have a solution on 0
-		distance_intervals = np.array([max(delta*(2*i-1), 0.0001) for i in range(len(groups))])
-		empirical_covs = np.array([_compute_empirical_covariance(g, signals) for g in groups])
+		# for double_delta = 0.2km -> 0, 0.2, 0.4, 0.6
+		# distance_intervals will be ~0, 0.1, 0.3, 0.5...
+		# clamp 0 to a very small value so that curve will fit on 0.0
+		distance_intervals = np.array([max(delta*(2*i-1), 1e-6) for i in range(len(groups))])
+		empirical_cov = np.array([_compute_empirical_covariance(g, signals) for g in groups])
 
-		cov_func = CovarianceFunction(distance_intervals, empirical_covs)
+		cov_func = CovarianceFunction(distance_intervals, empirical_cov, cov_function_type)
 		return cov_func
 
 	def __call__(self, coords):
@@ -129,7 +170,9 @@ class Collocation:
 		num_signals = self.signals.shape[0]*2
 		init_coords = self.initial_transf(coords)
 		S = np.concatenate([self.signals[:, 0], self.signals[:, 1]]).reshape(num_signals, 1)
-		x0 = np.concatenate([init_coords[:, 0], init_coords[:, 1]]).reshape(num_xy*2, 1)
-		x = x0 + Cyx @ np.linalg.inv(Cxx) @ S
+		S = Cyx @ np.linalg.inv(Cxx) @ S
+		S /= 100.0 # back to meters
 
+		x0 = np.concatenate([init_coords[:, 0], init_coords[:, 1]]).reshape(num_xy*2, 1)
+		x = x0 + S
 		return np.concatenate([x[0:num_xy], x[num_xy:2*num_xy]], axis=1)
