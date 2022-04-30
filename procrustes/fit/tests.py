@@ -1,6 +1,7 @@
 from django.test import TestCase
 from pyproj.transformer import Transformer
 from . import SimilarityTransformation2D, PolynomialTransformation2D, AffineTransformation2D
+from . import HausbrandtCorrection
 import numpy as np
 import math
 
@@ -143,3 +144,56 @@ class AffineTransformation2DTest(Transformation2DTest):
 	def test_errors(self):
 		with self.assertRaises(AssertionError):
 			t = AffineTransformation2D(self.hatt[0:4,:], self.tm3[0:5,:])
+
+
+class HausbrandtCorrectionTest(TestCase):
+
+	def test_correction(self):
+		source_coords = np.array([
+			[14482.564, 13288.071],
+			[8445.162, 20281.612],
+			[6187.062, 12491.598],
+		])
+		target_coords = np.array([
+			[5768950.542, 6441593.071],
+			[5763055.723, 6448708.668],
+			[5760639.634, 6440965.177],
+		])
+		new_source_coords = np.array([
+			[10550.348, 13150.453],
+			[8000.671, 16023.344],
+			[10591.893, 16627.614],
+		])
+		new_target_coords = np.array([
+			[5765015.893, 6441535.346],
+			[5762524.797, 6444459.784],
+			[5765128.055, 6445011.369],
+		])
+
+		tr = SimilarityTransformation2D(source_coords, target_coords)
+		hc = HausbrandtCorrection(source_coords, target_coords, tr)
+
+		self.assertFalse(np.all(
+			np.equal(
+				np.round(tr(source_coords), 3),
+				target_coords
+			)
+		))
+
+		self.assertTrue(np.all(
+			np.equal(
+				np.round(hc(source_coords), 3),
+				target_coords
+			)
+		))
+
+		self.assertTrue(np.all(
+			np.equal(
+				np.round(hc(new_source_coords), 3),
+				new_target_coords
+			)
+		))
+
+
+
+
