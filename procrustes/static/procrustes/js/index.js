@@ -1,3 +1,5 @@
+const ANIM_TIME = 300;
+
 function generate_reference_coordinate_table(result) {
 
     let source_coords = result.input.cs_source.coords; // arrays with [x,y]
@@ -105,9 +107,9 @@ function generate_covariance_plot(collocation_data) {
     ];
 
     let layout = {
-        title: "Covariance Function",
-        xaxis: { title: "Distance (km)" },
-        yaxis: { title: "Covariance (cm<sup>2</sup>)" },
+        title: "Συνάρτηση συμμεταβλητότητας f<sub>c</sub>(d)",
+        xaxis: { title: "Απόσταση(km)" },
+        yaxis: { title: "Συμμεταβλητότητα (cm<sup>2</sup>)" },
     }
     Plotly.newPlot("output_cov_plot", data, layout, {staticPlot:true});
 }
@@ -164,8 +166,29 @@ $("#id_transformation_type > input[type=radio]").change(function() {
     carousel.to(this.value);
 });
 
+$("#id_residual_correction_type > input[type=radio]").change(function() {
+    let carousel = bootstrap.Carousel.getOrCreateInstance($("#id_carousel_residual_correction_type")[0]);
+    carousel.to(this.value);
+});
+
+$('#id_cov_function_type').hide(); // initial state
+
+// change visibility of covariance function type
+$('#id_residual_correction_type > input[type=radio]').change(function() {
+    const COLLOCATION_ID = 1;
+    if (this.value == COLLOCATION_ID) {
+        $('#id_cov_function_type').show(ANIM_TIME);
+        //$('#id_cov_function_type > input').prop('disabled', false);
+    } else {
+        $('#id_cov_function_type').hide(ANIM_TIME);
+        //$('#id_cov_function_type > input').prop('disabled', true);
+    }
+});
+
+/*
 $("#id_carousel_transformation_type").on("slide.bs.carousel", function (e) {
     let index = e.to;
    // $("#id_transformation_type > input[type=radio]").removeAttr("checked");
     $(`#id_transformation_type > input[type=radio][value=${index}]`).prop("checked", true);
 });
+*/

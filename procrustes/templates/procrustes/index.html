@@ -16,25 +16,22 @@
     <!--Plotly-->
     <script src="https://cdn.plot.ly/plotly-2.11.1.min.js"></script>
     <!--Mathjax-->
-    <script>
-        MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']]
-            }
-        };
-    </script>
+    <script src="{% static 'procrustes/js/mathjax_config.js' %}?version=1.3" type="text/javascript"></script>
     <script type="text/javascript" id="MathJax-script" async
         src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
     </script>
 </head>
 <body>
     <div class="container pt-5">
-        <h1>Procrustes</h1>
+        <h2>Προκρούστης
+            <small class="text-muted">υπολογισμός βέλτιστου μετασχηματισμού σημείων</small>
+        </h2>
         <hr>
-        <div class="row">
-            <form id="form_input" method="post" action="{% url 'upload_reference' %}" enctype="multipart/form-data">
-                <div class="pt-3 pb-3">
-                    {% csrf_token %}
+        <form id="form_input" method="post" action="{% url 'upload_reference' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="row">
+                <div class="col-sm-4">
                     <label class="form-label" for="{{ form.reference_points.id_for_label }}">
                         {{ form.reference_points.label }}:
                     </label>
@@ -47,132 +44,181 @@
                     <div class="pb-3">
                         {{ form.validation_points }}
                     </div>
-                    <label class="form-label" for="id_transformation_type">
-                        {{ form.transformation_type.label }}:
-                    </label>
-                    <div class="row">
-                        <!-- <div style="visibility: hidden;"> -->
-                        <div class="col-md-12">
-                            <div class="btn-group" role="group" id="id_transformation_type">
-                                {% for radio in form.transformation_type %}
-                                {{ radio.tag }}
-                                <label class="btn btn-outline-primary" for="{{ radio.id_for_label }}">
-                                    {{ radio.choice_label }}
-                                </label>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div id="id_carousel_transformation_type" class="carousel carousel-dark slide" data-bs-interval="false">
-                                <div class="carousel-inner">
-                                    <div class="carousel-item active">
-                                        <div class="d-inline-block w-25 h-100"></div>
-                                        <div style="min-height: 250px" class="d-inline-block w-50 h-100">
-                                            <p class="lead">Ομοιότητας</p>
-                                            <p>Οι διαφορές των συστημάτων αναφοράς περιγράφονται από
-                                                    2 παραμέτρους μετάθεσης $t_x$ και $t_y$
-                                                    μία στροφή $\theta$ και 
-                                                    ένα συντελεστή κλίμακας $\delta s$
-                                            </p>
-                                            <p>
-                                                $$
-                                                \begin{bmatrix} x^{'} \\ y^{'} \end{bmatrix} = 
-                                                \begin{bmatrix} t_x \\ t_y \end{bmatrix} +
-                                                (1-\delta s) \begin{bmatrix} \cos\theta & \sin\theta \\ -\sin\theta & \cos\theta \end{bmatrix} 
-                                                \begin{bmatrix} x \\ y \end{bmatrix} 
-                                                $$
-                                            </p>
-                                        </div>
-                                        <div class="d-inline-block w-25 h-100"></div>
-                                    </div>
-                                    <div class="carousel-item">
-                                        <div class="d-inline-block w-25 h-100"></div>
-                                        <div style="min-height: 250px" class="d-inline-block w-50 h-100">
-                                            <p class="lead">Αφινικός</p>
-                                            <p>Οι διαφορές των συστημάτων αναφοράς περιγράφονται από
-                                                    2 παραμέτρους μετάθεσης $t_x$ και $t_y$
-                                                    2 στροφές $\theta_x$, $\theta_y$ και 
-                                                    2 συντελεστές κλίμακας $\delta s_x$, $\delta s_y$
-                                            </p>
-                                            <p>
-                                                $$
-                                                \begin{bmatrix} x^{'} \\ y^{'} \end{bmatrix} = 
-                                                \begin{bmatrix} t_x \\ t_y \end{bmatrix} +
-                                                \begin{bmatrix} 1-\delta s_x & 0 \\ 0 & 1-\delta s_y \end{bmatrix}
-                                                \begin{bmatrix} \cos\theta_x & \sin\theta_y \\ -\sin\theta_x & \cos\theta_y \end{bmatrix} 
-                                                \begin{bmatrix} x \\ y \end{bmatrix} 
-                                                $$
-                                            </p>
-                                        </div>
-                                        <div class="d-inline-block w-25 h-100"></div>
-                                    </div>
-                                    <div class="carousel-item">
-                                        <div class="d-inline-block w-25 h-100"></div>
-                                        <div style="min-height: 250px" class="d-inline-block w-50 h-100">
-                                            <p class="lead">Πολυωνυμικός 2ου βαθμού</p>
-                                            <p>Οι διαφορές των συστημάτων αναφοράς περιγράφονται από 12 παραμέτρους $\alpha_i$ και $\beta_i$</p>
-                                            <p>
-                                                $$\begin{aligned}
-                                                x^{'} &= \alpha_0 + \alpha_1 x + \alpha_2 y + \alpha_3 x^{2} + \alpha_4 y^{2} + \alpha_5 xy \\
-                                                y^{'} &= \beta_0 + \beta_1 x + \beta_2 y + \beta_3 x^{2} + \beta_4 y^{2} + \beta_5 xy
-                                                \end{aligned}
-                                                $$
-                                                <!--
-                                                $$
-                                                \begin{bmatrix} x^{'} \\ y^{'} \end{bmatrix} = 
-                                                \begin{bmatrix} \alpha_0 \\ \beta_0 \end{bmatrix} +
-                                                \begin{bmatrix} \alpha_1 + \alpha_3 x & \alpha_2 + \alpha_4 y + \alpha_5 x \\ \beta_1 + \beta_3 x + \beta_5 y & beta_2 + \beta_4 y \end{bmatrix} 
-                                                \begin{bmatrix} x \\ y \end{bmatrix} 
-                                                $$
-                                                -->
-                                            </p>
-                                        </div>
-                                        <div class="d-inline-block w-25 h-100"></div>
-                                    </div>
+                </div>
+                <div class="col-sm-8">
+                    <!-- map -->
+                </div>
+           </div>
+
+           <fieldset class="row">
+               <legend class="pb-4">
+                    {{ form.transformation_type.label }}:
+               </legend>
+                <div class="col-sm-4">
+                    <div class="btn-group-vertical" role="group" id="id_transformation_type">
+                    {% for radio in form.transformation_type %}
+                        {{ radio.tag }}
+                        <label class="btn btn-outline-primary" for="{{ radio.id_for_label }}">
+                            {{ radio.choice_label }}
+                        </label>
+                    {% endfor %}
+                    </div>
+                </div>
+                <div class="col-sm-8">
+                    <div id="id_carousel_transformation_type" class="carousel carousel-dark slide" data-bs-interval="false">
+                        <div class="carousel-inner">
+                            <div class="carousel-item active">
+                                <div style="min-height: 250px" class="d-block w-100 h-100">
+                                    <p class="lead">Ομοιότητας</p>
+                                    <p>Οι διαφορές των συστημάτων αναφοράς περιγράφονται από 2 παραμέτρους μετάθεσης $t_x$ και $t_y$
+                                       μία στροφή $\theta$ και ένα συντελεστή κλίμακας $\delta s$
+                                    </p>
+                                    <p>
+                                        $$
+                                        \begin{bmatrix} x^{'} \\ y^{'} \end{bmatrix} = 
+                                        \begin{bmatrix} t_x \\ t_y \end{bmatrix} +
+                                        (1-\delta s) \begin{bmatrix} \cos\theta & \sin\theta \\ -\sin\theta & \cos\theta \end{bmatrix} 
+                                        \begin{bmatrix} x \\ y \end{bmatrix} 
+                                        $$
+                                    </p>
                                 </div>
-                                <button class="carousel-control-prev" type="button" data-bs-target="#id_carousel_transformation_type" data-bs-slide="prev">
-                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Previous</span>
-                                </button>
-                                <button class="carousel-control-next" type="button" data-bs-target="#id_carousel_transformation_type" data-bs-slide="next">
-                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Next</span>
-                                </button>
+                            </div>
+                            <div class="carousel-item">
+                                <div style="min-height: 250px" class="d-block w-100 h-100">
+                                    <p class="lead">Αφινικός</p>
+                                    <p>Οι διαφορές των συστημάτων αναφοράς περιγράφονται από
+                                       2 παραμέτρους μετάθεσης $t_x$ και $t_y$
+                                       2 στροφές $\theta_x$, $\theta_y$ και 
+                                       2 συντελεστές κλίμακας $\delta s_x$, $\delta s_y$
+                                    </p>
+                                    <p>
+                                        $$
+                                        \begin{bmatrix} x^{'} \\ y^{'} \end{bmatrix} = 
+                                        \begin{bmatrix} t_x \\ t_y \end{bmatrix} +
+                                        \begin{bmatrix} 1-\delta s_x & 0 \\ 0 & 1-\delta s_y \end{bmatrix}
+                                        \begin{bmatrix} \cos\theta_x & \sin\theta_y \\ -\sin\theta_x & \cos\theta_y \end{bmatrix} 
+                                        \begin{bmatrix} x \\ y \end{bmatrix} 
+                                        $$
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="carousel-item">
+                                <div style="min-height: 250px" class="d-block w-100 h-100">
+                                    <p class="lead">Πολυωνυμικός 2ου βαθμού</p>
+                                    <p>Οι διαφορές των συστημάτων αναφοράς περιγράφονται από 12 παραμέτρους $\alpha_i$ και $\beta_i$</p>
+                                    <p>
+                                        $$\begin{aligned}
+                                        x^{'} &= \alpha_0 + \alpha_1 x + \alpha_2 y + \alpha_3 x^{2} + \alpha_4 y^{2} + \alpha_5 xy \\
+                                        y^{'} &= \beta_0 + \beta_1 x + \beta_2 y + \beta_3 x^{2} + \beta_4 y^{2} + \beta_5 xy
+                                        \end{aligned}
+                                        $$
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <label class="form-label" for="id_residual_correction_type">
-                        {{ form.residual_correction_type.label }}:
-                    </label>
-                    <div class="pb-3">
-                        <div class="btn-group" role="group" id="id_residual_correction_type">
-                        {% for radio in form.residual_correction_type %}
-                            {{ radio.tag }}
-                            <label class="btn btn-primary" for="{{ radio.id_for_label }}">
-                                {{ radio.choice_label }}
-                            </label>
-                        {% endfor %}
-                        </div>
+                </div>
+            </fieldset> <!-- transformation_type row-->
+
+            <fieldset class="row">
+                <legend class="pb-4">
+                    {{ form.residual_correction_type.label }}:
+                </legend>
+                <div class="col-sm-2">
+                    <div class="btn-group-vertical" role="group" id="id_residual_correction_type">
+                    {% for radio in form.residual_correction_type %}
+                        {{ radio.tag }}
+                        <label class="btn btn-outline-primary" for="{{ radio.id_for_label }}">
+                            {{ radio.choice_label }}
+                        </label>
+                    {% endfor %}
                     </div>
+                </div>
+                <div class="col-sm-2">
+                    <!--
                     <label class="form-label" for="id_cov_function_type">
                         {{ form.cov_function_type.label }}:
                     </label>
-                    <div class="pb-3">
-                        <div class="btn-group" role="group" id="id_cov_function_type">
-                        {% for radio in form.cov_function_type %}
-                            {{ radio.tag }}
-                            <label class="btn btn-primary" for="{{ radio.id_for_label }}">
-                                {{ radio.choice_label }}
-                            </label>
-                        {% endfor %}
+                    -->
+                    <div class="btn-group-vertical" role="group" id="id_cov_function_type">
+                    {% for radio in form.cov_function_type %}
+                        {{ radio.tag }}
+                        <label class="btn btn-outline-primary" for="{{ radio.id_for_label }}">
+                            {{ radio.choice_label }}
+                        </label>
+                    {% endfor %}
+                    </div>
+                </div>
+                <div class="col-sm-8">
+                    <div id="id_carousel_residual_correction_type" class="carousel carousel-dark slide" data-bs-interval="false">
+                        <div class="carousel-inner">
+                            <div class="carousel-item active">
+                                <div style="min-height: 350px" class="d-block w-100 h-100">
+                                    <p class="lead">Χωρίς Μοντελοποίηση</p>
+                                    <p>
+                                    Υπολογισμός βέλτιστου μετασχηματισμού χωρίς μοντελοποίηση υπολοίπων.
+                                    Τα υπόλοιπα της εφαρμογής $s_{ref}$ του μετασχηματισμού $M$ στα σημεία αναφορας $x_{ref}$ δεν θα είναι μηδενικά,
+                                    λόγω συστηματικών διαφορών και ασυνεπειών των δύο συστημάτων αναφοράς.
+                                    </p>
+                                    <p>
+                                        $$
+                                        x^{'}_{ref} = M x_{ref} + s_{ref}
+                                        $$
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="carousel-item">
+                                <div style="min-height: 350px" class="d-block w-100 h-100">
+                                    <p class="lead">Σημειακή Προσαρμογή (Collocation)</p>
+                                    <p>
+                                    Ανακατανομή των υπολοίπων $s_{ref}$ των σημείων αναφοράς $x_{ref}$ στα νέα σημεία 
+                                    προς μετασχηματισμό $x_{new}$ μέσω σημειακής προσαρμογής.
+                                    Τα υπόλοιπα $s_{ref}$ αντιμετωπίζονται ως σήματα και γίνεται πρόγνωση σημάτων
+                                    στα $x_{new}$. Για την πρόγνωση υπολογίζεται συνάρτηση $f_c(d)$ πού περιγράφει 
+                                    την συμμετάβλητότητα $c$ του σήματος σε ένα σημείο στην περιοχή ενδιαφέροντος, με βάση την απόστασή του $d$ 
+                                    από τα σημεία αναφοράς.
+                                    </p>
+                                    <p>
+                                        $$
+                                        x^{'}_{ref} = M x_{ref}
+                                        $$
+                                        $$
+                                        x^{'}_{new} = M x_{new} + C_{new, ref} C^{-1}_{ref, ref} s_{ref}
+                                        $$
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="carousel-item">
+                                <div style="min-height: 350px" class="d-block w-100 h-100">
+                                    <p class="lead">Διόρθωση Hausbrandt</p>
+                                    <p>
+                                    Ανακατανομή των υπολοίπων $s_{ref}$ των σημείων αναφοράς $x_{ref}$ στα νέα σημεία 
+                                    προς μετασχηματισμό $x_{new}$ μέσω παρεμβολής.
+                                    Η παρεμβολή χρησιμοποιεί βάρος $w$, ίσο με το αντίστροφο του τετραγώνου 
+                                    της απόστασης του νέου σημείου από τα σημεία αναφοράς.
+                                    </p>
+                                    <p>
+                                        $$
+                                        x^{'}_{ref} = M x_{ref}
+                                        $$
+                                        $$
+                                        x^{'}_{new} = M x_{new} + \delta x_{new}
+                                        $$
+                                        $$
+                                        \delta x_{new} = \sum_{i=0}^{ref} {w_{new,i} s_i \over w_{new,i}}
+                                        $$
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="pb-3">
-                    <button class="btn btn-primary">Submit</button>
-                </div>
-            </form>
-        </div>
+            </fieldset> <!-- residual_correction_type row -->
+
+            <div class="pb-3">
+                <button class="btn btn-primary">Submit</button>
+            </div>
+        </form>
         <div class="row pt-3">
             <div class="col-sm-4">
                 <div id="output_transformation_params"></div>
