@@ -20,6 +20,7 @@ To install and run the project locally:
 * Add a simple text file named ".env" with some environment values for
   - DJANGO_SECRET_KEY=addasecretkeyhere
   - DATABASE_URL=sqlite:///survgr.db
+  - SURVGR_DEBUG=True
 * `python manage.py migrate` to create an sqlite db with some initial data
 * Run `python manage.py test` for testing
 * Run `python manage.py collectstatic` 
