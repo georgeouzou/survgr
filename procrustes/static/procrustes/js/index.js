@@ -158,3 +158,14 @@ $('#form_input').submit(function(event) {
     });
 
 });
+
+$("#id_transformation_type > input[type=radio]").change(function() {
+    let carousel = bootstrap.Carousel.getOrCreateInstance($("#id_carousel_transformation_type")[0]);
+    carousel.to(this.value);
+});
+
+$("#id_carousel_transformation_type").on("slide.bs.carousel", function (e) {
+    let index = e.to;
+   // $("#id_transformation_type > input[type=radio]").removeAttr("checked");
+    $(`#id_transformation_type > input[type=radio][value=${index}]`).prop("checked", true);
+});

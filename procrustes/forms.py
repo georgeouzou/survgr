@@ -24,7 +24,7 @@ class ReferencePointsForm(forms.Form):
 		initial = TransformationType.Similarity.value,
 		label = 'Transformation Type',
 		widget=forms.RadioSelect(
-			attrs={'class': 'btn-check'},
+			attrs={'class': 'btn-check', 'autocomplete': 'off'},
 		)
 	)
 	residual_correction_type = forms.ChoiceField(
@@ -36,7 +36,7 @@ class ReferencePointsForm(forms.Form):
 		initial = ResidualCorrectionType.NoCorrection.value,
 		label = 'Residual Correction Type',
 		widget=forms.RadioSelect(
-			attrs={'class': 'btn-check'},
+			attrs={'class': 'btn-check', 'autocomplete': 'off'},
 		)
 	)
 	cov_function_type = forms.ChoiceField(
@@ -49,6 +49,6 @@ class ReferencePointsForm(forms.Form):
 		initial = CovarianceFunctionType.CardinalSine.value,
 		label = 'Covariance Function Type',
 		widget=forms.RadioSelect(
-			attrs={'class': 'btn-check'},
+			attrs={'class': 'btn-check', 'autocomplete': 'off'},
 		)
 	)
