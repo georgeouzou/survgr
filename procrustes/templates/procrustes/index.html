@@ -23,200 +23,77 @@
 </head>
 <body>
     <div class="container pt-5">
-        <h2>Προκρούστης
+        <h1>Προκρούστης
             <small class="text-muted">υπολογισμός βέλτιστου μετασχηματισμού σημείων</small>
-        </h2>
+        </h1>
         <hr>
         <form id="form_input" method="post" action="{% url 'upload_reference' %}" enctype="multipart/form-data">
             {% csrf_token %}
-
             <div class="row">
-                <div class="col-sm-4">
-                    <label class="form-label" for="{{ form.reference_points.id_for_label }}">
-                        {{ form.reference_points.label }}:
-                    </label>
-                    <div class="pb-3">
-                        {{ form.reference_points }}
-                    </div>
-                    <label class="form-label" for="{{ form.validation_points.id_for_label }}">
-                        {{ form.validation_points.label }}:
-                    </label>
-                    <div class="pb-3">
-                        {{ form.validation_points }}
-                    </div>
+                <label class="col-form-label col-sm-2" for="{{ form.reference_points.id_for_label }}">
+                    {{ form.reference_points.label }}:
+                </label>
+                <div class="col-sm-10 pb-3">
+                    {{ form.reference_points }}
                 </div>
-                <div class="col-sm-8">
-                    <!-- map -->
+                <label class="col-form-label col-sm-2" for="{{ form.validation_points.id_for_label }}">
+                    {{ form.validation_points.label }}:
+                </label>
+                <div class="col-sm-10 pb-3">
+                    {{ form.validation_points }}
                 </div>
            </div>
 
-           <fieldset class="row">
-               <legend class="pb-4">
-                    {{ form.transformation_type.label }}:
+           <fieldset class="row pb-3">
+               <legend class="col-form-label col-2">
+                   {{ form.transformation_type.label }}:
                </legend>
-                <div class="col-sm-4">
-                    <div class="btn-group-vertical" role="group" id="id_transformation_type">
-                    {% for radio in form.transformation_type %}
-                        {{ radio.tag }}
-                        <label class="btn btn-outline-primary" for="{{ radio.id_for_label }}">
-                            {{ radio.choice_label }}
-                        </label>
-                    {% endfor %}
-                    </div>
-                </div>
-                <div class="col-sm-8">
-                    <div id="id_carousel_transformation_type" class="carousel carousel-dark slide" data-bs-interval="false">
-                        <div class="carousel-inner">
-                            <div class="carousel-item active">
-                                <div style="min-height: 250px" class="d-block w-100 h-100">
-                                    <p class="lead">Ομοιότητας</p>
-                                    <p>Οι διαφορές των συστημάτων αναφοράς περιγράφονται από 2 παραμέτρους μετάθεσης $t_x$ και $t_y$
-                                       μία στροφή $\theta$ και ένα συντελεστή κλίμακας $\delta s$
-                                    </p>
-                                    <p>
-                                        $$
-                                        \begin{bmatrix} x^{'} \\ y^{'} \end{bmatrix} = 
-                                        \begin{bmatrix} t_x \\ t_y \end{bmatrix} +
-                                        (1-\delta s) \begin{bmatrix} \cos\theta & \sin\theta \\ -\sin\theta & \cos\theta \end{bmatrix} 
-                                        \begin{bmatrix} x \\ y \end{bmatrix} 
-                                        $$
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="carousel-item">
-                                <div style="min-height: 250px" class="d-block w-100 h-100">
-                                    <p class="lead">Αφινικός</p>
-                                    <p>Οι διαφορές των συστημάτων αναφοράς περιγράφονται από
-                                       2 παραμέτρους μετάθεσης $t_x$ και $t_y$
-                                       2 στροφές $\theta_x$, $\theta_y$ και 
-                                       2 συντελεστές κλίμακας $\delta s_x$, $\delta s_y$
-                                    </p>
-                                    <p>
-                                        $$
-                                        \begin{bmatrix} x^{'} \\ y^{'} \end{bmatrix} = 
-                                        \begin{bmatrix} t_x \\ t_y \end{bmatrix} +
-                                        \begin{bmatrix} 1-\delta s_x & 0 \\ 0 & 1-\delta s_y \end{bmatrix}
-                                        \begin{bmatrix} \cos\theta_x & \sin\theta_y \\ -\sin\theta_x & \cos\theta_y \end{bmatrix} 
-                                        \begin{bmatrix} x \\ y \end{bmatrix} 
-                                        $$
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="carousel-item">
-                                <div style="min-height: 250px" class="d-block w-100 h-100">
-                                    <p class="lead">Πολυωνυμικός 2ου βαθμού</p>
-                                    <p>Οι διαφορές των συστημάτων αναφοράς περιγράφονται από 12 παραμέτρους $\alpha_i$ και $\beta_i$</p>
-                                    <p>
-                                        $$\begin{aligned}
-                                        x^{'} &= \alpha_0 + \alpha_1 x + \alpha_2 y + \alpha_3 x^{2} + \alpha_4 y^{2} + \alpha_5 xy \\
-                                        y^{'} &= \beta_0 + \beta_1 x + \beta_2 y + \beta_3 x^{2} + \beta_4 y^{2} + \beta_5 xy
-                                        \end{aligned}
-                                        $$
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </fieldset> <!-- transformation_type row-->
+               <div class="col-10">
+                   {% for radio in form.transformation_type %}
+                   <div class="form-check">
+                       {{ radio.tag }}
+                       <label class="form-check-label" for="{{ radio.id_for_label }}">
+                           {{ radio.choice_label }}
+                       </label>
+                   </div>
+                   {% endfor %}
+               </div>
+           </fieldset> <!-- transformation_type row-->
 
-            <fieldset class="row">
-                <legend class="pb-4">
-                    {{ form.residual_correction_type.label }}:
-                </legend>
-                <div class="col-sm-2">
-                    <div class="btn-group-vertical" role="group" id="id_residual_correction_type">
-                    {% for radio in form.residual_correction_type %}
-                        {{ radio.tag }}
-                        <label class="btn btn-outline-primary" for="{{ radio.id_for_label }}">
-                            {{ radio.choice_label }}
-                        </label>
-                    {% endfor %}
-                    </div>
-                </div>
-                <div class="col-sm-2">
-                    <!--
-                    <label class="form-label" for="id_cov_function_type">
-                        {{ form.cov_function_type.label }}:
-                    </label>
-                    -->
-                    <div class="btn-group-vertical" role="group" id="id_cov_function_type">
-                    {% for radio in form.cov_function_type %}
-                        {{ radio.tag }}
-                        <label class="btn btn-outline-primary" for="{{ radio.id_for_label }}">
-                            {{ radio.choice_label }}
-                        </label>
-                    {% endfor %}
-                    </div>
-                </div>
-                <div class="col-sm-8">
-                    <div id="id_carousel_residual_correction_type" class="carousel carousel-dark slide" data-bs-interval="false">
-                        <div class="carousel-inner">
-                            <div class="carousel-item active">
-                                <div style="min-height: 350px" class="d-block w-100 h-100">
-                                    <p class="lead">Χωρίς Μοντελοποίηση</p>
-                                    <p>
-                                    Υπολογισμός βέλτιστου μετασχηματισμού χωρίς μοντελοποίηση υπολοίπων.
-                                    Τα υπόλοιπα της εφαρμογής $s_{ref}$ του μετασχηματισμού $M$ στα σημεία αναφορας $x_{ref}$ δεν θα είναι μηδενικά,
-                                    λόγω συστηματικών διαφορών και ασυνεπειών των δύο συστημάτων αναφοράς.
-                                    </p>
-                                    <p>
-                                        $$
-                                        x^{'}_{ref} = M x_{ref} + s_{ref}
-                                        $$
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="carousel-item">
-                                <div style="min-height: 350px" class="d-block w-100 h-100">
-                                    <p class="lead">Σημειακή Προσαρμογή (Collocation)</p>
-                                    <p>
-                                    Ανακατανομή των υπολοίπων $s_{ref}$ των σημείων αναφοράς $x_{ref}$ στα νέα σημεία 
-                                    προς μετασχηματισμό $x_{new}$ μέσω σημειακής προσαρμογής.
-                                    Τα υπόλοιπα $s_{ref}$ αντιμετωπίζονται ως σήματα και γίνεται πρόγνωση σημάτων
-                                    στα $x_{new}$. Για την πρόγνωση υπολογίζεται συνάρτηση $f_c(d)$ πού περιγράφει 
-                                    την συμμετάβλητότητα $c$ του σήματος σε ένα σημείο στην περιοχή ενδιαφέροντος, με βάση την απόστασή του $d$ 
-                                    από τα σημεία αναφοράς.
-                                    </p>
-                                    <p>
-                                        $$
-                                        x^{'}_{ref} = M x_{ref}
-                                        $$
-                                        $$
-                                        x^{'}_{new} = M x_{new} + C_{new, ref} C^{-1}_{ref, ref} s_{ref}
-                                        $$
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="carousel-item">
-                                <div style="min-height: 350px" class="d-block w-100 h-100">
-                                    <p class="lead">Διόρθωση Hausbrandt</p>
-                                    <p>
-                                    Ανακατανομή των υπολοίπων $s_{ref}$ των σημείων αναφοράς $x_{ref}$ στα νέα σημεία 
-                                    προς μετασχηματισμό $x_{new}$ μέσω παρεμβολής.
-                                    Η παρεμβολή χρησιμοποιεί βάρος $w$, ίσο με το αντίστροφο του τετραγώνου 
-                                    της απόστασης του νέου σημείου από τα σημεία αναφοράς.
-                                    </p>
-                                    <p>
-                                        $$
-                                        x^{'}_{ref} = M x_{ref}
-                                        $$
-                                        $$
-                                        x^{'}_{new} = M x_{new} + \delta x_{new}
-                                        $$
-                                        $$
-                                        \delta x_{new} = \sum_{i=0}^{ref} {w_{new,i} s_i \over w_{new,i}}
-                                        $$
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </fieldset> <!-- residual_correction_type row -->
+           <fieldset class="row pb-3" id="id_residual_correction_type">
+               <legend class="col-form-label col-2">
+                   {{ form.residual_correction_type.label }}:
+               </legend>
+               <div class="col-10">
+                   {% for radio in form.residual_correction_type %}
+                   <div class="form-check">
+                       {{ radio.tag }}
+                       <label class="form-check-label" for="{{ radio.id_for_label }}">
+                           {{ radio.choice_label }}
+                       </label>
+                   </div>
+                   {% endfor %}
+               </div>
+           </fieldset> <!-- residual_correction_type row-->
+
+           <fieldset class="row pb-3" id="id_cov_function_type">
+               <legend class="col-form-label col-2">
+                   {{ form.cov_function_type.label }}:
+               </legend>
+               <div class="col-10">
+                   {% for radio in form.cov_function_type %}
+                   <div class="form-check">
+                       {{ radio.tag }}
+                       <label class="form-check-label" for="{{ radio.id_for_label }}">
+                           {{ radio.choice_label }}
+                       </label>
+                   </div>
+                   {% endfor %}
+               </div>
+            </fieldset> <!-- cov_function_type row -->
 
             <div class="pb-3">
-                <button class="btn btn-primary">Submit</button>
+                <button class="btn btn-primary">Υπολόγισε</button>
             </div>
         </form>
         <div class="row pt-3">
@@ -225,6 +102,147 @@
             </div>
             <div class="col-sm-8">
                 <div id="output_cov_plot"></div>
+            </div>
+        </div>
+    </div> 
+    <div class="container pt-5">
+        <div class="row pb-5">
+            <h2>Τι είναι</h2>
+            <p> 
+            Ο Προκρούστης προσπαθεί να προσεγγίσει με τη μέθοδο των ελαχίστων τετραγώνων, τον βέλτιστο 2Δ μετασχηματισμό μεταξύ δύο σετ σημείων $(x^{'}, y^{'})$ και $(x, y)$.
+            Τα δύο σέτ σημείων έχουν γνωστές συντεταγμένες σε δύο διαφορετικά συστήματα αναφοράς.
+            </p>
+            <p>
+            Δέχετε αρχεία CSV τα οποία περιέχουν σημεία. Το κάθε σημείο αναγράφεται σε ξεχωριστή γραμμή. 
+            Η κάθε γραμμή μπορεί να περιέχει:
+            </p>
+            <div>
+                <ul>
+                    <li>ένα προαιρετικό αναγνωριστικό κωδικό (id) για το σημείο</li>
+                    <li>τις 2D προβολικές συντεταγμένες $x, y$ του σημείου στο 1ο σύστημα αναφοράς (source)</li>
+                    <li>τις 2D προβολικές συντεταγμένες $x^{'}, y^{'}$ του σημείου στο 2ο συστημα αναφοράς (target)</li>
+                </ul>
+            </div>
+            <p>
+            Τα δεδομένα είναι διαχωρισμένα με κόμμα/κενό/tab/ερωτηματικό. Μονάδα μέτρησης για τις προβολικές συντεταγμένες είναι τα μέτρα.
+            </p>
+            <p>
+            Μπορείτε να εισάγετε δύο CSV αρχεία τα οποία θα έχουν το ίδιο format που περιγράφηκε παραπάνω.
+            </p>
+            <div>
+                <ul>
+                    <li> Σημεία Αναφοράς (υποχρεωτικό) - Θα χρησιμοποιηθούν για τον υπολογισμό του βέλτιστου μετασχηματισμού</li>
+                    <li> Σημεία Επιβεβαίωσης (προαιρετικό) - Θα χρησιμοποιηθούν για την ποιοτικό έλεγχο των αποτελεσμάτων</li>
+                </ul>
+            </div>
+        </div>
+        <div class="row pb-5">
+            <h2> Μετασχηματισμός</h2>
+            <p>
+            Δίνεται επιλογή 3 τύπων μετασχηματισμού:
+            </p>
+            <div>
+                <h3>Ομοιότητας</h3>
+                <p>
+                Οι διαφορές των συστημάτων αναφοράς περιγράφονται από 2 παραμέτρους μετάθεσης $t_x$ και $t_y$
+                μία στροφή $\theta$ και ένα συντελεστή κλίμακας $\delta s$
+                </p>
+                <p>
+                $$
+                \begin{bmatrix} x^{'} \\ y^{'} \end{bmatrix} = 
+                \begin{bmatrix} t_x \\ t_y \end{bmatrix} +
+                (1-\delta s) \begin{bmatrix} \cos\theta & \sin\theta \\ -\sin\theta & \cos\theta \end{bmatrix} 
+                \begin{bmatrix} x \\ y \end{bmatrix} 
+                $$
+                </p>
+            </div>
+            <div>
+                <h3>Αφινικός</h3>
+                <p>
+                Οι διαφορές των συστημάτων αναφοράς περιγράφονται από
+                2 παραμέτρους μετάθεσης $t_x$ και $t_y$
+                2 στροφές $\theta_x$, $\theta_y$ και 
+                2 συντελεστές κλίμακας $\delta s_x$, $\delta s_y$
+                </p>
+                <p>
+                $$
+                \begin{bmatrix} x^{'} \\ y^{'} \end{bmatrix} = 
+                \begin{bmatrix} t_x \\ t_y \end{bmatrix} +
+                \begin{bmatrix} 1-\delta s_x & 0 \\ 0 & 1-\delta s_y \end{bmatrix}
+                \begin{bmatrix} \cos\theta_x & \sin\theta_y \\ -\sin\theta_x & \cos\theta_y \end{bmatrix} 
+                \begin{bmatrix} x \\ y \end{bmatrix} 
+                $$
+                </p>
+            </div>
+            <div>
+                <h3>Πολυωνυμικός 2ου βαθμού</h3>
+                <p>
+                Οι διαφορές των συστημάτων αναφοράς περιγράφονται από 12 παραμέτρους $\alpha_i$ και $\beta_i$
+                </p>
+                <p>
+                $$\begin{aligned}
+                x^{'} &= \alpha_0 + \alpha_1 x + \alpha_2 y + \alpha_3 x^{2} + \alpha_4 y^{2} + \alpha_5 xy \\
+                y^{'} &= \beta_0 + \beta_1 x + \beta_2 y + \beta_3 x^{2} + \beta_4 y^{2} + \beta_5 xy 
+                \end{aligned}
+                $$
+                </p>
+            </div>
+        </div>
+        <div class="row pb-5">
+            <h2>Μοντελοποίηση Υπολοίπων</h2>
+            <div>
+                <p>
+                Τα υπόλοιπα $s_{ref}$ της εφαρμογής του μετασχηματισμού $M$ στα σημεία αναφορας $X_{ref}$ δεν θα είναι μηδενικά,
+                λόγω συστηματικών διαφορών και ασυνεπειών των δύο συστημάτων αναφοράς.
+                </p>
+                <p>
+                $$
+                X^{'}_{ref} = M X_{ref} + s_{ref}
+                $$
+                </p>
+                <p>
+                Ο Προκρούστης δίνει δύο επιλογές για την μοντελοποίηση των υπολοίπων. Με την εφαρμογή τους επιτυγχάνεται
+                εκμηδενισμός των υπολοίπων στα σημεία αναφοράς.
+                </p>
+            </div>
+            <div>
+                <h3>Σημειακή Προσαρμογή (Collocation)</h3>
+                <p>
+                Ανακατανομή των υπολοίπων $s_{ref}$ των σημείων αναφοράς $X_{ref}$ στα νέα σημεία 
+                προς μετασχηματισμό $X_{new}$ μέσω σημειακής προσαρμογής.
+                Τα υπόλοιπα $s_{ref}$ αντιμετωπίζονται ως σήματα και γίνεται πρόγνωση σημάτων
+                στα $X_{new}$. Για την πρόγνωση υπολογίζεται συνάρτηση $f_c(d)$ πού περιγράφει 
+                την συμμετάβλητότητα $C$ του σήματος σε ένα σημείο στην περιοχή ενδιαφέροντος, με βάση την απόστασή του $d$ 
+                από τα σημεία αναφοράς.
+                </p>
+                <p>
+                $$
+                X^{'}_{ref} = M X_{ref}
+                $$
+                $$
+                X^{'}_{new} = M X_{new} + C_{new, ref} C^{-1}_{ref, ref} s_{ref}
+                $$
+                </p>
+            </div>
+            <div>
+                <h3>Διόρθωση Hausbrandt</h3>
+                <p>
+                Ανακατανομή των υπολοίπων $s_{ref}$ των σημείων αναφοράς $X_{ref}$ στα νέα σημεία 
+                προς μετασχηματισμό $X_{new}$ μέσω παρεμβολής.
+                Η παρεμβολή χρησιμοποιεί βάρος $w$, ίσο με το αντίστροφο του τετραγώνου 
+                της απόστασης του νέου σημείου από τα σημεία αναφοράς.
+                </p>
+                <p>
+                $$
+                X^{'}_{ref} = M X_{ref}
+                $$
+                $$
+                X^{'}_{new} = M X_{new} + \delta X_{new}
+                $$
+                $$
+                \delta X_{new} = \sum_{i=0}^{ref} {w_{new,i} s_i \over w_{new,i}}
+                $$
+                </p>
             </div>
         </div>
     </div>

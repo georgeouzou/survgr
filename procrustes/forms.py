@@ -24,7 +24,7 @@ class ReferencePointsForm(forms.Form):
 		initial = TransformationType.Similarity.value,
 		label = 'Μετασχηματισμός',
 		widget=forms.RadioSelect(
-			attrs={'class': 'btn-check', 'autocomplete': 'off'},
+			attrs={'class': 'form-check-input', 'autocomplete': 'off'},
 		)
 	)
 	residual_correction_type = forms.ChoiceField(
@@ -34,9 +34,9 @@ class ReferencePointsForm(forms.Form):
 			(ResidualCorrectionType.Hausbrandt.value, 'Διόρθωση Hausbrandt'),
 		],
 		initial = ResidualCorrectionType.NoCorrection.value,
-		label = 'Μοντελοποίηση Yπολοίπων Μετασχηματισμού',
+		label = 'Μοντελοποίηση Yπολοίπων',
 		widget=forms.RadioSelect(
-			attrs={'class': 'btn-check', 'autocomplete': 'off'},
+			attrs={'class': 'form-check-input', 'autocomplete': 'off'},
 		)
 	)
 	cov_function_type = forms.ChoiceField(
@@ -47,8 +47,8 @@ class ReferencePointsForm(forms.Form):
 			(CovarianceFunctionType.Spline.value, 'Spline'),
 		],
 		initial = CovarianceFunctionType.CardinalSine.value,
-		label = 'Covariance Function Type',
+		label = 'Συνάρτηση Συμμεταβλητότητας',
 		widget=forms.RadioSelect(
-			attrs={'class': 'btn-check', 'autocomplete': 'off'},
+			attrs={'class': 'form-check-input', 'autocomplete': 'off'},
 		)
 	)

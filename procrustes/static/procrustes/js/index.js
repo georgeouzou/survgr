@@ -161,6 +161,19 @@ $('#form_input').submit(function(event) {
 
 });
 
+$('#id_cov_function_type').hide(); // initial state
+
+// change visibility of covariance function type
+$('#id_residual_correction_type :input[type=radio]').change(function() {
+    const COLLOCATION_ID = 1;
+    if (this.value == COLLOCATION_ID) {
+        $('#id_cov_function_type').show(ANIM_TIME);
+    } else {
+        $('#id_cov_function_type').hide(ANIM_TIME);
+    }
+});
+
+/*
 $("#id_transformation_type > input[type=radio]").change(function() {
     let carousel = bootstrap.Carousel.getOrCreateInstance($("#id_carousel_transformation_type")[0]);
     carousel.to(this.value);
@@ -171,21 +184,6 @@ $("#id_residual_correction_type > input[type=radio]").change(function() {
     carousel.to(this.value);
 });
 
-$('#id_cov_function_type').hide(); // initial state
-
-// change visibility of covariance function type
-$('#id_residual_correction_type > input[type=radio]').change(function() {
-    const COLLOCATION_ID = 1;
-    if (this.value == COLLOCATION_ID) {
-        $('#id_cov_function_type').show(ANIM_TIME);
-        //$('#id_cov_function_type > input').prop('disabled', false);
-    } else {
-        $('#id_cov_function_type').hide(ANIM_TIME);
-        //$('#id_cov_function_type > input').prop('disabled', true);
-    }
-});
-
-/*
 $("#id_carousel_transformation_type").on("slide.bs.carousel", function (e) {
     let index = e.to;
    // $("#id_transformation_type > input[type=radio]").removeAttr("checked");
