@@ -15,6 +15,16 @@ class ReferencePointsForm(forms.Form):
 			attrs={'class': 'form-control'},
 		)
 	)
+	points_format = forms.ChoiceField(
+		label='Μορφή',
+		choices=[
+			('id,xs,ys,xt,yt', "id, x, y, x', y'"),
+			('xs,ys,xt,yt',    "x, y, x', y'"),
+		],
+		widget=forms.Select(
+			attrs={'class': 'form-select'},
+		)
+	)
 	transformation_type = forms.ChoiceField(
 		choices=[
 			(TransformationType.Similarity.value, 'Ομοιότητας'),

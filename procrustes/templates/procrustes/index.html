@@ -44,6 +44,15 @@
                 </div>
            </div>
 
+           <div class="row">
+               <label class="col-form-label col-sm-2" for="{{ form.points_format.id_for_label }}">
+                    {{ form.points_format.label }}:
+               </label>
+               <div class="col-sm-10 pb-3">
+                   {{ form.points_format }}
+               </div>
+           </div>
+
            <fieldset class="row pb-3">
                <legend class="col-form-label col-2">
                    {{ form.transformation_type.label }}:
@@ -96,6 +105,7 @@
                 <button class="btn btn-primary">Υπολόγισε</button>
             </div>
         </form>
+
         <div class="row pt-3">
             <div class="col-sm-4">
                 <div id="output_transformation_params"></div>
@@ -109,11 +119,11 @@
         <div class="row pb-5">
             <h2>Τι είναι</h2>
             <p> 
-            Ο Προκρούστης προσπαθεί να προσεγγίσει με τη μέθοδο των ελαχίστων τετραγώνων, τον βέλτιστο 2Δ μετασχηματισμό μεταξύ δύο σετ σημείων $(x^{'}, y^{'})$ και $(x, y)$.
+            Ο Προκρούστης προσπαθεί να προσεγγίσει, με τη μέθοδο των ελαχίστων τετραγώνων, τον βέλτιστο 2Δ μετασχηματισμό μεταξύ δύο σετ σημείων $(x, y)$ και $(x^{'}, y^{'})$.
             Τα δύο σέτ σημείων έχουν γνωστές συντεταγμένες σε δύο διαφορετικά συστήματα αναφοράς.
             </p>
             <p>
-            Δέχετε αρχεία CSV τα οποία περιέχουν σημεία. Το κάθε σημείο αναγράφεται σε ξεχωριστή γραμμή. 
+            Δέχεται αρχεία CSV τα οποία περιέχουν σημεία. Το κάθε σημείο αναγράφεται σε ξεχωριστή γραμμή.
             Η κάθε γραμμή μπορεί να περιέχει:
             </p>
             <div>

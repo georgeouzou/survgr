@@ -15,10 +15,12 @@ def index(request):
 	form = ReferencePointsForm()
 	return render(request, 'procrustes/index.html', { 'form': form })
 
-def _read_reference_points(fp):
-	fieldnames = ['id', 'sx', 'sy', 'tx', 'ty']
-	reader = csv.DictReader(fp, fieldnames=fieldnames, delimiter=' ', skipinitialspace=True)
-	data = np.array([(float(p['sx']), float(p['sy']), float(p['tx']), float(p['ty'])) for p in reader])
+def _read_reference_points(fp, field_names):
+	dialect = csv.Sniffer().sniff(fp.read(1024), delimiters=";, ")
+	fp.seek(0)
+
+	reader = csv.DictReader(fp, fieldnames=field_names, delimiter=dialect.delimiter, skipinitialspace=True, strict=True)
+	data = np.array([(float(p['xs']), float(p['ys']), float(p['xt']), float(p['yt'])) for p in reader])
 	source_coords = data[:, 0:2]
 	target_coords = data[:, 2:4]
 	return (source_coords, target_coords)
@@ -27,8 +29,11 @@ def upload_reference(request):
 	if request.method == 'POST':
 		form_data = ReferencePointsForm(request.POST, request.FILES)
 		if form_data.is_valid():
+
+			field_names = form_data.cleaned_data['points_format'].split(',')
+
 			f = io.TextIOWrapper(form_data.cleaned_data['reference_points'], encoding='utf-8')
-			source_coords, target_coords = _read_reference_points(f)
+			source_coords, target_coords = _read_reference_points(f, field_names)
 
 			transf_type = TransformationType(int(form_data.cleaned_data['transformation_type']))
 			if transf_type == TransformationType.Similarity:
@@ -53,7 +58,7 @@ def upload_reference(request):
 			has_validation = form_data.cleaned_data['validation_points'] is not None
 			if has_validation:
 				f = io.TextIOWrapper(form_data.cleaned_data['validation_points'], encoding='utf-8')
-				val_source_coords, val_target_coords = _read_reference_points(f)
+				val_source_coords, val_target_coords = _read_reference_points(f, field_names)
 				val_stats = ResidualStatistics(val_source_coords, val_target_coords, tr)
 				if has_residual_correction:
 					val_stats_rescor = ResidualStatistics(val_source_coords, val_target_coords, rescor)
