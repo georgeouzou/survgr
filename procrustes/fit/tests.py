@@ -138,7 +138,7 @@ class AffineTransformation2DTest(Transformation2DTest):
 	def test_rank_deficiency(self):
 		t = AffineTransformation2D(self.hatt[0:2, :], self.tm3[0:2, :]) # 4 xy, 6 params
 		self.assertTrue(t.rank_deficiency == True)
-		t = AffineTransformation2D(self.hatt[0:3, :], self.tm3[0:3, :]) # 6 xy, 12 params
+		t = AffineTransformation2D(self.hatt[0:3, :], self.tm3[0:3, :]) # 6 xy, 6 params
 		self.assertTrue(t.rank_deficiency == False)
 
 	def test_errors(self):
