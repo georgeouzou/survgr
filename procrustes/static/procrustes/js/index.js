@@ -114,6 +114,29 @@ function generate_covariance_plot(collocation_data) {
     Plotly.newPlot("output_cov_plot", data, layout, {staticPlot:true});
 }
 
+function init_map() {
+    const view = new ol.View({
+        projection: 'EPSG:3857', //spherical merc
+        center: ol.proj.transform([25,38.4],'EPSG:4326','EPSG:3857'),
+        zoom: 6,
+    });
+    const default_interactions_list = ol.interaction.defaults({altShiftDragRotate:false, pinchRotate:false});
+
+    let map = new ol.Map({
+        layers:[
+            new ol.layer.Tile({
+                source: new ol.source.OSM()
+            }),
+        ],
+        target: "map",
+        view: view,
+        interactions: default_interactions_list,
+    });
+
+    $('#map').data('map', map);
+}
+
+
 
 $('#form_input').submit(function(event) {
     event.preventDefault();
@@ -158,10 +181,8 @@ $('#form_input').submit(function(event) {
 
     }).fail(function (jqXHR) {
     });
-
 });
 
-$('#id_cov_function_type').hide(); // initial state
 
 // change visibility of covariance function type
 $('#id_residual_correction_type :input[type=radio]').change(function() {
@@ -171,6 +192,67 @@ $('#id_residual_correction_type :input[type=radio]').change(function() {
     } else {
         $('#id_cov_function_type').hide(ANIM_TIME);
     }
+});
+
+function remove_layer_from_map(name) {
+    let ol_map = $('#map').data('map');
+    let layers_to_remove = [];
+    ol_map.getLayers().forEach(function (layer) {
+        if (layer.get('name') === name) {
+            layers_to_remove.push(layer);
+        }
+    });
+    layers_to_remove.forEach(function (layer) {
+        ol_map.removeLayer(layer);
+    });
+}
+
+$('#id_reference_points').change(function() {
+    let ol_map = $('#map').data('map');
+    remove_layer_from_map('reference_points');
+
+    const file = $('#id_reference_points').prop('files')[0];
+    const format = $('#id_points_format').val();
+    const num_entries = format === 'id,xs,ys,xt,yt' ? 5 : 4;
+
+    Papa.parse(file, {
+        delimitersToGuess: [' ', ',', ';'],
+        skipEmptyLines: 'greedy',
+        complete: function(results) {
+            const points = results.data.map(function (line) {
+                const entries = line.filter(function (entry) { return /\S/.test(entry); });
+
+                const idx_x = num_entries == 5 ? 3 : 2;
+                const idx_y = num_entries == 5 ? 4 : 3;
+                let coords = [parseFloat(entries[idx_x]), parseFloat(entries[idx_y])];
+                coords = ol.proj.transform(coords, 'EPSG:2100', 'EPSG:3857');
+
+                return new ol.Feature({
+                    geometry: new ol.geom.Point(coords),
+                });
+            });
+
+            const vector_source = new ol.source.Vector({
+                features: points,
+            });
+
+            let vector_layer = new ol.layer.Vector({
+                source: vector_source,
+            });
+            vector_layer.set('name', 'reference_points');
+
+            ol_map.addLayer(vector_layer);
+            ol_map.getView().fit(vector_source.getExtent());
+        }
+    });
+});
+
+// main
+$(document).ready(function() {
+    $('#id_cov_function_type').hide(); // initial state
+    init_map();
+    proj4.defs("EPSG:2100","+proj=tmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=0 +ellps=GRS80 +towgs84=-199.87,74.79,246.62,0,0,0,0 +units=m +no_defs");
+    ol.proj.proj4.register(proj4);
 });
 
 /*
