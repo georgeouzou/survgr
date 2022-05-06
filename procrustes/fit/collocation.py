@@ -100,7 +100,7 @@ class CovarianceFunction:
 	# output: covariances in cm^2
 
 	def __init__(self, distance_intervals, empirical_cov, func_type):
-		if func_type == CovarianceFunctionType.CardinalSine:
+		if func_type == CovarianceFunctionType.Sinc:
 			self._func = self._init_sinc(distance_intervals, empirical_cov)
 		elif func_type == CovarianceFunctionType.Gaussian:
 			self._func = self._init_gaussian(distance_intervals, empirical_cov)
@@ -109,6 +109,7 @@ class CovarianceFunction:
 		else:
 			self._func = self._init_spline(distance_intervals, empirical_cov)
 
+		self.type = func_type
 		self.distance_intervals =  distance_intervals
 		self.empirical_cov = empirical_cov
 		self.fitted_cov = self._func(distance_intervals)

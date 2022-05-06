@@ -88,6 +88,7 @@ function generate_covariance_plot(collocation_data) {
     let intervals = collocation_data.distance_intervals;
     let empirical_cov = collocation_data.empirical_cov;
     let fitted_cov = collocation_data.fitted_cov;
+    let type = collocation_data.type;
 
     let data = [
         {
@@ -95,14 +96,14 @@ function generate_covariance_plot(collocation_data) {
             y: empirical_cov,
             mode: "lines+markers",
             type: "scatter",
-            name: "empirical",
+            name: "εμπειρικές τιμές",
         },
         {
             x: intervals,
             y: fitted_cov,
             mode: "lines",
             type: "scatter",
-            name: "sinc fitted",
+            name: `προσαρμοσμένη ${type}`,
         },
     ];
 

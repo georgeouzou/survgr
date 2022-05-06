@@ -51,12 +51,12 @@ class ReferencePointsForm(forms.Form):
 	)
 	cov_function_type = forms.ChoiceField(
 		choices=[
-			(CovarianceFunctionType.CardinalSine.value, 'Sinc'),
-			(CovarianceFunctionType.Gaussian.value, 'Gauss'),
-			(CovarianceFunctionType.Exponential.value, 'Exp'),
-			(CovarianceFunctionType.Spline.value, 'Spline'),
+			(CovarianceFunctionType.Sinc.value, CovarianceFunctionType.Sinc.name),
+			(CovarianceFunctionType.Gaussian.value, CovarianceFunctionType.Gaussian.name),
+			(CovarianceFunctionType.Exponential.value, CovarianceFunctionType.Exponential.name),
+			(CovarianceFunctionType.Spline.value, CovarianceFunctionType.Spline.name),
 		],
-		initial = CovarianceFunctionType.CardinalSine.value,
+		initial = CovarianceFunctionType.Sinc.value,
 		label = 'Συνάρτηση Συμμεταβλητότητας',
 		widget=forms.RadioSelect(
 			attrs={'class': 'form-check-input', 'autocomplete': 'off'},

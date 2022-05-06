@@ -63,10 +63,10 @@
            </div>
 
            <fieldset class="row pb-3">
-               <legend class="col-form-label col-2">
+               <legend class="col-form-label col-sm-2">
                    {{ form.transformation_type.label }}:
                </legend>
-               <div class="col-10">
+               <div class="col-sm-10">
                    {% for radio in form.transformation_type %}
                    <div class="form-check">
                        {{ radio.tag }}
@@ -79,10 +79,10 @@
            </fieldset> <!-- transformation_type row-->
 
            <fieldset class="row pb-3" id="id_residual_correction_type">
-               <legend class="col-form-label col-2">
+               <legend class="col-form-label col-sm-2">
                    {{ form.residual_correction_type.label }}:
                </legend>
-               <div class="col-10">
+               <div class="col-sm-10">
                    {% for radio in form.residual_correction_type %}
                    <div class="form-check">
                        {{ radio.tag }}
@@ -95,10 +95,10 @@
            </fieldset> <!-- residual_correction_type row-->
 
            <fieldset class="row pb-3" id="id_cov_function_type">
-               <legend class="col-form-label col-2">
+               <legend class="col-form-label col-sm-2">
                    {{ form.cov_function_type.label }}:
                </legend>
-               <div class="col-10">
+               <div class="col-sm-10">
                    {% for radio in form.cov_function_type %}
                    <div class="form-check">
                        {{ radio.tag }}
@@ -116,11 +116,14 @@
         </form>
     </div>
 
-    <div class="map pt-5" id="map">
+    <div class="container pt-5">
+        <div class="map" id="map">
+        </div>
     </div>
 
     <div class="container pt-5">
-        <div class="row pt-3">
+        <div class="row">
+            <h2>Αποτελέσματα</h2>
             <div class="col-sm-4">
                 <div id="output_transformation_params"></div>
             </div>

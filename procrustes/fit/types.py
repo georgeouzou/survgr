@@ -14,7 +14,7 @@ class ResidualCorrectionType(enum.Enum):
 
 @enum.unique
 class CovarianceFunctionType(enum.Enum):
-	CardinalSine = 0
+	Sinc = 0
 	Gaussian = 1
 	Exponential = 2
 	Spline = 3

@@ -86,6 +86,7 @@ def upload_reference(request):
 			if has_residual_correction and rescor_type == ResidualCorrectionType.Collocation:
 				collocation = rescor
 				result["collocation"] = {
+					"type": collocation.cov_func.type.name.lower(), # CovarianceFunctionType
 					"distance_intervals": collocation.cov_func.distance_intervals.tolist(),
 					"empirical_cov": collocation.cov_func.empirical_cov.tolist(),
 					"fitted_cov": collocation.cov_func.fitted_cov.tolist(),
