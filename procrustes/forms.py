@@ -18,11 +18,12 @@ class ReferencePointsForm(forms.Form):
 	points_format = forms.ChoiceField(
 		label='Μορφή',
 		choices=[
-			('id,xs,ys,xt,yt', "id, x, y, x', y'"),
-			('xs,ys,xt,yt',    "x, y, x', y'"),
+			(0, "id, x, y, x', y'"),
+			(1, "x, y, x', y'"),
 		],
-		widget=forms.Select(
-			attrs={'class': 'form-select'},
+		initial = 0,
+		widget=forms.RadioSelect(
+			attrs={'class': 'form-check-input', 'autocomplete': 'off'},
 		)
 	)
 	transformation_type = forms.ChoiceField(

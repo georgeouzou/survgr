@@ -53,12 +53,19 @@
                 </div>
            </div>
 
-           <div class="row">
+           <div class="row pb-3">
                <label class="col-form-label col-sm-2" for="{{ form.points_format.id_for_label }}">
-                    {{ form.points_format.label }}:
+                   {{ form.points_format.label }}:
                </label>
-               <div class="col-sm-10 pb-3">
-                   {{ form.points_format }}
+               <div class="col-sm-10">
+                   {% for radio in form.points_format %}
+                   <div class="form-check">
+                       {{ radio.tag }}
+                       <label class="form-check-label" for="{{ radio.id_for_label }}">
+                           {{ radio.choice_label }}
+                       </label>
+                   </div>
+                   {% endfor %}
                </div>
            </div>
 
