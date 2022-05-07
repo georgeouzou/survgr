@@ -1,5 +1,39 @@
 const ANIM_TIME = 300;
 
+const FILL_TRANSPARENT = new ol.style.Fill({
+    color: 'rgba(255,255,255,0.4)',
+});
+
+const STROKE_BLUE = new ol.style.Stroke({
+    color: '#3399CC',
+    width: 4,
+});
+
+const STROKE_PURPLE = new ol.style.Stroke({
+    color: '#cc3399',
+    width: 4,
+});
+
+const REFERENCE_POINT_STYLE = new ol.style.Style({
+    image: new ol.style.Circle({
+        fill: FILL_TRANSPARENT,
+        stroke: STROKE_BLUE,
+        radius: 7,
+    }),
+    fill: FILL_TRANSPARENT,
+    stroke: STROKE_BLUE,
+});
+
+const VALIDATION_POINT_STYLE = new ol.style.Style({
+    image: new ol.style.Circle({
+        fill: FILL_TRANSPARENT,
+        stroke: STROKE_PURPLE,
+        radius: 7,
+    }),
+    fill: FILL_TRANSPARENT,
+    stroke: STROKE_PURPLE,
+});
+
 function generate_reference_coordinate_table(result) {
 
     let source_coords = result.input.cs_source.coords; // arrays with [x,y]
@@ -137,8 +171,6 @@ function init_map() {
     $('#map').data('map', map);
 }
 
-
-
 $('#form_input').submit(function(event) {
     event.preventDefault();
     $('#output_cov_plot').empty();
@@ -184,7 +216,6 @@ $('#form_input').submit(function(event) {
     });
 });
 
-
 // change visibility of covariance function type
 $('#id_residual_correction_type :input[type=radio]').change(function() {
     const COLLOCATION_ID = 1;
@@ -208,44 +239,89 @@ function remove_layer_from_map(name) {
     });
 }
 
-$('#id_reference_points').change(function() {
-    let ol_map = $('#map').data('map');
-    remove_layer_from_map('reference_points');
+function zoom_in_to_point_extents(ol_map)
+{
+    let extent = ol.extent.createEmpty();
+    ol_map.getLayers().forEach(function(l) {
+        const source = l.getSource();
+        if (source instanceof ol.source.Vector) {
+            ol.extent.extend(extent, source.getExtent());
+        }
+    });
+    let zoom_extent = ol.geom.Polygon.fromExtent(extent);
+    zoom_extent.scale(1.2);
+    ol_map.getView().fit(zoom_extent);
+}
 
-    const file = $('#id_reference_points').prop('files')[0];
+function update_points_on_map(layer_name, style) {
+
+    let ol_map = $('#map').data('map');
+    remove_layer_from_map(layer_name);
+
+    const file = $(`#id_${layer_name}`).prop('files')[0];
     const format = $('#id_points_format').val();
-    const num_entries = format === 'id,xs,ys,xt,yt' ? 5 : 4;
+    const contain_id = format === 'id,xs,ys,xt,yt';
+
+    const proj_ggrs87 = ol.proj.get('EPSG:2100');
+    const proj_web = ol.proj.get('EPSG:3857');
+
+    const ggrs84_lower = [94875.0, 3868409.0];
+    const ggrs84_upper = [857398.0, 4630677.0];
+    const ggrs84_bounds = ol.extent.boundingExtent([ggrs84_lower, ggrs84_upper]);
 
     Papa.parse(file, {
         delimitersToGuess: [' ', ',', ';'],
         skipEmptyLines: 'greedy',
         complete: function(results) {
-            const points = results.data.map(function (line) {
-                const entries = line.filter(function (entry) { return /\S/.test(entry); });
+            const coords = results.data.map(function (line) {
+                // remove empty entries
+                let entries = line.filter(function (entry) { return /\S/.test(entry); });
+                // remove id entry
+                if (contain_id) {
+                    entries = entries.slice(1);
+                }
+                return entries.map(function (entry) { return parseFloat(entry); });
+            });
+            // now we got coordinates like this
+            // [[x0, y0, x'0, y'0], [x1, y1, x'1, y'1] ...]
+            // try to guess which set if any set is in ggrs87
+            const source_is_ggrs87 = coords.every(function (p) {
+                return ol.extent.containsCoordinate(ggrs84_bounds, p.slice(0, 2));
 
-                const idx_x = num_entries == 5 ? 3 : 2;
-                const idx_y = num_entries == 5 ? 4 : 3;
-                let coords = [parseFloat(entries[idx_x]), parseFloat(entries[idx_y])];
-                coords = ol.proj.transform(coords, 'EPSG:2100', 'EPSG:3857');
+            });
+            const target_is_ggrs87 = coords.every(function (p) {
+                return ol.extent.containsCoordinate(ggrs84_bounds, p.slice(2, 4));
+            });
+            if (!source_is_ggrs87 && !target_is_ggrs87) return;
 
+            const features = coords.map(function (c) {
+                let xy = c.slice(source_is_ggrs87 ? 0 : 2, source_is_ggrs87 ? 2 : 4);
+                xy = ol.proj.transform(xy, proj_ggrs87, proj_web);
                 return new ol.Feature({
-                    geometry: new ol.geom.Point(coords),
+                    geometry: new ol.geom.Point(xy),
                 });
             });
-
             const vector_source = new ol.source.Vector({
-                features: points,
+                features: features,
             });
-
-            let vector_layer = new ol.layer.Vector({
+            const vector_layer = new ol.layer.Vector({
+                name: layer_name,
                 source: vector_source,
+                style: style,
             });
-            vector_layer.set('name', 'reference_points');
-
             ol_map.addLayer(vector_layer);
-            ol_map.getView().fit(vector_source.getExtent());
+
+            zoom_in_to_point_extents(ol_map);
         }
     });
+
+}
+
+$('#id_reference_points').change(function() {
+    update_points_on_map('reference_points', REFERENCE_POINT_STYLE);
+});
+$('#id_validation_points').change(function() {
+    update_points_on_map('validation_points', VALIDATION_POINT_STYLE);
 });
 
 // main
@@ -254,6 +330,13 @@ $(document).ready(function() {
     init_map();
     proj4.defs("EPSG:2100","+proj=tmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=0 +ellps=GRS80 +towgs84=-199.87,74.79,246.62,0,0,0,0 +units=m +no_defs");
     ol.proj.proj4.register(proj4);
+
+    if ($('#id_reference_points')[0].files.length == 1) {
+        update_points_on_map('reference_points', REFERENCE_POINT_STYLE);
+    }
+    if ($('#id_validation_points')[0].files.length == 1) {
+        update_points_on_map('validation_points', VALIDATION_POINT_STYLE);
+    }
 });
 
 /*
