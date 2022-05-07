@@ -259,8 +259,8 @@ function update_points_on_map(layer_name, style) {
     remove_layer_from_map(layer_name);
 
     const file = $(`#id_${layer_name}`).prop('files')[0];
-    const format = $('#id_points_format').val();
-    const contain_id = format === 0;
+    const format = $('#id_points_format input[type=radio]:checked').val();
+    const contain_id = format === 'id,xs,ys,xt,yt';
 
     const proj_ggrs87 = ol.proj.get('EPSG:2100');
     const proj_web = ol.proj.get('EPSG:3857');
