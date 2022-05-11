@@ -4,7 +4,8 @@
   "description": "frontend static files for survgr",
   "private": true,
   "scripts": {
-    "build": "webpack --config webpack/webpack.config.js",
+    "build": "webpack --config webpack/webpack.config.prod.js",
+    "watch": "webpack --watch --config webpack/webpack.config.dev.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "George Ouzounoudis",
