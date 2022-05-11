@@ -1,3 +1,5 @@
+import './mathjax_config.js';
+
 const ANIM_TIME = 300;
 
 const FILL_TRANSPARENT = new ol.style.Fill({
