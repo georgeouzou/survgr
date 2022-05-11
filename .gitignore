@@ -5,6 +5,7 @@
 
 .vs
 .env
+webpack-stats.json
 
 __pycache__
 

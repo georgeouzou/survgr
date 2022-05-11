@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+	'webpack_loader',
     'transform',
 	'procrustes',
 ]
@@ -131,3 +132,9 @@ STATICFILES_DIRS = [
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+WEBPACK_LOADER = {
+	'DEFAULT': {
+		'STATS_FILE': os.path.join(BASE_DIR, 'frontend', 'webpack', 'webpack-stats.json')
+	}
+}
