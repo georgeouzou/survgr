@@ -4,11 +4,14 @@
   "description": "frontend static files for survgr",
   "private": true,
   "scripts": {
+    "build": "webpack --config webpack/webpack.config.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "George Ouzounoudis",
   "license": "MIT",
   "devDependencies": {
+    "css-loader": "^6.7.1",
+    "mini-css-extract-plugin": "^2.6.0",
     "webpack": "^5.72.1",
     "webpack-cli": "^4.9.2"
   }

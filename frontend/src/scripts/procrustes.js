@@ -1,4 +1,5 @@
 import './mathjax_config.js';
+import '../styles/procrustes.css';
 
 const ANIM_TIME = 300;
 
