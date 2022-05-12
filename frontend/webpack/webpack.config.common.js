@@ -8,7 +8,7 @@ module.exports = {
         procrustes: path.resolve(__dirname, '../src/scripts/procrustes.js'),
     },
     output: {
-        path: path.resolve(__dirname, '../dist'),
+        path: path.join(__dirname, '../dist'),
         clean: true,
         publicPath: '/static/',
     },
@@ -17,6 +17,11 @@ module.exports = {
     ],
     module: {
         rules: [
+            {
+                test: /\.m?js$/,
+                exclude: /node_modules/,
+                use: ['babel-loader']
+            },
             {
                 test: /\.css$/i,
                 use: [MiniCssExtractPlugin.loader, 'css-loader'],
