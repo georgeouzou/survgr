@@ -1,4 +1,5 @@
 import '../styles/transform.css';
+import HATTBLOCK_FEATURES_URL from '../assets/hattblocks.min.geojson';
 
 /*
  * Constants
@@ -159,7 +160,7 @@ function initMap() {
     interactions: default_interactions_list,
   });
 
-  selectAction = new ol.interaction.Select({
+  let selectAction = new ol.interaction.Select({
       style: function (feature, resolution) {
           labelStyle
               .getText()
@@ -250,8 +251,8 @@ function initSelectors(){
 
   $(".srid-selection").on('change', function(){
     // hide or show hatt selection
-    fromSrid = $("#from-srid").val();
-    toSrid = $("#to-srid").val();
+    const fromSrid = $("#from-srid").val();
+    const toSrid = $("#to-srid").val();
 
     if (fromSrid == HATT_SRID || (isOldGreek(fromSrid) && !isOldGreek(toSrid))) {
       $("#from-hatt").show(ANIM_TIME);
