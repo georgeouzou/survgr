@@ -9,6 +9,7 @@ module.exports = merge(common_config,  {
     output: {
         filename: 'js/[name].[chunkhash:8].js',
         chunkFilename: 'js/[name].[chunkhash:8].chunk.js',
+        assetModuleFilename: 'assets/[name].[contenthash][ext]',
     },
     plugins: [
         new MiniCssExtractPlugin({

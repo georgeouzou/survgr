@@ -4,6 +4,7 @@ const BundleTracker = require('webpack-bundle-tracker');
 
 module.exports = {
     entry: {
+        transform: path.resolve(__dirname, '../src/scripts/transform.js'),
         procrustes: path.resolve(__dirname, '../src/scripts/procrustes.js'),
     },
     output: {
@@ -19,6 +20,10 @@ module.exports = {
             {
                 test: /\.css$/i,
                 use: [MiniCssExtractPlugin.loader, 'css-loader'],
+            },
+            {
+                test: /\.geojson$/i,
+                type: 'asset/resource',
             }
         ],
     },

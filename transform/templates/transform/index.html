@@ -1,4 +1,6 @@
 ﻿{% load static %}
+{% load render_bundle from webpack_loader %}
+{% load webpack_static from webpack_loader %}
 
 <!DOCTYPE HTML>
 <html lang="el-GR">
@@ -21,7 +23,7 @@
     <!--fonts-->
     <link href="//fonts.googleapis.com/css?family=Ubuntu&subset=latin,greek" rel='stylesheet' type='text/css'>
     <!--styling-->
-    <link href="{% static 'transform/css/index.css' %}?version=1.3" rel="stylesheet">
+    {% render_bundle 'transform' 'css' %}
 </head>
 
   <body>
@@ -213,10 +215,6 @@
       <p> Μπορείτε να δείτε και να συμμετάσχετε στον open source κώδικα της εφαρμογής με την επίσκεψή σας στην παρακάτω <a href="https://github.com/georgeouzou/survgr"> διεύθυνση</a>. Επίσης, τυχόν σφάλματα και προτροπές για αναβάθμιση της εφαρμογής μπορούν να αναφερθούν <a href="https://github.com/georgeouzou/survgr/issues">εδώ</a>.</p>
       <hr>
     </div> <!--container-->
-
-    <script type="text/javascript">
-      var HATTBLOCK_FEATURES_URL = "{% static 'transform/assets/hattblocks.min.geojson' %}";
-    </script>
-    <script src="{% static 'transform/js/index.js' %}?version=1.3" type="text/javascript"></script>
+    {% render_bundle 'transform' 'js' %}
   </body>
 </html>
