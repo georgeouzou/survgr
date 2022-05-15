@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import Bloodhound from 'bloodhound-js';
+import Bloodhound from 'corejs-typeahead';
 import '../styles/transform.css';
 import HATTBLOCK_FEATURES_URL from '../assets/hattblocks.min.geojson';
 import { init_map } from './hattblock_map.js';
