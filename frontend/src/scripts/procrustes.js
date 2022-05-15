@@ -1,24 +1,65 @@
+// ol modules
+import 'ol/ol.css';
+import {
+    Map as olMap,
+    View as olView,
+    Feature as olFeature,
+} from 'ol';
+import {
+    Vector as olVectorSource,
+    OSM as olOSMSource
+} from 'ol/source';
+import {
+    Vector as olVectorLayer,
+    Tile as olTileLayer,
+} from 'ol/layer';
+import {
+    Circle as olCircle,
+    Style as olStyle,
+    Stroke as olStroke,
+    Fill as olFill
+} from 'ol/style';
+import * as olExtent from 'ol/extent';
+import {
+    Point as olPoint
+} from 'ol/geom';
+import {
+    get as ol_proj_get,
+    transform as ol_proj_transform,
+} from  'ol/proj';
+import { register as ol_proj_register } from  'ol/proj/proj4';
+import { defaults as ol_get_interaction_defaults } from 'ol/interaction';
+import { fromExtent as ol_poly_from_extent } from 'ol/geom/Polygon';
+
+// CDN lib modules
+import $ from 'jquery';
+import Plotly from 'plotly.js-dist-min';
+import proj4 from 'proj4';
+import Papa from 'papaparse';
+
+// local modules
 import './mathjax_config.js';
 import '../styles/procrustes.css';
 
+// constants
 const ANIM_TIME = 300;
 
-const FILL_TRANSPARENT = new ol.style.Fill({
+const FILL_TRANSPARENT = new olFill({
     color: 'rgba(255,255,255,0.4)',
 });
 
-const STROKE_BLUE = new ol.style.Stroke({
+const STROKE_BLUE = new olStroke({
     color: '#3399CC',
     width: 4,
 });
 
-const STROKE_PURPLE = new ol.style.Stroke({
+const STROKE_PURPLE = new olStroke({
     color: '#cc3399',
     width: 4,
 });
 
-const REFERENCE_POINT_STYLE = new ol.style.Style({
-    image: new ol.style.Circle({
+const REFERENCE_POINT_STYLE = new olStyle({
+    image: new olCircle({
         fill: FILL_TRANSPARENT,
         stroke: STROKE_BLUE,
         radius: 7,
@@ -27,8 +68,8 @@ const REFERENCE_POINT_STYLE = new ol.style.Style({
     stroke: STROKE_BLUE,
 });
 
-const VALIDATION_POINT_STYLE = new ol.style.Style({
-    image: new ol.style.Circle({
+const VALIDATION_POINT_STYLE = new olStyle({
+    image: new olCircle({
         fill: FILL_TRANSPARENT,
         stroke: STROKE_PURPLE,
         radius: 7,
@@ -37,6 +78,7 @@ const VALIDATION_POINT_STYLE = new ol.style.Style({
     stroke: STROKE_PURPLE,
 });
 
+/*
 function generate_reference_coordinate_table(result) {
 
     let source_coords = result.input.cs_source.coords; // arrays with [x,y]
@@ -84,12 +126,13 @@ function generate_reference_coordinate_table(result) {
     }
 
     let table = document.createElement("table");
-    table.appendChild(tableHead);
-    table.appendChild(tableBody);
+    table.appendChild(table_head);
+    table.appendChild(table_body);
     $(table).addClass("table");
     $(table).addClass("table-striped");
     return table;
 }
+*/
 
 function generate_statistics_table(name, statistics) {
 
@@ -153,17 +196,17 @@ function generate_covariance_plot(collocation_data) {
 }
 
 function init_map() {
-    const view = new ol.View({
+    const view = new olView({
         projection: 'EPSG:3857', //spherical merc
-        center: ol.proj.transform([25,38.4],'EPSG:4326','EPSG:3857'),
+        center: ol_proj_transform([25,38.4],'EPSG:4326','EPSG:3857'),
         zoom: 6,
     });
-    const default_interactions_list = ol.interaction.defaults({altShiftDragRotate:false, pinchRotate:false});
+    const default_interactions_list = ol_get_interaction_defaults({altShiftDragRotate:false, pinchRotate:false});
 
-    let map = new ol.Map({
+    let map = new olMap({
         layers:[
-            new ol.layer.Tile({
-                source: new ol.source.OSM()
+            new olTileLayer({
+                source: new olOSMSource()
             }),
         ],
         target: "map",
@@ -214,8 +257,6 @@ $('#form_input').submit(function(event) {
                 );
             }
         }
-
-    }).fail(function (jqXHR) {
     });
 });
 
@@ -244,14 +285,14 @@ function remove_layer_from_map(name) {
 
 function zoom_in_to_point_extents(ol_map)
 {
-    let extent = ol.extent.createEmpty();
+    let extent = olExtent.createEmpty();
     ol_map.getLayers().forEach(function(l) {
         const source = l.getSource();
-        if (source instanceof ol.source.Vector) {
-            ol.extent.extend(extent, source.getExtent());
+        if (source instanceof olVectorSource) {
+            olExtent.extend(extent, source.getExtent());
         }
     });
-    let zoom_extent = ol.geom.Polygon.fromExtent(extent);
+    let zoom_extent = ol_poly_from_extent(extent);
     zoom_extent.scale(1.2);
     ol_map.getView().fit(zoom_extent);
 }
@@ -265,12 +306,12 @@ function update_points_on_map(layer_name, style) {
     const format = $('#id_points_format input[type=radio]:checked').val();
     const contain_id = format === 'id,xs,ys,xt,yt';
 
-    const proj_ggrs87 = ol.proj.get('EPSG:2100');
-    const proj_web = ol.proj.get('EPSG:3857');
+    const proj_ggrs87 = ol_proj_get('EPSG:2100');
+    const proj_web = ol_proj_get('EPSG:3857');
 
     const ggrs84_lower = [94875.0, 3868409.0];
     const ggrs84_upper = [857398.0, 4630677.0];
-    const ggrs84_bounds = ol.extent.boundingExtent([ggrs84_lower, ggrs84_upper]);
+    const ggrs84_bounds = olExtent.boundingExtent([ggrs84_lower, ggrs84_upper]);
 
     Papa.parse(file, {
         delimitersToGuess: [' ', ',', ';'],
@@ -289,25 +330,25 @@ function update_points_on_map(layer_name, style) {
             // [[x0, y0, x'0, y'0], [x1, y1, x'1, y'1] ...]
             // try to guess which set if any set is in ggrs87
             const source_is_ggrs87 = coords.every(function (p) {
-                return ol.extent.containsCoordinate(ggrs84_bounds, p.slice(0, 2));
+                return olExtent.containsCoordinate(ggrs84_bounds, p.slice(0, 2));
 
             });
             const target_is_ggrs87 = coords.every(function (p) {
-                return ol.extent.containsCoordinate(ggrs84_bounds, p.slice(2, 4));
+                return olExtent.containsCoordinate(ggrs84_bounds, p.slice(2, 4));
             });
             if (!source_is_ggrs87 && !target_is_ggrs87) return;
 
             const features = coords.map(function (c) {
                 let xy = c.slice(source_is_ggrs87 ? 0 : 2, source_is_ggrs87 ? 2 : 4);
-                xy = ol.proj.transform(xy, proj_ggrs87, proj_web);
-                return new ol.Feature({
-                    geometry: new ol.geom.Point(xy),
+                xy = ol_proj_transform(xy, proj_ggrs87, proj_web);
+                return new olFeature({
+                    geometry: new olPoint(xy),
                 });
             });
-            const vector_source = new ol.source.Vector({
+            const vector_source = new olVectorSource({
                 features: features,
             });
-            const vector_layer = new ol.layer.Vector({
+            const vector_layer = new olVectorLayer({
                 name: layer_name,
                 source: vector_source,
                 style: style,
@@ -332,7 +373,7 @@ $(document).ready(function() {
     $('#id_cov_function_type').hide(); // initial state
     init_map();
     proj4.defs("EPSG:2100","+proj=tmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=0 +ellps=GRS80 +towgs84=-199.87,74.79,246.62,0,0,0,0 +units=m +no_defs");
-    ol.proj.proj4.register(proj4);
+    ol_proj_register(proj4);
 
     if ($('#id_reference_points')[0].files.length == 1) {
         update_points_on_map('reference_points', REFERENCE_POINT_STYLE);

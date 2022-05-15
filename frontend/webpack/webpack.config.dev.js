@@ -1,5 +1,7 @@
+const path = require('path');
 const { merge } = require('webpack-merge');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
 
 const common_config = require('./webpack.config.common.js');
 
@@ -15,6 +17,6 @@ module.exports = merge(common_config,  {
         new MiniCssExtractPlugin({
             filename: 'css/[name].css'
         }),
+        new ESLintPlugin(),
     ],
-
 });

@@ -1,23 +1,23 @@
 // ol modules
 import 'ol/ol.css';
 import { Map, View } from 'ol';
-
 import { 
     Vector as VectorSource, 
     OSM as OSMSource 
 } from 'ol/source';
-
 import { 
     VectorImage as VectorImageLayer, 
     Vector as VectorLayer, 
     Tile as TileLayer
 } from 'ol/layer';
-
 import GeoJSON from 'ol/format/GeoJSON';
 import { Style, Stroke, Fill, Text } from 'ol/style';
-import { transform as ol_transform } from 'ol/proj';
+import { transform } from 'ol/proj';
 import { Select, defaults as get_interaction_defaults, } from 'ol/interaction';
 import { getCenter as extent_get_center } from 'ol/extent';
+
+// CDN imports
+import $ from 'jquery';
 
 // hattblocks url
 import HATTBLOCK_FEATURES_URL from '../assets/hattblocks.min.geojson';
@@ -74,7 +74,7 @@ export function init_map() {
     });
     let view = new View({
         projection: 'EPSG:3857', // spherical merc 
-        center: ol_transform([25.0,38.4],'EPSG:4326','EPSG:3857'),
+        center: transform([25.0,38.4],'EPSG:4326','EPSG:3857'),
         zoom: 6,
         maxZoom: 10
     });
@@ -155,7 +155,7 @@ export function init_map() {
         }
     });
 
-    $('#map-modal').on('shown.bs.modal', (e) => {
+    $('#map-modal').on('shown.bs.modal', () => {
         // this is needed because i use the map inside of a modal
         map.updateSize();
         // pan view to the selected feature
@@ -168,7 +168,7 @@ export function init_map() {
         } 
     });
 
-    $('#map-modal').on('hide.bs.modal', (e) => {
+    $('#map-modal').on('hide.bs.modal', () => {
         // update the selected hatt name and hatt id elements
         if (select_action.getFeatures().getLength() > 0){
             let selected_feature = select_action.getFeatures().pop();
@@ -205,8 +205,8 @@ function get_hattblock_label(feature, resolution) {
 
     let phi = feature.get('cy');
     let lambda = feature.get('cx');
-    let [sign_phi, d_phi, m_phi, s_phi] = decdeg2dms(phi);
-    let [sign_lambda, d_lambda, m_lambda, s_lambda] = decdeg2dms(lambda);
+    let [sign_phi, d_phi, m_phi, ] = decdeg2dms(phi);
+    let [sign_lambda, d_lambda, m_lambda, ] = decdeg2dms(lambda);
 
 
     let info1 = ` Φo ${sign_phi}${d_phi}\u00B0${m_phi}`;

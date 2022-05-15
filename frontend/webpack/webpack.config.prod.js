@@ -16,5 +16,16 @@ module.exports = merge(common_config,  {
             filename: 'css/[name].[contenthash].css'
         }),
     ],
-
+    optimization: {
+        splitChunks: {
+            chunks: 'all',
+        },
+    },
+    externals: {
+        'jquery': 'jQuery',
+        'bloodhound-js': 'Bloodhound',
+        'papaparse': 'Papa',
+        'plotly.js-dist-min': 'Plotly',
+        'proj4': 'proj4',
+    },
 });

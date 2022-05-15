@@ -1,3 +1,5 @@
+import $ from 'jquery';
+import Bloodhound from 'bloodhound-js';
 import '../styles/transform.css';
 import HATTBLOCK_FEATURES_URL from '../assets/hattblocks.min.geojson';
 import { init_map } from './hattblock_map.js';
@@ -138,8 +140,8 @@ function getInputType(){
 }
 
 function validateInput(){
-  fromSrid = $("#from-srid").val();
-  toSrid = $("#to-srid").val();
+  let fromSrid = $("#from-srid").val();
+  let toSrid = $("#to-srid").val();
   if ((fromSrid == HATT_SRID && $("#from-hatt .hatt-id").val() == -1) || 
     (toSrid == HATT_SRID && $("#to-hatt .hatt-id").val() == -1)) {
     $('#output-area').val("Παρακαλώ επιλέξτε φύλλο χάρτη HATT.");
