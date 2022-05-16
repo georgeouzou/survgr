@@ -32,4 +32,11 @@ module.exports = {
             }
         ],
     },
+    externals: {
+        'corejs-typeahead': 'Bloodhound',
+        'jquery': 'jQuery',
+        'papaparse': 'Papa',
+        'plotly.js-dist-min': 'Plotly',
+        'proj4': 'proj4',
+    },
 };

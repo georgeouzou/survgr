@@ -21,11 +21,4 @@ module.exports = merge(common_config,  {
             chunks: 'all',
         },
     },
-    externals: {
-        'jquery': 'jQuery',
-        'bloodhound-js': 'Bloodhound',
-        'papaparse': 'Papa',
-        'plotly.js-dist-min': 'Plotly',
-        'proj4': 'proj4',
-    },
 });
