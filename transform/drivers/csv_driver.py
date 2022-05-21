@@ -1,14 +1,22 @@
 import csv
 import numpy as np
+import re
 from itertools import islice
 from io import StringIO
 
-def transform(transformer, fp, decimals=(3,3,3), fieldnames='x,y', delimiter=','):
+def transform(transformer, fp, decimals=(3,3,3), fieldnames='x,y'):
+	# read chunk of 1024 bytes
+	file_chunk = fp.read(1024)
+	# replace all multi-space occurencies with single space
+	file_chunk = re.sub(' +', ' ', file_chunk)
+	dialect = csv.Sniffer().sniff(file_chunk, delimiters=";, \t")
+	fp.seek(0)
+
 	fieldnames = fieldnames.strip().split(',')
-	reader = csv.DictReader(fp, fieldnames=fieldnames, delimiter=delimiter, skipinitialspace=True)
+	reader = csv.DictReader(fp, fieldnames=fieldnames, delimiter=dialect.delimiter, skipinitialspace=True, strict=True)
 	
 	output = StringIO()
-	writer = csv.DictWriter(output, fieldnames=fieldnames, extrasaction='ignore', delimiter=delimiter)
+	writer = csv.DictWriter(output, fieldnames=fieldnames, extrasaction='ignore', delimiter=dialect.delimiter)
 
 	hasz = 'z' in fieldnames
 	decx, decy, decz = decimals

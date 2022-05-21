@@ -16,7 +16,7 @@ def index(request):
 	return render(request, 'procrustes/index.html', { 'form': form })
 
 def _read_reference_points(fp, field_names):
-	dialect = csv.Sniffer().sniff(fp.read(1024), delimiters=";, ")
+	dialect = csv.Sniffer().sniff(fp.read(1024), delimiters=";, \t")
 	fp.seek(0)
 
 	reader = csv.DictReader(fp, fieldnames=field_names, delimiter=dialect.delimiter, skipinitialspace=True, strict=True)

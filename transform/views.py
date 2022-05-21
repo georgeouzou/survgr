@@ -53,7 +53,6 @@ def transform(request):
 			z_decimals = 3
 			csv_result = csv_driver.transform(transformer, inp, 
 			    (xy_decimals, xy_decimals, z_decimals),
-				delimiter=request.POST['csv_delimiter'],
 				fieldnames=request.POST['csv_fields'])
 			return json_response({
 				"type": "csv", 
