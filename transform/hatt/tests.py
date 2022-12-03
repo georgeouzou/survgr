@@ -1,29 +1,27 @@
 # -*- coding: utf-8 -*-
 from django.test import TestCase
 
-from .models import Hattblock, OKXECoefficient
-from . import hatt2ggrs
+from .models import Hattblock
+from .okxe_transformer import OKXETransformer
 
 class OKXETransformTest(TestCase):
 
 	def setup(self):
 		self.coeffs = [370552.68, 0.9997155, 0.0175123, -1.08e-09, 1.63e-09, 2.04e-09,\
 		4511927.23, -0.0174755, 0.9996979, -6.50e-10, 5.60e-10, -1.65e-09]
+		self.transformer = OKXETransformer(self.coeffs, inverse=False)
+		self.inv_transformer = OKXETransformer(self.coeffs, inverse=True)
 
 	def test_coeff_num(self):
-		with self.assertRaises(ValueError):
-			hatt2ggrs.fwd([1]*13, -16997.09, -14277.15)
-		with self.assertRaises(ValueError):
-			hatt2ggrs.inv([1]*13, 353310.92, 4497950.95)
-		with self.assertRaises(ValueError):
-			hatt2ggrs.fwd([1]*9, -16997.09, -14277.15)
-		with self.assertRaises(ValueError):
-			hatt2ggrs.inv([1]*8, 353310.92, 4497950.95)
+		with self.assertRaises(IndexError):
+			OKXETransformer([1]*9, inverse=False)
+		with self.assertRaises(IndexError):
+			OKXETransformer([1]*8, inverse=False)
 
 	def test_forward_func(self):
 		self.setup()
 		x1, y1 = (-16997.09, -14277.15)
-		x2, y2 = hatt2ggrs.fwd(self.coeffs, x1, y1)
+		x2, y2 = self.transformer(x1, y1)
 
 		self.assertEqual(round(x2,2), 353310.92)
 		self.assertEqual(round(y2,2), 4497950.95)
@@ -31,7 +29,7 @@ class OKXETransformTest(TestCase):
 	def test_inverse_func(self):
 		self.setup()
 		x1, y1 = (353310.92, 4497950.95)
-		x2, y2 = hatt2ggrs.inv(self.coeffs, x1, y1)
+		x2, y2 = self.inv_transformer(x1, y1)
 
 		self.assertEqual(round(x2,2),-16997.09)
 		self.assertEqual(round(y2,2),-14277.15)

@@ -6,9 +6,9 @@ from functools import partial
 import pyproj # TODO: update pyproj.transform as it is now deprecated
 import numpy
 
-from .hatt import hatt2ggrs
 from .hatt.models import Hattblock
 from .htrs.grid import GridFile
+from .hatt.okxe_transformer import OKXETransformer
 
 @enum.unique
 class Datum(enum.Enum):
@@ -85,12 +85,12 @@ class WorkHorseTransformer(object):
 		-from_hatt_id: the id of the 1:50000 hatt block (given by OKXE service) if ref. system 1 is a hattblock.
 		-to_hatt_id: the id of the 1:50000 hatt block if ref. system 2 is a hattblock.
 	'''
-	
+
 	def __init__(self, **params):
 		self.transformers = []
 		self.transformation_steps = []
 		self.log = []
-	
+
 		# add hattblock objects to the parameters, needed in _compile function
 		if 'from_hatt_id' in params:
 			if 'from_srid' not in params: params['from_srid'] = HATT_SRID
@@ -105,7 +105,7 @@ class WorkHorseTransformer(object):
 				params['to_hattblock'] = Hattblock.objects.get(id=params['to_hatt_id'])
 			except Hattblock.DoesNotExist:
 				raise ValueError('Parameter Error: Hatt block with id "%d" does not exist' % params['to_hatt_id'])
-	
+
 		try:
 			self._compile(**params)
 		except KeyError as e:
@@ -271,26 +271,6 @@ def ProjTransformer(from_proj4, to_proj4):
 	p1 = pyproj.Proj(from_proj4)
 	p2 = pyproj.Proj(to_proj4)
 	return partial(pyproj.transform, p1, p2)
-
-class OKXETransformer(object):
-	'''
-	Func object for Old Greek Datum.
-	Transforms in place from Hatt ref system to GGRS87 / GG (inverse=False)
-	or from GGRS87 / GG to Hatt ref system (inverse=True)
-	'''
-	def __init__(self, coeffs, inverse):
-		self._coeffs = coeffs
-		self._inverse = inverse
-		if inverse: # ggrs -> hatt
-			self._scalarfunc = hatt2ggrs.inv
-		else: # hatt -> ggrs
-			self._scalarfunc = hatt2ggrs.fwd
-				
-	def __call__(self, x, y, z=None):
-		for index, pt in enumerate(zip(x, y)):
-			x[index], y[index] = self._scalarfunc(self._coeffs, pt[0], pt[1])
-
-		return tuple(filter(lambda array: array is not None, [x, y, z]))
 
 class HeposTransformer(object):
 	'''
