@@ -11,3 +11,4 @@
 --- version 2.0 ---
 - transform: guess csv format automatically from inputs
 - transform: use proj library's horner for faster hatt-ggrs transformation
+- transform: mmap htrs grid file for faster/lazy reads
