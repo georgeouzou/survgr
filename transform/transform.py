@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import enum
-from functools import partial
 
-import pyproj # TODO: update pyproj.transform as it is now deprecated
+import pyproj
 import numpy
 
 from .hatt.models import Hattblock
@@ -67,6 +66,14 @@ TM87_SRID = 2100
 
 class TransformerError(Exception):
 	pass
+
+class ProjTransformer(object):
+
+	def __init__(self, from_proj, to_proj):
+		self._transformer = pyproj.Transformer.from_proj(from_proj, to_proj)
+
+	def __call__(self, x, y, z=None):
+		return self._transformer.transform(x, y, z)
 
 class WorkHorseTransformer(object):
 	'''
@@ -261,12 +268,3 @@ class WorkHorseTransformer(object):
 
 	def log_str(self):
 		return '\n'.join(list(self.log))
-
-#
-# Below are the transformers that can be used with the workhorse transformer
-#
-def ProjTransformer(from_proj4, to_proj4):
-    #Returns a callable partial function for general purpose - proj4 based tranformations.
-	p1 = pyproj.Proj(from_proj4)
-	p2 = pyproj.Proj(to_proj4)
-	return partial(pyproj.transform, p1, p2)
