@@ -1,5 +1,5 @@
 import struct, math
-import numpy
+import numpy as np
 
 class GridInfo(object):
 	# rows, columns, resolution, first_cell_coords
@@ -26,39 +26,36 @@ class GridFile(object):
 
 		# memory map the grid for faster lazy access
 		shape = (self.info.rows, self.info.cols)
-		self._map = numpy.memmap(name, dtype='f,f', mode='r',
+		dtype = [('de', np.float32), ('dn', np.float32)]
+		self._map = np.memmap(name, dtype=dtype, mode='r',
 			offset=self.info.header_struct.size, shape=shape)
 
+	# returns corrections de, dn in centimeters
 	def interpolate(self, x, y):
 		# raises IndexError if out of bounds
-		# normalized coordinates (float row column)
+		x = np.asarray(x)
+		y = np.asarray(y)
 
-		norm_x = (x-self.info.min_x) / self.info.res
-		norm_y = (y-self.info.min_y) / self.info.res
+		pixel_x = (x-self.info.min_x) / self.info.res
+		pixel_y = (y-self.info.min_y) / self.info.res
 
-		# rj	ul-----ur
- 		# 	    |  pt  |
-		# ri	ll----lr
+		pixel_x0 = np.floor(pixel_x).astype(int)
+		pixel_y0 = np.floor(pixel_y).astype(int)
+		pixel_x1 = pixel_x0 + 1
+		pixel_y1 = pixel_y0 + 1
 
-		ri = int(math.floor(norm_y))
-		rj = int(math.ceil(norm_y))
-		ci = int(math.floor(norm_x))
-		cj = int(math.ceil(norm_x))
+		values_ll = self._map[pixel_y0, pixel_x0]
+		values_ul = self._map[pixel_y1, pixel_x0]
+		values_lr = self._map[pixel_y0, pixel_x1]
+		values_ur = self._map[pixel_y1, pixel_x1]
 
-		cell = (self._map[ri,ci], self._map[rj,ci], self._map[rj,cj], self._map[ri,cj])
+		weight_ll = (pixel_x1-pixel_x) * (pixel_y1-pixel_y)
+		weight_ul = (pixel_x1-pixel_x) * (pixel_y-pixel_y0)
+		weight_lr = (pixel_x-pixel_x0) * (pixel_y1-pixel_y)
+		weight_ur = (pixel_x-pixel_x0) * (pixel_y-pixel_y0)
 
-		norm_x -= ci # normalized cell coordinates [0-1]
-		norm_y -= ri
+		dx = weight_ll*values_ll['de'] + weight_ul*values_ul['de'] + weight_lr*values_lr['de'] + weight_ur*values_ur['de']
+		dy = weight_ll*values_ll['dn'] + weight_ul*values_ul['dn'] + weight_lr*values_lr['dn'] + weight_ur*values_ur['dn']
 
-		# bilinear interpolation
-		num_values = len(cell[0]) # how many values does the cell contain?
-		value = [0] * num_values
-		for i in range(num_values):
-			# horizontal interpolations
-			vh = (cell[2][i]-cell[1][i]) * norm_x + cell[1][i]
-			vl = (cell[3][i]-cell[0][i]) * norm_x + cell[0][i]
+		return (dx, dy)
 
-			# vertical interpolation
-			value[i] =  (vh-vl) * norm_y + vl
-
-		return value

@@ -32,12 +32,11 @@ class HeposTransformer(object):
 		if self._inverse: #ggrs -> htrs
 			# first apply the approximate tranformation
 			h_xyz = self._htrs_to_ggrs_approx.transform(x, y, z, direction=pyproj.enums.TransformDirection.INVERSE)
-			x, y = h_xyz[0], h_xyz[1] # we need to interpolate with htrs coords
-			for index, pt in enumerate(zip(x, y)):
-				de, dn = grid.interpolate(pt[0], pt[1])
-				x[index] -= de / 100.0 # grid file contains cm corrections
-				y[index] -= dn / 100.0
-
+			h_x, h_y = h_xyz[0], h_xyz[1]
+			# we need to interpolate with htrs coords
+			de, dn = grid.interpolate(h_x, h_y)
+			h_x -= de / 100.0
+			h_y -= dn / 100.0
 			return h_xyz
 
 		else: # htrs -> ggrs
@@ -45,9 +44,8 @@ class HeposTransformer(object):
 			g_xyz = self._htrs_to_ggrs_approx.transform(x, y, z, direction=pyproj.enums.TransformDirection.FORWARD)
 			# then apply shift correction
 			g_x, g_y = g_xyz[0], g_xyz[1]
-			for index, pt in enumerate(zip(x, y)): #again we need to interpolate with htrs coords
-				de, dn = grid.interpolate(pt[0], pt[1])
-				g_x[index] += de / 100.0
-				g_y[index] += dn / 100.0
-
+			#again we need to interpolate with htrs coords
+			de, dn = grid.interpolate(x, y)
+			g_x += de / 100.0
+			g_y += dn / 100.0
 			return g_xyz
