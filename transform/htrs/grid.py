@@ -41,6 +41,10 @@ class GridFile(object):
 
 		pixel_x0 = np.floor(pixel_x).astype(int)
 		pixel_y0 = np.floor(pixel_y).astype(int)
+
+		if np.any((pixel_x0 < 0)) or np.any((pixel_y0 < 0)):
+			raise IndexError
+
 		pixel_x1 = pixel_x0 + 1
 		pixel_y1 = pixel_y0 + 1
 
