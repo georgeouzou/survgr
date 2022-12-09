@@ -1,9 +1,15 @@
-/*Openlayers*/
+body {
+  font-family: 'Ubuntu';
+}
 
+/* Openlayers */
 .map {
   width:100%;
-  height:600px;
+  height:400px;
   margin:0;
   padding:0;
 }
 
+.statistics-block {
+  display:none;
+}

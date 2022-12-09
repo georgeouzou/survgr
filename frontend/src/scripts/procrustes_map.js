@@ -59,12 +59,12 @@ const VALIDATION_POINT_STYLE = new Style({
 });
 
 export const PROCRUSTES_MAP_LAYERS = {
-    REFERENCE_POINTS: { 
-        style: REFERENCE_POINT_STYLE, 
+    REFERENCE_POINTS: {
+        style: REFERENCE_POINT_STYLE,
         name: 'reference_points',
     },
     VALIDATION_POINTS: {
-        style: VALIDATION_POINT_STYLE, 
+        style: VALIDATION_POINT_STYLE,
         name: 'validation_points',
     },
 };
@@ -74,9 +74,11 @@ export class ProcrustesMap
     #map;
 
     constructor() {
-        proj4.defs("EPSG:2100",
+        proj4.defs(
+            "EPSG:2100",
             "+proj=tmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=0 +ellps=GRS80\
-            +towgs84=-199.87,74.79,246.62,0,0,0,0 +units=m +no_defs");
+            +towgs84=-199.87,74.79,246.62,0,0,0,0 +units=m +no_defs"
+        );
         proj_register(proj4);
 
         let view = new View({
@@ -84,20 +86,22 @@ export class ProcrustesMap
             center: proj_transform([25,38.4],'EPSG:4326','EPSG:3857'),
             zoom: 6,
         });
-        let default_interactions_list = interaction_get_defaults({altShiftDragRotate:false, pinchRotate:false});
+        let default_interactions_list = interaction_get_defaults({
+            altShiftDragRotate:false,
+            pinchRotate:false
+        });
 
         let map = new Map({
-            layers:[
-                new TileLayer({
-                    source: new OSMSource()
-                }),
-            ],
             target: "map",
             view: view,
             interactions: default_interactions_list,
         });
 
         this.#map = map;
+    }
+
+    #remove_all_layers_from_map() {
+        this.#map.setLayers([]);
     }
 
     #remove_layer_from_map(name) {
@@ -114,8 +118,8 @@ export class ProcrustesMap
 
     #zoom_in_to_point_extents() {
         let extent = Extent.createEmpty();
-        this.#map.getLayers().forEach(function(l) {
-            const source = l.getSource();
+        this.#map.getLayers().forEach(layer => {
+            const source = layer.getSource();
             if (source instanceof VectorSource) {
                 Extent.extend(extent, source.getExtent());
             }
@@ -126,8 +130,9 @@ export class ProcrustesMap
     }
 
     check_if_ggrs87_pointset(coords) {
-        const ggrs84_lower = [94875.0, 3868409.0];
-        const ggrs84_upper = [857398.0, 4630677.0];
+        // bounds found in: https://epsg.io/2100
+        const ggrs84_lower = [94874.71, 3859448.36];
+        const ggrs84_upper = [892934.13, 4631226.44];
         const ggrs84_bounds = Extent.boundingExtent([ggrs84_lower, ggrs84_upper]);
         const is_ggrs87 = coords.every(p => {
             return Extent.containsCoordinate(ggrs84_bounds, p);
@@ -135,16 +140,35 @@ export class ProcrustesMap
         return is_ggrs87;
     }
 
-    clear_points(layer) {
-        this.#remove_layer_from_map(layer.name);
+    clear() {
+        this.#remove_all_layers_from_map()
     }
 
-    add_points(layer, coords) {
-        const proj_ggrs87 = proj_get('EPSG:2100');
-        const proj_web = proj_get('EPSG:3857');
-        
+    add_background_tiles() {
+        const osm_layer = new TileLayer({
+            source: new OSMSource()
+        });
+        this.#map.addLayer(osm_layer);
+    }
+
+    add_points(layer, coords, local_crs) {
+        if (coords.length == 0)
+            return;
+
+        if (local_crs === undefined) {
+            coords.forEach(xy => {
+                xy[0] -= local_crs[0];
+                xy[1] -= local_crs[1];
+            });
+        }
+
+        const proj_from = local_crs === undefined ?
+            proj_get('EPSG:3857') :
+            proj_get('EPSG:2100');
+        const proj_to = proj_get('EPSG:3857');
+
         const features = coords.map(xy => {
-            xy = proj_transform(xy, proj_ggrs87, proj_web);
+            xy = proj_transform(xy, proj_from, proj_to);
             return new Feature({
                 geometry: new Point(xy),
             });

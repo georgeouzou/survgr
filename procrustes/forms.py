@@ -3,28 +3,11 @@ from .fit import TransformationType, ResidualCorrectionType, CovarianceFunctionT
 
 class ReferencePointsForm(forms.Form):
 	reference_points = forms.FileField(
-		label='Σημεία Αναφοράς',
-		widget=forms.FileInput(
-			attrs={'class': 'form-control'},
-		)
-	)
-	validation_points = forms.FileField(
-		label='Σημεία Επιβεβαίωσης',
-		required=False,
-		widget=forms.FileInput(
-			attrs={'class': 'form-control'},
-		)
-	)
-	points_format = forms.ChoiceField(
-		label='Μορφή',
-		choices=[
-			("id,xs,ys,xt,yt", "id, x, y, x', y'"),
-			("xs,ys,xt,yt",    "x, y, x', y'"),
-		],
-		initial = "id,xs,ys,xt,yt",
-		widget=forms.RadioSelect(
-			attrs={'class': 'form-check-input'}
-		)
+		label='Σημεία αναφοράς',
+        widget=forms.FileInput(
+            attrs={'class': 'hidden'}
+		),
+		required=True,
 	)
 	transformation_type = forms.ChoiceField(
 		choices=[
@@ -34,32 +17,45 @@ class ReferencePointsForm(forms.Form):
 		],
 		initial = TransformationType.Similarity.value,
 		label = 'Μετασχηματισμός',
-		widget=forms.RadioSelect(
-			attrs={'class': 'form-check-input', 'autocomplete': 'off'},
-		)
+		widget=forms.Select(
+			attrs={'class': 'form-control', 'autocomplete': 'off'},
+		),
+		required=True,
 	)
 	residual_correction_type = forms.ChoiceField(
 		choices=[
-			(ResidualCorrectionType.NoCorrection.value, 'Χωρίς Μοντελοποίηση'),
-			(ResidualCorrectionType.Collocation.value, 'Σημειακή Προσαρμογή'),
+			(ResidualCorrectionType.NoCorrection.value, 'Χωρίς μοντελοποίηση'),
+			(ResidualCorrectionType.Collocation.value, 'Σημειακή προσαρμογή'),
 			(ResidualCorrectionType.Hausbrandt.value, 'Διόρθωση Hausbrandt'),
 		],
 		initial = ResidualCorrectionType.NoCorrection.value,
-		label = 'Μοντελοποίηση Yπολοίπων',
-		widget=forms.RadioSelect(
-			attrs={'class': 'form-check-input', 'autocomplete': 'off'},
-		)
+		label = 'Μοντελοποίηση υπολοίπων',
+		widget=forms.Select(
+			attrs={'class': 'form-control', 'autocomplete': 'off'},
+		),
+		required=True,
 	)
 	cov_function_type = forms.ChoiceField(
 		choices=[
 			(CovarianceFunctionType.Sinc.value, CovarianceFunctionType.Sinc.name),
 			(CovarianceFunctionType.Gaussian.value, CovarianceFunctionType.Gaussian.name),
 			(CovarianceFunctionType.Exponential.value, CovarianceFunctionType.Exponential.name),
-			(CovarianceFunctionType.Spline.value, CovarianceFunctionType.Spline.name),
+			#(CovarianceFunctionType.Spline.value, CovarianceFunctionType.Spline.name),
 		],
 		initial = CovarianceFunctionType.Sinc.value,
-		label = 'Συνάρτηση Συμμεταβλητότητας',
-		widget=forms.RadioSelect(
-			attrs={'class': 'form-check-input', 'autocomplete': 'off'},
-		)
+		label = 'Συνάρτηση συμμεταβλητότητας',
+		widget=forms.Select(
+			attrs={'class': 'form-control', 'autocomplete': 'off'},
+		),
+		required=False,
 	)
+	collocation_noise = forms.IntegerField(
+        max_value=1000, #mm
+        min_value=0,
+		label='Προαιρετικός θόρυβος υπολοίπων σε mm',
+		initial=0,
+		widget=forms.NumberInput(
+			attrs={'class': 'form-control', 'autocomplete': 'off'},
+		),
+		required=False
+    )

@@ -7,11 +7,12 @@ import { init_map } from './hattblock_map.js';
 /*
  * Constants
  */
-var NOT_SELECTED_ID = -1;
-var ANIM_TIME = 300;
-var HATT_SRID = 1000000;
-var OLD_GREEK_SRIDS = [1000000, 1000001, 1000002, 1000003, 4815];
-var GEODETIC_SRIDS = [4121,4815,4326,4230,1000004];
+const NOT_SELECTED_ID = -1;
+const ANIM_TIME = 300;
+const HATT_SRID = 1000000;
+const OLD_GREEK_SRIDS = [1000000, 1000001, 1000002, 1000003, 4815];
+const GEODETIC_SRIDS = [4121,4815,4326,4230,1000004];
+const PROCRUSTES_SRID = 1000006
 
 /*
  * Initializers
@@ -140,11 +141,18 @@ function getInputType(){
 }
 
 function validateInput(){
-  let fromSrid = $("#from-srid").val();
-  let toSrid = $("#to-srid").val();
+  const fromSrid = $("#from-srid").val();
+  const toSrid = $("#to-srid").val();
+
+  if ((fromSrid == PROCRUSTES_SRID && toSrid != PROCRUSTES_SRID) ||
+      (fromSrid != PROCRUSTES_SRID && toSrid == PROCRUSTES_SRID)) {
+    $('#output-area').val('Σφάλμα: Οι μετασχηματισμοί Προκρούστη απαιτούν όμοια "Aπό" και "Πρός" συστήματα αναφοράς.');
+    return false;
+  }
+
   if ((fromSrid == HATT_SRID && $("#from-hatt .hatt-id").val() == -1) || 
-    (toSrid == HATT_SRID && $("#to-hatt .hatt-id").val() == -1)) {
-    $('#output-area').val("Παρακαλώ επιλέξτε φύλλο χάρτη HATT.");
+      (toSrid == HATT_SRID && $("#to-hatt .hatt-id").val() == -1)) {
+    $('#output-area').val("Σφάλμα: Παρακαλώ επιλέξτε φύλλο χάρτη HATT.");
     return false;
   }
   return true;
@@ -179,7 +187,10 @@ $(function() {
   $('#form-params').submit(function (e){
     e.preventDefault();
     
-    if (!validateInput()) return;
+    if (!validateInput()) {
+      clearOutputAccuracyArea();
+      return;
+    }
     console.log($(this).serialize());
 
     var fd = new FormData($(this)[0]);
