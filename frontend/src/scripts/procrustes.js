@@ -87,6 +87,41 @@ function generate_reference_coordinate_table(result) {
     return table;
 }
 */
+function generate_input_example_table() {
+    const data = [
+        [ 0, 'R', -2053.94, -1260.15, 435925.608, 4498716.989],
+        [ 1, 'R', -1967.90, -1392.66, 436010.417, 4498583.937],
+        [ 2, 'R', -2160.13, -1378.92, 435818.477, 4498599.266],
+        [ 3, 'R', -1628.33, -1596.61, 436348.218, 4498377.348],
+        [ 4, 'R', -2113.55, -1546.32, 435863.644, 4498431.584],
+        [ 5, 'R', -1753.39, -1610.69, 436223.087, 4498364.386],
+        [ 6, 'R', -2072.28, -1280.96, 435907.134, 4498696.338],
+        [ 7, 'R', -1678.26, -1769.90, 436296.819, 4498204.603],
+        [ 8, 'R', -1896.61, -1794.73, 436078.251, 4498181.554],
+        [ 9, 'V', -1836.68, -1550.86, 436140.233, 4498424.854],
+        [10, 'V', -1453.61, -1688.15, 436522.266, 4498284.378],
+        [11, 'V', -1923.54, -1574.84, 436053.504, 4498401.504],
+    ];
+
+    for (let i = 0; i < data.length; ++i) {
+        let id = document.createElement("td");
+        let is_ref = document.createElement("td");
+        let x_src = document.createElement("td");
+        let y_src = document.createElement("td");
+        let x_dst = document.createElement("td");
+        let y_dst = document.createElement("td");
+        id.textContent = data[i][0];
+        is_ref.textContent = data[i][1];
+        x_src.textContent = data[i][2];
+        y_src.textContent = data[i][3]; 
+        x_dst.textContent = data[i][4]; 
+        y_dst.textContent = data[i][5]; 
+
+        let row = document.createElement("tr");
+        $(row).append([id, is_ref, x_src, y_src, x_dst, y_dst]);
+        $('#id_input_example').append(row);
+    }
+}
 
 function generate_statistics_table(name, statistics) {
     let table = document.createElement("table");
@@ -317,6 +352,8 @@ $(function() {
 
     let map = new ProcrustesMap();
     $('#map').data('map', map);
+
+    generate_input_example_table();
 
     if ($('#id_reference_points')[0].files.length == 1) {
         update_points_on_map();

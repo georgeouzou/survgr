@@ -128,7 +128,15 @@
         Τα δύο σέτ σημείων έχουν γνωστές συντεταγμένες σε δύο διαφορετικά συστήματα αναφοράς.
       </p>
       <p>
-        Δέχεται αρχεία CSV τα οποία περιέχουν σημεία. Το κάθε σημείο αναγράφεται σε ξεχωριστή γραμμή.
+        Το αποτέλεσμα των ελαχίστων τετραγώνων μπορεί να αποθηκευτεί
+        και να χρησιμοποιηθεί περαιτέρω σαν επιλογή στους <a href="{% url 'transform:index' %}">Μετασχηματισμούς</a>.
+        Aποθηκεύεται και είναι διαθέσιμο για μία εβδομάδα μετά την εκτέλεση, λόγω περιορισμένου χώρου στον server.
+      </p>
+    </div>
+    <div class="row">
+      <h3>Μορφή δεδομένων</h3>
+      <p>
+        Η εφαρμογή δέχεται αρχεία CSV τα οποία περιέχουν σημεία. Το κάθε σημείο αναγράφεται σε ξεχωριστή γραμμή.
         Η κάθε γραμμή μπορεί να περιέχει:
       </p>
       <div>
@@ -145,18 +153,39 @@
         </ul>
       </div>
       <p>
-        Τα δεδομένα είναι διαχωρισμένα με κόμμα/κενό/tab/ερωτηματικό. Μονάδα μέτρησης για τις προβολικές συντεταγμένες είναι
-        τα μέτρα.
-      </p>
-      <p>
         Η χρήση Validation σημείων είναι προαιρετική.
+        Τα δεδομένα είναι διαχωρισμένα με κόμμα/κενό/tab/ερωτηματικό.
+        Μονάδα μέτρησης για τις προβολικές συντεταγμένες είναι τα μέτρα.
       </p>
+      <div class="panel panel-default">
+        <div class="panel-heading" role="tab" id="input_example_heading">
+          <h4 class="panel-title">
+            <a role="button" data-toggle="collapse"
+              href="#input_example_collapse" aria-expanded="false" aria-controls="input_example_collapse">
+              Παράδειγμα Αρχείου
+            </a>
+          </h4>
+        </div>
+        <div id="input_example_collapse" class="panel-collapse collapse" role="tabpanel"
+          aria-labelledby="input_example_heading">
+          <div class="panel-body">
+            <table class="table" style="table-layout: fixed;" id="id_input_example"></table>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="row">
       <h3>Τύπος μετασχηματισμού</h3>
       <p>
         Δίνεται επιλογή 3 τύπων μετασχηματισμού:
+      </p>
+      <p>
+        $$
+        X^{'}_{ref} = M X_{ref} \Rightarrow
+        \begin{bmatrix} x^{'} \\ y^{'} \end{bmatrix} =
+        Μ \begin{bmatrix} x \\ y \end{bmatrix}
+        $$
       </p>
       <div class="panel-group" id="info_xform_accordion" role="tablist" aria-multiselectable="true">
         <div class="panel panel-default">
@@ -248,7 +277,7 @@
       <h3>Μοντελοποίηση Υπολοίπων</h3>
       <div>
         <p>
-          Τα υπόλοιπα $s_{ref}$ της εφαρμογής του μετασχηματισμού $M$ στα σημεία αναφορας $X_{ref}$ δεν θα είναι μηδενικά,
+          Στην πραγματικότητα τα υπόλοιπα $s_{ref}$ της εφαρμογής του μετασχηματισμού $M$ στα σημεία αναφορας $X_{ref}$ δεν θα είναι μηδενικά,
           λόγω συστηματικών διαφορών και ασυνεπειών των δύο συστημάτων αναφοράς.
         </p>
         <p>
@@ -281,14 +310,14 @@
                 Τα υπόλοιπα $s_{ref}$ αντιμετωπίζονται ως σήματα και γίνεται πρόγνωση σημάτων
                 στα $X_{new}$. Για την πρόγνωση υπολογίζεται συνάρτηση $f(d)$ πού περιγράφει
                 την συμμετάβλητότητα $C$ του σήματος σε ένα σημείο στην περιοχή ενδιαφέροντος, με βάση την απόστασή του $d$
-                από τα σημεία αναφοράς.
+                από τα σημεία αναφοράς. Ο πίνακας $C_{n}$ περιγράφει τον προαιρετικό θόρυβο του σήματος, δηλαδή των υπολοίπων.
               </p>
               <p>
                 $$
                 X^{'}_{ref} = M X_{ref}
                 $$
                 $$
-                X^{'}_{new} = M X_{new} + C_{new, ref} C^{-1}_{ref, ref} s_{ref}
+                X^{'}_{new} = M X_{new} + C_{new, ref} (C_{ref, ref}+C_{n})^{-1} s_{ref}
                 $$
               </p>
             </div>
@@ -331,17 +360,17 @@
     </div> <!-- row -->
 
     <div class="row">
-      <h3>Βιβλιογραφία</h1>
+      <h3>Πηγές</h1>
       <ul>
         <li>
           <p>
-            Δ. Αμπατζίδης, Σ. Μελαχροινός (2017): <cite>The connection of an old geodetic datum with a new one using Least Squares
-            Collocation: The Greek case</cite>
+            Α. Φωτίου (2007): <cite>Γεωμετρική Γεωδαισία, Θεωρία και Πράξη</cite>
           </p>
         </li>
         <li>
           <p>
-            Α.Ι. Φωτίου (2007): <cite>Γεωμετρική Γεωδαισία, Θεωρία και Πράξη</cite>
+            Δ. Αμπατζίδης, Σ. Μελαχροινός (2017): <cite>The connection of an old geodetic datum with a new one using Least Squares
+            Collocation: The Greek case</cite>
           </p>
         </li>
         <li>
