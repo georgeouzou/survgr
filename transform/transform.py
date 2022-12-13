@@ -40,7 +40,7 @@ class ReferenceSystem(object):
 
 	def is_longlat(self):
 		return '+proj=longlat' in self.proj4text
-		
+
 # All the reference systems used in Greece.
 # Each Hattblock has its own reference system (see Hattblock proj4text property...)
 # All +towgs84 dx,dy,dz are taken from Fotiou book
@@ -105,9 +105,9 @@ class WorkHorseTransformer(object):
 		- OKXETransformer
 		- HeposTransformer
 		- ProcrustesTransformer
-	Transformers are functors that get called with x, y and maybe z numpy arrays as arguments 
+	Transformers are functors that get called with x, y and maybe z numpy arrays as arguments
 	and return x, y, maybe z numpy arrays transformed.
-	Keyword arguments can be: 
+	Keyword arguments can be:
 		General params:
 		-from_srid: the REF_SYS key corresponding to ref. system 1.
 		-to_srid: the REF_SYS key corresponding to ref. system 2.
@@ -151,7 +151,7 @@ class WorkHorseTransformer(object):
 		else:
 			transformer = ProcrustesTransformer(params['procrustes'])
 			self.transformers.append(transformer)
-			self.log.append('Procrustes Transformation') 
+			self.log.append('Procrustes Transformation')
 			if transformer.accuracy == float('inf'):
 				self.transformation_steps.append("Μετασχηματισμός μέσω Προκρούστη. Άγνωστη ακρίβεια.")
 			else:
@@ -160,7 +160,7 @@ class WorkHorseTransformer(object):
 		# if any key error happens this will throw above
 		self.from_refsys = REF_SYS[params['from_srid']]
 		self.to_refsys = REF_SYS[params['to_srid']]
-			
+
 	def _compute_tranform_accuracy(self, refsys1, refsys2):
 
 		#middle_text = "%s συντεταγμένων %s σε %s συντεταγμένες %s" % (

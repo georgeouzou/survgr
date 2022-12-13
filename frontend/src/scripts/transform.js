@@ -63,7 +63,7 @@ function initBloodhound(){
     var hatt = $(this).parents('.hatt-selection');
     hatt.find('.hatt-id').val(obj.id);
   });
-  
+
   $('.hatt-name').typeahead({
     // options
     minLength: 1,
@@ -77,11 +77,30 @@ function initBloodhound(){
   });
 }
 
+function initProcrustesSelector()
+{
+  $('#from-srid').on('change', function() {
+    const from_srid = $(this).val();
+    const to_srid = $('#to-srid').val();
+    if (from_srid == PROCRUSTES_SRID) {
+      $(`#to-srid option[value="${PROCRUSTES_SRID}"]`).parent().attr('hidden', false);
+      $('#to-srid').val(PROCRUSTES_SRID).trigger('change');
+      $('#to-srid').attr('disabled', true);
+    } else if (to_srid == PROCRUSTES_SRID && from_srid != PROCRUSTES_SRID) {
+      $('#to-srid').val(HATT_SRID).trigger('change');
+      $(`#to-srid option[value="${PROCRUSTES_SRID}"]`).parent().attr('hidden', true);
+      $('#to-srid').attr('disabled', false);
+    }
+  });
+  // default visibility for procrustes-off
+  $(`#to-srid option[value="${PROCRUSTES_SRID}"]`).parent().attr('hidden', true);
+}
+
 function initSelectors(){
   // visibility of hatt selection html elements is based
   // on the selected srid
   // SRIDS are defined in transform.py
-  
+
   function isOldGreek(srid){
     return OLD_GREEK_SRIDS.indexOf(parseInt(srid)) != -1;
   }
@@ -108,6 +127,8 @@ function initSelectors(){
     }
   });
 
+  initProcrustesSelector();
+
   //change visibility of csv format options on input-type radio change
   $('#input-type input').on('change', function() {
    if (getInputType() == 'geojson'){
@@ -124,12 +145,12 @@ function initSelectors(){
     var template = ($.inArray(parseInt($("#from-srid").val()), GEODETIC_SRIDS) != -1) ? 
       ["λ, φ","λ, φ, h","id, λ, φ","id, λ, φ, h", "φ, λ","φ, λ, h","id, φ, λ","id, φ, λ, h"] : 
       ["Ε, Ν","Ε, Ν, h","id, Ε, Ν","id, Ε, Ν, h", "N, E", "N, E, h","id, N, E","id, N, E, h",];
-    
+
     $("#csv-fields option").each(function(i){
       this.text = template[i];
     });
   });
-   
+
   // select manually default hatt srid on startup
   $(".srid-selection").val(HATT_SRID).trigger('change');
   $("#input-type input").trigger('change');
@@ -176,7 +197,7 @@ function fillOutputAccuracyArea(transform_steps)
 /*
  * Main
  */
-$(function() { 
+$(function() {
   initBloodhound();
   init_map();
   initSelectors();
@@ -186,7 +207,7 @@ $(function() {
 
   $('#form-params').submit(function (e){
     e.preventDefault();
-    
+
     if (!validateInput()) {
       clearOutputAccuracyArea();
       return;
@@ -194,8 +215,12 @@ $(function() {
     console.log($(this).serialize());
 
     var fd = new FormData($(this)[0]);
+    if (fd.get('from_srid') == PROCRUSTES_SRID) {
+      // in this case the select input is disabled, so we set the value explicitly
+      fd.set('to_srid', PROCRUSTES_SRID);
+    }
     fd.append("input", new Blob([$('#input-area').val()], { type: "text/plain;charset=utf-8"}));
-    
+
     $.ajax({
       type: 'POST',
       url: $(this).attr('action'),

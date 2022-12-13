@@ -41,7 +41,7 @@ def transform(request):
 	procrustes = request.session.get('procrustes', None)
 	if procrustes:
 		params['procrustes'] = procrustes
-	
+
 	# TODO: Add exception support
 	try:
 		transformer = WorkHorseTransformer(**params)
@@ -58,19 +58,19 @@ def transform(request):
 			#http://wiki.gis.com/wiki/index.php/Decimal_degrees
 			xy_decimals = 9 if transformer.to_refsys.is_longlat() else 3
 			z_decimals = 3
-			csv_result = csv_driver.transform(transformer, inp, 
+			csv_result = csv_driver.transform(transformer, inp,
 			    (xy_decimals, xy_decimals, z_decimals),
 				fieldnames=request.POST['csv_fields'])
 			return json_response({
-				"type": "csv", 
-				"result": csv_result.read(), 
+				"type": "csv",
+				"result": csv_result.read(),
 				"steps": transformer.transformation_steps,
 			})
 		elif input_type == "geojson":
 			gj_result = geojson_driver.transform(transformer, inp)
 			return json_response({
-				"type": "geojson", 
-				"result": gj_result, 
+				"type": "geojson",
+				"result": gj_result,
 				"steps": transformer.transformation_steps,
 			})
 	except Exception as e:
