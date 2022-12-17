@@ -11,9 +11,6 @@ from .drivers import csv_driver, geojson_driver
 
 def index(request):
 	q = [{'srid':srid, 'name':rs.name, 'datum': DATUMS[rs.datum]}  for srid, rs in REF_SYS.items()]
-	# remove procrustes entries, if we have no previous procrustes-transformation
-	if 'procrustes' not in request.session:
-		q = filter(lambda ref_sys: ref_sys['srid'] != 1000006, q)
 	return render(request, 'transform/index.html', {'ref_systems':q})
 
 def hattblock_info(request, id):
@@ -38,18 +35,14 @@ def transform(request):
 		if n in ['from_srid', 'to_srid', 'from_hatt_id', 'to_hatt_id']:
 			params[n] = int(v)
 
-	procrustes = request.session.get('procrustes', None)
-	if procrustes:
-		params['procrustes'] = procrustes
-
-	# TODO: Add exception support
+	# TODO: Add better exception support
 	try:
+		if 'procrustes' in request.FILES:
+			params['procrustes'] = json.loads(request.FILES['procrustes'].read())
+
 		transformer = WorkHorseTransformer(**params)
 		print(transformer.log_str())
-	except ValueError as e:
-		return HttpResponse(str(e), status=404)
 
-	try:
 		input_type = request.POST['input_type']
 		inp = TextIOWrapper(request.FILES['input'].file, encoding='utf-8')
 		if input_type == "csv":

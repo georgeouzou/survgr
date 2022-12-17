@@ -2,6 +2,7 @@
 import $ from 'jquery';
 import Plotly from 'plotly.js-dist-min';
 import Papa from 'papaparse';
+import { get as idb_get, set as idb_set, clear as idb_clear } from 'idb-keyval';
 
 // local modules
 import './mathjax_config.js';
@@ -196,12 +197,13 @@ function generate_covariance_plot(covariance_data) {
     Plotly.newPlot("output_cov_plot", data, layout, {staticPlot:true});
 }
 
-$('#form_input').submit(function(event) {
-    event.preventDefault();
+function clear_results_block() {
     $('#output_statistics').empty();
     $('#output_cov_plot').empty();
-    $('.statistics-block').hide();
+    $('.results-block').hide();
+}
 
+function fill_results_block(json_output) {
     const transformation_names = {
         [TransformationType.Similarity]: 'μετασχηματισμό ομοιότητας',
         [TransformationType.Affine]: 'αφινικό μετασχηματισμό',
@@ -212,6 +214,46 @@ $('#form_input').submit(function(event) {
         [ResidualCorrectionType.Collocation]: 'σημειακή προσαρμογή',
     };
 
+    const transformation = json_output.transformation;
+    const transformation_name = transformation_names[transformation.type];
+    {
+        $("#output_statistics").append(
+            generate_statistics_table(
+                `Στατιστικά υπολοίπων Reference με ${transformation_name}`,
+                transformation.reference_statistics)
+        );
+    }
+    {
+        if ("validation_statistics" in transformation) {
+            $("#output_statistics").append(
+                generate_statistics_table(
+                    `Στατιστικά υπολοίπων Validation με ${transformation_name}`,
+                    transformation.validation_statistics)
+            );
+        }
+    }
+
+    const residual_correction = json_output.residual_correction;
+    if (residual_correction.type === ResidualCorrectionType.Collocation) {
+        let collocation = residual_correction.collocation;
+        generate_covariance_plot(collocation.covariance);
+    }
+    if (residual_correction.type != ResidualCorrectionType.NoCorrection) {
+        const residual_correction_name = residual_correction_names[residual_correction.type];
+        if ("validation_statistics" in residual_correction) {
+            $("#output_statistics").append(
+                generate_statistics_table(`Στατιστικά υπολοίπων Validation με ${residual_correction_name}`, residual_correction.validation_statistics)
+            );
+        }
+    }
+
+    $('.results-block').show();
+}
+
+$('#form_input').submit(function(event) {
+    event.preventDefault();
+    clear_results_block();
+
     var fd = new FormData($(this)[0]);
     $.ajax({
         type: 'POST',
@@ -221,42 +263,26 @@ $('#form_input').submit(function(event) {
         processData: false,
         contentType: false,
     }).done(function (json_output){
-        const transformation = json_output.transformation;
-        const transformation_name = transformation_names[transformation.type];
-        {
-            $("#output_statistics").append(
-                generate_statistics_table(
-                    `Στατιστικά υπολοίπων Reference με ${transformation_name}`,
-                    transformation.reference_statistics)
-            );
-        }
-        {
-            if ("validation_statistics" in transformation) {
-                $("#output_statistics").append(
-                    generate_statistics_table(
-                        `Στατιστικά υπολοίπων Validation με ${transformation_name}`,
-                        transformation.validation_statistics)
-                );
-            }
-        }
+        fill_results_block(json_output);
 
-        const residual_correction = json_output.residual_correction;
-        if (residual_correction.type === ResidualCorrectionType.Collocation) {
-            let collocation = residual_correction.collocation;
-            generate_covariance_plot(collocation.covariance);
-        }
-        if (residual_correction.type != ResidualCorrectionType.NoCorrection) {
-            const residual_correction_name = residual_correction_names[residual_correction.type];
-            if ("validation_statistics" in residual_correction) {
-                $("#output_statistics").append(
-                    generate_statistics_table(`Στατιστικά υπολοίπων Validation με ${residual_correction_name}`, residual_correction.validation_statistics)
-                );
-            }
-        }
-
-        $(".statistics-block").show();
-        //$('html,body').animate({scrollTop: $(".statistics-block").offset().top});
+        $('#id_btn_results_save').attr('disabled', true);
+        idb_set('procrustes_latest_results', json_output)
+        .then(() => {
+            $('#id_btn_results_save').removeAttr('disabled');
+        });
     });
+});
+
+$('#id_btn_results_save').on('click', () => {
+    idb_get('procrustes_latest_results')
+    .then((val) => {
+        idb_set('procrustes_saved_results', val);
+    });
+});
+
+$('#id_btn_results_clear').on('click', () => {
+    idb_clear();
+    clear_results_block();
 });
 
 // change visibility of covariance function type

@@ -1,5 +1,7 @@
 import $ from 'jquery';
 import Bloodhound from 'corejs-typeahead';
+import { get as idb_get } from 'idb-keyval';
+
 import '../styles/transform.css';
 import HATTBLOCK_FEATURES_URL from '../assets/hattblocks.min.geojson';
 import { init_map } from './hattblock_map.js';
@@ -93,7 +95,16 @@ function initProcrustesSelector()
     }
   });
   // default visibility for procrustes-off
+  $(`#from-srid option[value="${PROCRUSTES_SRID}"]`).parent().attr('hidden', true);
   $(`#to-srid option[value="${PROCRUSTES_SRID}"]`).parent().attr('hidden', true);
+
+  idb_get('procrustes_saved_results')
+  .then((val) => {
+    if (val) {
+      $(`#from-srid option[value="${PROCRUSTES_SRID}"]`).parent().attr('hidden', false);
+    }
+  });
+ 
 }
 
 function initSelectors(){
@@ -194,6 +205,53 @@ function fillOutputAccuracyArea(transform_steps)
   });
 }
 
+function send_transform_form_data(form, form_data) {
+  $.ajax({
+    type: 'POST',
+    url: form.attr('action'),
+    data: form_data,
+    dataType: "json",
+    processData: false, // this is not to url-encode the fd object
+    contentType: false // this is how it automatically computes the boundary
+  }).done(function (json_output){
+    if (json_output.type == "csv") {
+      $('#output-area').val(json_output.result);
+    } else if (json_output.type == "geojson") {
+      $('#output-area').val(JSON.stringify(json_output.result));
+    }
+    fillOutputAccuracyArea(json_output.steps)
+  }).fail(function (jqXHR) {
+    $('#output-area').val(jqXHR.responseText);
+    clearOutputAccuracyArea();
+  });
+}
+
+$('#form-params').submit(function (e){
+  e.preventDefault();
+
+  if (!validateInput()) {
+    clearOutputAccuracyArea();
+    return;
+  }
+  console.log($(this).serialize());
+
+  var fd = new FormData($(this)[0]);
+  fd.append("input", new Blob([$('#input-area').val()], { type: "text/plain;charset=utf-8"}));
+  
+  if (fd.get('from_srid') == PROCRUSTES_SRID) {
+    // in this case the select input is disabled, so we set the value explicitly
+    fd.set('to_srid', PROCRUSTES_SRID);
+    idb_get('procrustes_saved_results')
+    .then((val) => {
+      console.log(JSON.stringify(val));
+      fd.append('procrustes', new Blob([JSON.stringify(val)], { type: 'application/json;charset=utf-8'}));
+      send_transform_form_data($(this), fd);
+    });
+  } else {
+    send_transform_form_data($(this), fd);
+  }  
+});
+
 /*
  * Main
  */
@@ -204,41 +262,5 @@ $(function() {
 
   // set hatt id element values to default -1 (nothing selected)
   $('.hatt-id').val(NOT_SELECTED_ID);
-
-  $('#form-params').submit(function (e){
-    e.preventDefault();
-
-    if (!validateInput()) {
-      clearOutputAccuracyArea();
-      return;
-    }
-    console.log($(this).serialize());
-
-    var fd = new FormData($(this)[0]);
-    if (fd.get('from_srid') == PROCRUSTES_SRID) {
-      // in this case the select input is disabled, so we set the value explicitly
-      fd.set('to_srid', PROCRUSTES_SRID);
-    }
-    fd.append("input", new Blob([$('#input-area').val()], { type: "text/plain;charset=utf-8"}));
-
-    $.ajax({
-      type: 'POST',
-      url: $(this).attr('action'),
-      data: fd,
-      dataType: "json",
-      processData: false, // this is not to url-encode the fd object
-      contentType: false // this is how it automatically computes the boundary
-    }).done(function (json_output){
-      if (json_output.type == "csv") {
-        $('#output-area').val(json_output.result);
-      } else if (json_output.type == "geojson") {
-        $('#output-area').val(JSON.stringify(json_output.result));
-      }
-      fillOutputAccuracyArea(json_output.steps)
-    }).fail(function (jqXHR) {
-      $('#output-area').val(jqXHR.responseText);
-      clearOutputAccuracyArea();
-    });
-  });
 });
 

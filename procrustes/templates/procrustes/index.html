@@ -56,7 +56,7 @@
   <div class="container">
     <div class="row">
       <div class="col-sm-4">
-        <form id="form_input" method="post" action="{% url 'procrustes:upload_reference' %}" enctype="multipart/form-data">
+        <form id="form_input" method="post" action="{% url 'procrustes:execute' %}" enctype="multipart/form-data">
           {% csrf_token %}
           <div class="form-group">
             <label class="btn btn-default">
@@ -103,7 +103,7 @@
       </div>
     </div>
 
-    <div class="statistics-block">
+    <div class="results-block">
       <h3>Αποτελέσματα</h3>
       <div class="row">
         <div class="panel panel-default">
@@ -112,11 +112,14 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="row">
-      <div id="output_cov_plot"></div>
-    </div>
+      <div class="row">
+        <div id="output_cov_plot"></div>
+      </div>
+      <div class="row">
+        <button class="btn btn-default" id="id_btn_results_save">Αποθήκευση</button>
+        <button class="btn btn-default" id="id_btn_results_clear">Καθαρισμός</button>
+      </div>
+    </div> <!-- results-block -->
 
     <hr>
 
@@ -130,7 +133,7 @@
       <p>
         Το αποτέλεσμα των ελαχίστων τετραγώνων μπορεί να αποθηκευτεί
         και να χρησιμοποιηθεί περαιτέρω σαν επιλογή στους <a href="{% url 'transform:index' %}">Μετασχηματισμούς</a>.
-        Aποθηκεύεται και είναι διαθέσιμο για μία εβδομάδα μετά την εκτέλεση, λόγω περιορισμένου χώρου στον server.
+        Τα αποτελέσματα δεν αποθηκεύονται στον server, αλλά τοπικά στο Browser Storage του χρήστη.
       </p>
     </div>
     <div class="row">

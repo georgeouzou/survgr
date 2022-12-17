@@ -45,7 +45,7 @@ def _read_points(fp):
     ]
     return pts
 
-def upload_reference(request):
+def execute(request):
     if request.method == 'POST':
         form_data = ReferencePointsForm(request.POST, request.FILES)
         if form_data.is_valid():
@@ -96,6 +96,7 @@ def upload_reference(request):
                         val_source_coords, val_target_coords, rescor)
 
             result = {
+                "version": '1.0',
                 "input_coords": {
                     "units": "meters",
                     "cs_source": {
@@ -134,7 +135,6 @@ def upload_reference(request):
                 if has_residual_correction:
                     result["residual_correction"]["validation_statistics"] = val_stats_rescor.__dict__
 
-            request.session['procrustes'] = result
             return json_response(result)
 
     return index(request)
