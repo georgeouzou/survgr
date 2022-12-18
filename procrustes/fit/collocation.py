@@ -144,7 +144,7 @@ class CovarianceFunction:
 
 class Collocation:
 
-	def __init__(self, source_coords, target_coords, initial_transf, cov_function_type):
+	def __init__(self, source_coords, target_coords, initial_transf, cov_function_type, collocation_noise_mm=0.0):
 		assert(source_coords.shape[1] == 2)
 		assert(target_coords.shape[1] == 2)
 
@@ -158,6 +158,7 @@ class Collocation:
 		self.signal_mean_avg = signal_mean_avg
 		self.cov_func = self._fit_empirical_covariance_func(self.signals, self.source_coords, cov_function_type)
 		self.initial_transf = initial_transf
+		self.collocation_noise = collocation_noise_mm * 10.0; # to cm
 
 	def _fit_empirical_covariance_func(self, signals, coords, cov_function_type):
 		pairwise_dists = _compute_paiwise_distances(coords)
@@ -166,7 +167,7 @@ class Collocation:
 		double_delta = _compute_distance_interval(pairwise_dists)
 		delta = double_delta / 2.0
 		groups = []
-		for k, g in itertools.groupby(pairwise_dists, lambda d: int(d.dist/double_delta)+1 if d.dist != 0.0 else 0):
+		for _, g in itertools.groupby(pairwise_dists, lambda d: int(d.dist/double_delta)+1 if d.dist != 0.0 else 0):
 			groups.append(list(g))
 
 		# for double_delta = 0.2km -> 0, 0.2, 0.4, 0.6
@@ -186,13 +187,15 @@ class Collocation:
 		Cyx = _compute_covariance_matrix(coords, self.source_coords, C0, self.cov_func)
 
 		num_signals = self.signals.shape[0]*2
-		init_coords = self.initial_transf(coords)
 		S = np.concatenate([self.signals[:, 0], self.signals[:, 1]]).reshape(num_signals, 1)
-		S = Cyx @ np.linalg.inv(Cxx) @ S
+		D = np.eye(Cxx.shape[0]) * (self.collocation_noise * self.collocation_noise)
+		invCxx = np.linalg.inv(Cxx + D)
+		S = Cyx @ invCxx @ S
 		S += self.signal_mean_avg
 		S /= 100.0 # back to meters
 
 		num_xy = coords.shape[0]
+		init_coords = self.initial_transf(coords)
 		x0 = np.concatenate([init_coords[:, 0], init_coords[:, 1]]).reshape(num_xy*2, 1)
 		x = x0 + S
 		return np.concatenate([x[0:num_xy], x[num_xy:2*num_xy]], axis=1)

@@ -4,268 +4,348 @@
 <!doctype html>
 <html lang="el-GR">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!--jQuery-->
-    <script
-	    src="https://code.jquery.com/jquery-3.6.1.min.js"
-	    integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ="
-		crossorigin="anonymous">
-    </script>
-    <!--Bootstrap 5-->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
-    <!--
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.1.3/dist/lumen/bootstrap.min.css">
-    -->
-    <!--Plotly-->
-    <script src="https://cdn.plot.ly/plotly-2.11.1.min.js"></script>
-    <!--Proj4js-->
-    <script src="https://cdn.jsdelivr.net/npm/proj4@2/dist/proj4.min.js"></script>
-    <!--Papaparse-->
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5/papaparse.min.js"></script>
-    <!-- custom styling -->
-    {% render_bundle 'procrustes' 'css' %}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!--jQuery-->
+  <script
+      src="https://code.jquery.com/jquery-3.6.1.min.js"
+      integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ="
+      crossorigin="anonymous">
+  </script>
+  <!--Bootstrap 3-->
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <link href="//maxcdn.bootstrapcdn.com/bootswatch/3.3.7/lumen/bootstrap.min.css" rel="stylesheet">
+  <!--Plotly-->
+  <script src="https://cdn.plot.ly/plotly-2.11.1.min.js"></script>
+  <!--Proj4js-->
+  <script src="https://cdn.jsdelivr.net/npm/proj4@2/dist/proj4.min.js"></script>
+  <!--Papaparse-->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5/papaparse.min.js"></script>
+  <!--fonts-->
+  <link href="//fonts.googleapis.com/css?family=Ubuntu&subset=latin,greek" rel='stylesheet' type='text/css'>
+  <!-- custom styling -->
+  {% render_bundle 'procrustes' 'css' %}
 </head>
 <body>
-    <div class="container pt-5">
-        <h1>Προκρούστης
-            <small class="text-muted">υπολογισμός βέλτιστου μετασχηματισμού σημείων</small>
-        </h1>
-        <hr>
-        <form id="form_input" method="post" action="{% url 'upload_reference' %}" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="row">
-                <label class="col-form-label col-sm-2" for="{{ form.reference_points.id_for_label }}">
-                    {{ form.reference_points.label }}:
-                </label>
-                <div class="col-sm-10 pb-3">
-                    {{ form.reference_points }}
-                </div>
-                <label class="col-form-label col-sm-2" for="{{ form.validation_points.id_for_label }}">
-                    {{ form.validation_points.label }}:
-                </label>
-                <div class="col-sm-10 pb-3">
-                    {{ form.validation_points }}
-                </div>
-           </div>
+  <nav class="navbar navbar-default navbar-static-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar_collapse" aria-expanded="false">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <div class="navbar-brand">SurvoGR</div>
+      </div>
 
-           <div class="row pb-3" id="id_points_format">
-               <label class="col-form-label col-sm-2" for="{{ form.points_format.id_for_label }}">
-                   {{ form.points_format.label }}:
-               </label>
-               <div class="col-sm-10">
-                   {% for radio in form.points_format %}
-                   <div class="form-check">
-                       {{ radio.tag }}
-                       <label class="form-check-label" for="{{ radio.id_for_label }}">
-                           {{ radio.choice_label }}
-                       </label>
-                   </div>
-                   {% endfor %}
-               </div>
-           </div>
+      <div class="collapse navbar-collapse" id="navbar_collapse">
+        <ul class="nav navbar-nav">
+          <li><a href="{% url 'transform:index' %}">Μετασχηματισμοί</a></li>
+          <li class="active"><a href="{% url 'procrustes:index' %}">Προκρούστης<span class="sr-only">(current)</span></a></li>
+        </ul>
+        <!--
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="#">Link</a></li>
+        </ul>
+        -->
+      </div><!-- /.navbar-collapse -->
+    </div>
+  </nav>
 
-           <fieldset class="row pb-3">
-               <legend class="col-form-label col-sm-2">
-                   {{ form.transformation_type.label }}:
-               </legend>
-               <div class="col-sm-10">
-                   {% for radio in form.transformation_type %}
-                   <div class="form-check">
-                       {{ radio.tag }}
-                       <label class="form-check-label" for="{{ radio.id_for_label }}">
-                           {{ radio.choice_label }}
-                       </label>
-                   </div>
-                   {% endfor %}
-               </div>
-           </fieldset> <!-- transformation_type row-->
-
-           <fieldset class="row pb-3" id="id_residual_correction_type">
-               <legend class="col-form-label col-sm-2">
-                   {{ form.residual_correction_type.label }}:
-               </legend>
-               <div class="col-sm-10">
-                   {% for radio in form.residual_correction_type %}
-                   <div class="form-check">
-                       {{ radio.tag }}
-                       <label class="form-check-label" for="{{ radio.id_for_label }}">
-                           {{ radio.choice_label }}
-                       </label>
-                   </div>
-                   {% endfor %}
-               </div>
-           </fieldset> <!-- residual_correction_type row-->
-
-           <fieldset class="row pb-3" id="id_cov_function_type">
-               <legend class="col-form-label col-sm-2">
-                   {{ form.cov_function_type.label }}:
-               </legend>
-               <div class="col-sm-10">
-                   {% for radio in form.cov_function_type %}
-                   <div class="form-check">
-                       {{ radio.tag }}
-                       <label class="form-check-label" for="{{ radio.id_for_label }}">
-                           {{ radio.choice_label }}
-                       </label>
-                   </div>
-                   {% endfor %}
-               </div>
-            </fieldset> <!-- cov_function_type row -->
-
-            <div class="pb-3">
-                <button class="btn btn-primary">Υπολόγισε</button>
-            </div>
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-4">
+        <form id="form_input" method="post" action="{% url 'procrustes:execute' %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="form-group">
+            <label class="btn btn-default">
+              {{ form.reference_points }}
+              Επιλογή Αρχείου
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="form-control-label" for="{{ form.transformation_type.id_for_label }}">
+              {{ form.transformation_type.label }}:
+            </label>
+            {{ form.transformation_type }}
+          </div>
+          <div class="form-group">
+            <label class="form-control-label" for="{{ form.residual_correction_type.id_for_label }}">
+              {{ form.residual_correction_type.label }}:
+            </label>
+            {{ form.residual_correction_type }}
+          </div>
+          <div class="form-group">
+            <label class="form-control-label" for="{{ form.cov_function_type.id_for_label }}">
+              {{ form.cov_function_type.label }}:
+            </label>
+            {{ form.cov_function_type }}
+          </div>
+          <div class="form-group">
+            <label class="form-control-label" for="{{ form.collocation_noise.id_for_label }}">
+              {{ form.collocation_noise.label }}:
+            </label>
+            {{ form.collocation_noise }}
+          </div>
+          <div class="form-group">
+            <button class="btn btn-primary">Εκτέλεση</button>
+          </div>
         </form>
+      </div>
+
+      <div class="col-sm-8">
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="map" id="map"></div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="container pt-5">
-        <div class="map" id="map">
+    <div class="results-block">
+      <h3>Αποτελέσματα</h3>
+      <div class="row">
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="row" id="output_statistics"></div>
+          </div>
         </div>
+      </div>
+      <div class="row">
+        <div id="output_cov_plot"></div>
+      </div>
+      <div class="row">
+        <button class="btn btn-default" id="id_btn_results_save">Αποθήκευση</button>
+        <button class="btn btn-default" id="id_btn_results_clear">Καθαρισμός</button>
+      </div>
+    </div> <!-- results-block -->
+
+    <hr>
+
+    <div class="row">
+      <h3> Προκρούστης </h3>
+      <p>
+        Ο Προκρούστης προσπαθεί να προσεγγίσει, με τη μέθοδο των ελαχίστων τετραγώνων, τον βέλτιστο 2Δ μετασχηματισμό μεταξύ
+        δύο σετ σημείων $(x, y)$ και $(x^{'}, y^{'})$.
+        Τα δύο σέτ σημείων έχουν γνωστές συντεταγμένες σε δύο διαφορετικά συστήματα αναφοράς.
+      </p>
+      <p>
+        Το αποτέλεσμα των ελαχίστων τετραγώνων μπορεί να αποθηκευτεί
+        και να χρησιμοποιηθεί περαιτέρω σαν επιλογή στους <a href="{% url 'transform:index' %}">Μετασχηματισμούς</a>.
+        Τα αποτελέσματα δεν αποθηκεύονται στον server, αλλά τοπικά στο Browser Storage του χρήστη.
+      </p>
+    </div>
+    <div class="row">
+      <h3>Μορφή δεδομένων</h3>
+      <p>
+        Η εφαρμογή δέχεται αρχεία CSV τα οποία περιέχουν σημεία. Το κάθε σημείο αναγράφεται σε ξεχωριστή γραμμή.
+        Η κάθε γραμμή μπορεί να περιέχει:
+      </p>
+      <div>
+        <ul>
+          <li>έναν αναγνωριστικό κωδικό (id) για το σημείο</li>
+          <li>έναν αναγνωριστικό χαρακτήρα για τον τύπο του σημείου
+            <ul>
+              <li>R: για Reference σημεία - θα χρησιμοποιηθούν για τον υπολογισμό του βέλτιστου μετασχηματισμού</li>
+              <li>V: για Validation σημεία - θα χρησιμοποιηθούν για την ποιοτικό έλεγχο των αποτελεσμάτων</li>
+            </ul>
+          </li>
+          <li>τις 2D προβολικές συντεταγμένες $x, y$ του σημείου στο 1ο σύστημα αναφοράς</li>
+          <li>τις 2D προβολικές συντεταγμένες $x^{'}, y^{'}$ του σημείου στο 2ο συστημα αναφοράς</li>
+        </ul>
+      </div>
+      <p>
+        Η χρήση Validation σημείων είναι προαιρετική.
+        Τα δεδομένα είναι διαχωρισμένα με κόμμα/κενό/tab/ερωτηματικό.
+        Μονάδα μέτρησης για τις προβολικές συντεταγμένες είναι τα μέτρα.
+      </p>
+      <div class="panel panel-default">
+        <div class="panel-heading" role="tab" id="input_example_heading">
+          <h4 class="panel-title">
+            <a role="button" data-toggle="collapse"
+              href="#input_example_collapse" aria-expanded="false" aria-controls="input_example_collapse">
+              Παράδειγμα Αρχείου
+            </a>
+          </h4>
+        </div>
+        <div id="input_example_collapse" class="panel-collapse collapse" role="tabpanel"
+          aria-labelledby="input_example_heading">
+          <div class="panel-body">
+            <table class="table" style="table-layout: fixed;" id="id_input_example"></table>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="container pt-5">
-        <div class="row">
-            <h2>Αποτελέσματα</h2>
-            <div class="col-sm-4">
-                <div id="output_transformation_params"></div>
-            </div>
-            <div class="col-sm-8">
-                <div id="output_cov_plot"></div>
-            </div>
-        </div>
-    </div>
-
-
-    <div class="container pt-5">
-        <div class="row pb-5">
-            <h2>Τι είναι</h2>
-            <p> 
-            Ο Προκρούστης προσπαθεί να προσεγγίσει, με τη μέθοδο των ελαχίστων τετραγώνων, τον βέλτιστο 2Δ μετασχηματισμό μεταξύ δύο σετ σημείων $(x, y)$ και $(x^{'}, y^{'})$.
-            Τα δύο σέτ σημείων έχουν γνωστές συντεταγμένες σε δύο διαφορετικά συστήματα αναφοράς.
-            </p>
-            <p>
-            Δέχεται αρχεία CSV τα οποία περιέχουν σημεία. Το κάθε σημείο αναγράφεται σε ξεχωριστή γραμμή.
-            Η κάθε γραμμή μπορεί να περιέχει:
-            </p>
-            <div>
-                <ul>
-                    <li>ένα προαιρετικό αναγνωριστικό κωδικό (id) για το σημείο</li>
-                    <li>τις 2D προβολικές συντεταγμένες $x, y$ του σημείου στο 1ο σύστημα αναφοράς (source)</li>
-                    <li>τις 2D προβολικές συντεταγμένες $x^{'}, y^{'}$ του σημείου στο 2ο συστημα αναφοράς (target)</li>
-                </ul>
-            </div>
-            <p>
-            Τα δεδομένα είναι διαχωρισμένα με κόμμα/κενό/tab/ερωτηματικό. Μονάδα μέτρησης για τις προβολικές συντεταγμένες είναι τα μέτρα.
-            </p>
-            <p>
-            Μπορείτε να εισάγετε δύο CSV αρχεία τα οποία θα έχουν το ίδιο format που περιγράφηκε παραπάνω.
-            </p>
-            <div>
-                <ul>
-                    <li> Σημεία Αναφοράς (υποχρεωτικό) - Θα χρησιμοποιηθούν για τον υπολογισμό του βέλτιστου μετασχηματισμού</li>
-                    <li> Σημεία Επιβεβαίωσης (προαιρετικό) - Θα χρησιμοποιηθούν για την ποιοτικό έλεγχο των αποτελεσμάτων</li>
-                </ul>
-            </div>
-        </div>
-        <div class="row pb-5">
-            <h2> Μετασχηματισμός</h2>
-            <p>
-            Δίνεται επιλογή 3 τύπων μετασχηματισμού:
-            </p>
-            <div>
-                <h3>Ομοιότητας</h3>
-                <p>
+    <div class="row">
+      <h3>Τύπος μετασχηματισμού</h3>
+      <p>
+        Δίνεται επιλογή 3 τύπων μετασχηματισμού:
+      </p>
+      <p>
+        $$
+        X^{'}_{ref} = M X_{ref} \Rightarrow
+        \begin{bmatrix} x^{'} \\ y^{'} \end{bmatrix} =
+        Μ \begin{bmatrix} x \\ y \end{bmatrix}
+        $$
+      </p>
+      <div class="panel-group" id="info_xform_accordion" role="tablist" aria-multiselectable="true">
+        <div class="panel panel-default">
+          <div class="panel-heading" role="tab" id="info_heading_xform_similarity">
+            <h4 class="panel-title">
+              <a role="button" data-toggle="collapse" data-parent="#info_xform_accordion"
+                href="#info_collapse_xform_similarity" aria-expanded="true" aria-controls="info_collapse_xform_similarity">
+                Ομοιότητας
+              </a>
+            </h4>
+          </div>
+          <div id="info_collapse_xform_similarity" class="panel-collapse collapse in" role="tabpanel"
+            aria-labelledby="info_heading_xform_similarity">
+            <div class="panel-body">
+              <p>
                 Οι διαφορές των συστημάτων αναφοράς περιγράφονται από 2 παραμέτρους μετάθεσης $t_x$ και $t_y$
                 μία στροφή $\theta$ και ένα συντελεστή κλίμακας $\delta s$
-                </p>
-                <p>
+              </p>
+              <p>
                 $$
-                \begin{bmatrix} x^{'} \\ y^{'} \end{bmatrix} = 
+                \begin{bmatrix} x^{'} \\ y^{'} \end{bmatrix} =
                 \begin{bmatrix} t_x \\ t_y \end{bmatrix} +
-                (1-\delta s) \begin{bmatrix} \cos\theta & \sin\theta \\ -\sin\theta & \cos\theta \end{bmatrix} 
-                \begin{bmatrix} x \\ y \end{bmatrix} 
+                (1-\delta s) \begin{bmatrix} \cos\theta & \sin\theta \\ -\sin\theta & \cos\theta \end{bmatrix}
+                \begin{bmatrix} x \\ y \end{bmatrix}
                 $$
-                </p>
+              </p>
             </div>
-            <div>
-                <h3>Αφινικός</h3>
-                <p>
+          </div>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-heading" role="tab" id="info_heading_xform_affine">
+            <h4 class="panel-title">
+              <a class="collapsed" role="button" data-toggle="collapse" data-parent="#info_xform_accordion"
+                href="#info_collapse_xform_affine" aria-expanded="false" aria-controls="info_collapse_xform_affine">
+                Αφινικός
+              </a>
+            </h4>
+          </div>
+          <div id="info_collapse_xform_affine" class="panel-collapse collapse" role="tabpanel"
+            aria-labelledby="info_heading_xform_affine">
+            <div class="panel-body">
+              <p>
                 Οι διαφορές των συστημάτων αναφοράς περιγράφονται από
                 2 παραμέτρους μετάθεσης $t_x$ και $t_y$
-                2 στροφές $\theta_x$, $\theta_y$ και 
+                2 στροφές $\theta_x$, $\theta_y$ και
                 2 συντελεστές κλίμακας $\delta s_x$, $\delta s_y$
-                </p>
-                <p>
+              </p>
+              <p>
                 $$
-                \begin{bmatrix} x^{'} \\ y^{'} \end{bmatrix} = 
+                \begin{bmatrix} x^{'} \\ y^{'} \end{bmatrix} =
                 \begin{bmatrix} t_x \\ t_y \end{bmatrix} +
                 \begin{bmatrix} 1-\delta s_x & 0 \\ 0 & 1-\delta s_y \end{bmatrix}
-                \begin{bmatrix} \cos\theta_x & \sin\theta_y \\ -\sin\theta_x & \cos\theta_y \end{bmatrix} 
-                \begin{bmatrix} x \\ y \end{bmatrix} 
+                \begin{bmatrix} \cos\theta_x & \sin\theta_y \\ -\sin\theta_x & \cos\theta_y \end{bmatrix}
+                \begin{bmatrix} x \\ y \end{bmatrix}
                 $$
-                </p>
+              </p>
             </div>
-            <div>
-                <h3>Πολυωνυμικός 2ου βαθμού</h3>
-                <p>
+          </div>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-heading" role="tab" id="info_heading_xform_polynomial">
+            <h4 class="panel-title">
+              <a class="collapsed" role="button" data-toggle="collapse" data-parent="#info_xform_accordion"
+                href="#info_collapse_xform_polynomial" aria-expanded="false" aria-controls="info_collapse_xform_polynomial">
+                Πολυωνυμικός 2ου βαθμού
+              </a>
+            </h4>
+          </div>
+          <div id="info_collapse_xform_polynomial" class="panel-collapse collapse" role="tabpanel"
+            aria-labelledby="info_heading_xform_polynomial">
+            <div class="panel-body">
+              <p>
                 Οι διαφορές των συστημάτων αναφοράς περιγράφονται από 12 παραμέτρους $\alpha_i$ και $\beta_i$
-                </p>
-                <p>
+              </p>
+              <p>
                 $$\begin{aligned}
                 x^{'} &= \alpha_0 + \alpha_1 x + \alpha_2 y + \alpha_3 x^{2} + \alpha_4 y^{2} + \alpha_5 xy \\
-                y^{'} &= \beta_0 + \beta_1 x + \beta_2 y + \beta_3 x^{2} + \beta_4 y^{2} + \beta_5 xy 
+                y^{'} &= \beta_0 + \beta_1 x + \beta_2 y + \beta_3 x^{2} + \beta_4 y^{2} + \beta_5 xy
                 \end{aligned}
                 $$
-                </p>
+              </p>
             </div>
+          </div>
         </div>
-        <div class="row pb-5">
-            <h2>Μοντελοποίηση Υπολοίπων</h2>
-            <div>
-                <p>
-                Τα υπόλοιπα $s_{ref}$ της εφαρμογής του μετασχηματισμού $M$ στα σημεία αναφορας $X_{ref}$ δεν θα είναι μηδενικά,
-                λόγω συστηματικών διαφορών και ασυνεπειών των δύο συστημάτων αναφοράς.
-                </p>
-                <p>
-                $$
-                X^{'}_{ref} = M X_{ref} + s_{ref}
-                $$
-                </p>
-                <p>
-                Ο Προκρούστης δίνει δύο επιλογές για την μοντελοποίηση των υπολοίπων. Με την εφαρμογή τους επιτυγχάνεται
-                εκμηδενισμός των υπολοίπων στα σημεία αναφοράς.
-                </p>
-            </div>
-            <div>
-                <h3>Σημειακή Προσαρμογή (Collocation)</h3>
-                <p>
-                Ανακατανομή των υπολοίπων $s_{ref}$ των σημείων αναφοράς $X_{ref}$ στα νέα σημεία 
+      </div>
+    </div>
+
+    <div class="row">
+      <h3>Μοντελοποίηση Υπολοίπων</h3>
+      <div>
+        <p>
+          Στην πραγματικότητα τα υπόλοιπα $s_{ref}$ της εφαρμογής του μετασχηματισμού $M$ στα σημεία αναφορας $X_{ref}$ δεν θα είναι μηδενικά,
+          λόγω συστηματικών διαφορών και ασυνεπειών των δύο συστημάτων αναφοράς.
+        </p>
+        <p>
+          $$
+          X^{'}_{ref} = M X_{ref} + s_{ref}
+          $$
+        </p>
+        <p>
+          Ο Προκρούστης δίνει δύο επιλογές για την μοντελοποίηση των υπολοίπων. Με την εφαρμογή τους επιτυγχάνεται
+          εκμηδενισμός των υπολοίπων στα σημεία αναφοράς.
+        </p>
+      </div>
+      <div class="panel-group" id="info_rescor_accordion" role="tablist" aria-multiselectable="true">
+        <div class="panel panel-default">
+          <div class="panel-heading" role="tab" id="info_heading_rescor_collocation">
+            <h4 class="panel-title">
+              <a role="button" data-toggle="collapse" data-parent="#info_rescor_accordion"
+                href="#info_collapse_rescor_collocation" aria-expanded="true"
+                aria-controls="info_collapse_rescor_collocation">
+                Σημειακή Προσαρμογή (Collocation)
+              </a>
+            </h4>
+          </div>
+          <div id="info_collapse_rescor_collocation" class="panel-collapse collapse in" role="tabpanel"
+            aria-labelledby="info_heading_rescor_collocation">
+            <div class="panel-body">
+              <p>
+                Ανακατανομή των υπολοίπων $s_{ref}$ των σημείων αναφοράς $X_{ref}$ στα νέα σημεία
                 προς μετασχηματισμό $X_{new}$ μέσω σημειακής προσαρμογής.
                 Τα υπόλοιπα $s_{ref}$ αντιμετωπίζονται ως σήματα και γίνεται πρόγνωση σημάτων
-                στα $X_{new}$. Για την πρόγνωση υπολογίζεται συνάρτηση $f_c(d)$ πού περιγράφει 
-                την συμμετάβλητότητα $C$ του σήματος σε ένα σημείο στην περιοχή ενδιαφέροντος, με βάση την απόστασή του $d$ 
-                από τα σημεία αναφοράς.
-                </p>
-                <p>
+                στα $X_{new}$. Για την πρόγνωση υπολογίζεται συνάρτηση $f(d)$ πού περιγράφει
+                την συμμετάβλητότητα $C$ του σήματος σε ένα σημείο στην περιοχή ενδιαφέροντος, με βάση την απόστασή του $d$
+                από τα σημεία αναφοράς. Ο πίνακας $C_{n}$ περιγράφει τον προαιρετικό θόρυβο του σήματος, δηλαδή των υπολοίπων.
+              </p>
+              <p>
                 $$
                 X^{'}_{ref} = M X_{ref}
                 $$
                 $$
-                X^{'}_{new} = M X_{new} + C_{new, ref} C^{-1}_{ref, ref} s_{ref}
+                X^{'}_{new} = M X_{new} + C_{new, ref} (C_{ref, ref}+C_{n})^{-1} s_{ref}
                 $$
-                </p>
+              </p>
             </div>
-            <div>
-                <h3>Διόρθωση Hausbrandt</h3>
-                <p>
-                Ανακατανομή των υπολοίπων $s_{ref}$ των σημείων αναφοράς $X_{ref}$ στα νέα σημεία 
+          </div>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-heading" role="tab" id="info_heading_rescor_hausbrandt">
+            <h4 class="panel-title">
+              <a class="collapsed" role="button" data-toggle="collapse" data-parent="#info_rescor_accordion"
+                href="#info_collapse_rescor_hausbrandt" aria-expanded="false"
+                aria-controls="info_collapse_rescor_hausbrandt">
+                Διόρθωση Hausbrandt
+              </a>
+            </h4>
+          </div>
+          <div id="info_collapse_rescor_hausbrandt" class="panel-collapse collapse" role="tabpanel"
+            aria-labelledby="info_heading_rescor_hausbrandt">
+            <div class="panel-body">
+              <p>
+                Ανακατανομή των υπολοίπων $s_{ref}$ των σημείων αναφοράς $X_{ref}$ στα νέα σημεία
                 προς μετασχηματισμό $X_{new}$ μέσω παρεμβολής.
-                Η παρεμβολή χρησιμοποιεί βάρος $w$, ίσο με το αντίστροφο του τετραγώνου 
+                Η παρεμβολή χρησιμοποιεί βάρος $w$, ίσο με το αντίστροφο του τετραγώνου
                 της απόστασης του νέου σημείου από τα σημεία αναφοράς.
-                </p>
-                <p>
+              </p>
+              <p>
                 $$
                 X^{'}_{ref} = M X_{ref}
                 $$
@@ -275,10 +355,49 @@
                 $$
                 \delta X_{new} = \sum_{i=0}^{ref} {w_{new,i} s_i \over w_{new,i}}
                 $$
-                </p>
+              </p>
             </div>
+          </div>
         </div>
+      </div> <!-- panel-group -->
+    </div> <!-- row -->
+
+    <div class="row">
+      <h3>Πηγές</h1>
+      <ul>
+        <li>
+          <p>
+            Α. Φωτίου (2007): <cite>Γεωμετρική Γεωδαισία, Θεωρία και Πράξη</cite>
+          </p>
+        </li>
+        <li>
+          <p>
+            Δ. Αμπατζίδης, Σ. Μελαχροινός (2017): <cite>The connection of an old geodetic datum with a new one using Least Squares
+            Collocation: The Greek case</cite>
+          </p>
+        </li>
+        <li>
+          <p>
+            M. Ligas, P. Banasik (2014): <cite>Least squares collocation alternative to helmert's transformation with Hausbrandt's
+            post-transformation correction, Reports on Geodesy and Geoinformatics vol. 97/2014</cite>
+          </p>
+        </li>
+        <li>
+          <p>
+            E.M. Mikhail, F.Ackermann (1976): <cite>Observation and Least Squares</cite>
+          </p>
+        </li>
+        <li>
+          <p>
+            R.J. You, H.W. Hwang (2006): <cite>Coordinate Transformation between Two Geodetic Datums of Taiwan by Least-
+              Squares Collocation</cite>
+          </p>
+        </li>
+      </ul>
+      <hr>
     </div>
-    {% render_bundle 'procrustes' 'js' %}
+  </div>
+
+  {% render_bundle 'procrustes' 'js' %}
 </body>
 </html>

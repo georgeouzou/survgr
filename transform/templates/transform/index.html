@@ -47,15 +47,37 @@
         </div>
       </div>
     </div>
-    
-    <div class="container">
-      <div class="page-header">
-        <h1>SurvoGR  <small>μετασχηματισμός-μετατροπή συντεταγμένων online</small></h1>
-      </div>
 
+    <nav class="navbar navbar-default navbar-static-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar_collapse" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <div class="navbar-brand">SurvoGR</div>
+        </div>
+
+        <div class="collapse navbar-collapse" id="navbar_collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="{% url 'transform:index' %}">Μετασχηματισμοί<span class="sr-only">(current)</span></a></li>
+            <li><a href="{% url 'procrustes:index' %}">Προκρούστης</a></li>
+          </ul>
+          <!--
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">Link</a></li>
+          </ul>
+          -->
+        </div><!-- /.navbar-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
       {% regroup ref_systems|dictsortreversed:"datum" by datum as datums %}
-    	<form id="form-params" class="form" role="form" method="post" action="{% url 'transform' %}">
-        
+    	<form id="form-params" class="form" role="form" method="post" action="{% url 'transform:transform' %}">
+
         <div class="row">
           <div class="col-sm-6">
             <div class="panel panel-primary panel-transform-from">
@@ -181,8 +203,8 @@
 
       <hr>
       <!-- info -->
-      <h3> Τι είναι το SurvoGR </h3>
-      <p>To SurvoGR είναι ένα web service για την εύκολη και μαζική μετατροπή συντεταγμένων σημείων αλλά και GIS features μεταξύ των διαφόρων συστημάτων αναφοράς που χρησιμοποιούνται στην Ελλάδα:
+      <h3> Μετασχηματισμοί </h3>
+      <p>Με τους Μετασχηματισμούς είναι εφικτή η εύκολη και μαζική μετατροπή συντεταγμένων σημείων αλλά και GIS features μεταξύ των διαφόρων συστημάτων αναφοράς που χρησιμοποιούνται στην Ελλάδα:
         <ul>
           <li>ΕΓΣΑ87 / TM87</li>
           <li>HTRS07 / TM07</li>
@@ -195,7 +217,7 @@
       <p>Το Παλιό Ελληνικό Datum αναφέρεται στο λεγόμενο "Νέο" Bessel η επίλυση του οποίου πραγματοποιήθηκε από την ΓΥΣ και όχι στο "Παλαιό" Bessel της ΤΥΥΓ.
       Για μια εκτενή παρουσίαση των προβλημάτων που προκύπτουν από τυχόν ταύτισή τους διαβάστε <a href=https://kataskevesktirion.gr/%CF%80%CE%B1%CE%BB%CE%B1%CE%B9%CF%8C-%CE%BA%CE%B1%CE%B9-%CE%BD%CE%AD%CE%BF-bessel-%CE%BC%CE%AF%CE%B1-%CF%83%CF%85%CF%87%CE%BD%CE%AE-%CF%80%CE%B1%CF%81%CE%B1%CE%BD%CF%8C%CE%B7/3/>εδώ</a>.</p>
       <p>Για τους μετασχηματισμούς πρός και από το Παλαιό Ελληνικό Datum (προβολές HATT, TM3) χρησιμοποιούνται οι πολυωνυμικοί συντελεστές του OKXE και γίνεται ενδιάμεσος μετασχηματισμός στο ΕΓΣΑ87. Παρομοίως, για τους μετασχηματισμούς από και προς το HTRS07 χρησιμοποιείται το μοντέλο μετασχηματισμού HTRS07-ΕΓΣΑ87 του <a href="https://www.ktimatologio.gr/el/page/geohorika/elliniko-systima-entopismoy-hepos">Hepos</a>.</p>
-      <h3> Τι δεδομένα υποστηρίζει </h3>
+      <h3> Τι δεδομένα υποστηρίζονται </h3>
       <p>
         Με ένα απλό copy-paste από το αρχείο σας εισάγετε και μετασχηματίστε τα δεδομένα σας.
         <ul>

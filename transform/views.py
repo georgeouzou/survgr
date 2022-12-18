@@ -35,14 +35,14 @@ def transform(request):
 		if n in ['from_srid', 'to_srid', 'from_hatt_id', 'to_hatt_id']:
 			params[n] = int(v)
 
-	# TODO: Add exception support
+	# TODO: Add better exception support
 	try:
+		if 'procrustes' in request.FILES:
+			params['procrustes'] = json.loads(request.FILES['procrustes'].read())
+
 		transformer = WorkHorseTransformer(**params)
 		print(transformer.log_str())
-	except ValueError as e:
-		return HttpResponse(str(e), status=404)
 
-	try:
 		input_type = request.POST['input_type']
 		inp = TextIOWrapper(request.FILES['input'].file, encoding='utf-8')
 		if input_type == "csv":
@@ -51,19 +51,19 @@ def transform(request):
 			#http://wiki.gis.com/wiki/index.php/Decimal_degrees
 			xy_decimals = 9 if transformer.to_refsys.is_longlat() else 3
 			z_decimals = 3
-			csv_result = csv_driver.transform(transformer, inp, 
+			csv_result = csv_driver.transform(transformer, inp,
 			    (xy_decimals, xy_decimals, z_decimals),
 				fieldnames=request.POST['csv_fields'])
 			return json_response({
-				"type": "csv", 
-				"result": csv_result.read(), 
+				"type": "csv",
+				"result": csv_result.read(),
 				"steps": transformer.transformation_steps,
 			})
 		elif input_type == "geojson":
 			gj_result = geojson_driver.transform(transformer, inp)
 			return json_response({
-				"type": "geojson", 
-				"result": gj_result, 
+				"type": "geojson",
+				"result": gj_result,
 				"steps": transformer.transformation_steps,
 			})
 	except Exception as e:

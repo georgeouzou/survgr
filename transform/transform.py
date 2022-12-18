@@ -2,11 +2,12 @@
 import enum
 
 import pyproj
-import numpy
+import numpy as np
 
 from .hatt.models import Hattblock
 from .hatt.okxe_transformer import OKXETransformer
 from .htrs.hepos_transformer import HeposTransformer
+from procrustes import deserialize as deserialize_procrustes
 
 @enum.unique
 class Datum(enum.Enum):
@@ -14,7 +15,8 @@ class Datum(enum.Enum):
 	HTRS07 = 1
 	OLD_GREEK= 2
 	ED50 = 3
-	WGS84 = 4
+	WGS84 = 4,
+	PROCRUSTES = 5,
 
 # All underlying datums used in Greece as the basis for the various reference systems.
 DATUMS = {
@@ -24,6 +26,7 @@ DATUMS = {
 	Datum.OLD_GREEK:	'Παλαιό Ελληνικό Datum (Νέο Bessel)',
 	Datum.ED50:			'ED50 (Ελλάδα)',
 	Datum.WGS84:		'WGS84',
+	Datum.PROCRUSTES:	'Προκρούστης',
 }
 
 class ReferenceSystem(object):
@@ -37,7 +40,7 @@ class ReferenceSystem(object):
 
 	def is_longlat(self):
 		return '+proj=longlat' in self.proj4text
-		
+
 # All the reference systems used in Greece.
 # Each Hattblock has its own reference system (see Hattblock proj4text property...)
 # All +towgs84 dx,dy,dz are taken from Fotiou book
@@ -57,12 +60,14 @@ REF_SYS = {
 	1000003: ReferenceSystem('Παλαιό Ελληνικό / TM3 Ανατ.Ζώνη', Datum.OLD_GREEK, '+proj=tmerc +lat_0=34 +lon_0=3 +k=0.9999 +x_0=200000 +y_0=0 +ellps=bessel +pm=athens +towgs84=456.387,372.620,496.818 +units=m +no_defs'),
 	1000004: ReferenceSystem('HTRS07 (λ,φ)', Datum.HTRS07, '+proj=longlat +ellps=GRS80 +towgs84=0,0,0 +no_defs'),
 	1000005: ReferenceSystem('HTRS07 / TM07', Datum.HTRS07, '+proj=etmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=-2000000 +ellps=GRS80 +towgs84=0,0,0 +units=m +no_defs'),
+	1000006: ReferenceSystem('Προκρούστης', Datum.PROCRUSTES, ''),
 }
 
-# mostly used constants below 
+# mostly used constants below
 HATT_SRID = 1000000
 TM07_SRID = 1000005
 TM87_SRID = 2100
+PROCRUSTES_SRID = 1000006
 
 class TransformerError(Exception):
 	pass
@@ -75,18 +80,38 @@ class ProjTransformer(object):
 	def __call__(self, x, y, z=None):
 		return self._transformer.transform(x, y, z)
 
+class ProcrustesTransformer(object):
+
+	def __init__(self, session_data):
+		self._procrustes_transformer = deserialize_procrustes.from_session_data(session_data)
+		if 'validation_statistics' in session_data['residual_correction']:
+			self.accuracy = float(session_data['residual_correction']['validation_statistics']['std'])
+		elif 'validation_statistics' in session_data['transformation']:
+			self.accuracy = float(session_data['transformation']['validation_statistics']['std'])
+		else:
+			self.accuracy = float('inf')
+
+	def __call__(self, x, y, z=None):
+		num_coords = x.shape[0]
+		in_coords = np.concatenate((x.reshape(num_coords,1), y.reshape(num_coords,1)), axis=1)
+		out_coords = self._procrustes_transformer(in_coords)
+		x, y = out_coords[:, 0], out_coords[:, 1]
+		return tuple(filter(lambda array: array is not None, [x, y, z]))
+
 class WorkHorseTransformer(object):
 	'''
 	Transforms points from ref. system 1 to ref. system 2 using other sub-transformers:
 		- ProjTransformer
 		- OKXETransformer
 		- HeposTransformer
-	Transformers are functors that get called with x, y and maybe z numpy arrays as arguments 
+		- ProcrustesTransformer
+	Transformers are functors that get called with x, y and maybe z numpy arrays as arguments
 	and return x, y, maybe z numpy arrays transformed.
-	Keyword arguments can be: 
+	Keyword arguments can be:
 		General params:
 		-from_srid: the REF_SYS key corresponding to ref. system 1.
 		-to_srid: the REF_SYS key corresponding to ref. system 2.
+		-procrustes: we might have data from procrustes transformation
 		Hatt params:
 		-from_hatt_id: the id of the 1:50000 hatt block (given by OKXE service) if ref. system 1 is a hattblock.
 		-to_hatt_id: the id of the 1:50000 hatt block if ref. system 2 is a hattblock.
@@ -112,20 +137,30 @@ class WorkHorseTransformer(object):
 			except Hattblock.DoesNotExist:
 				raise ValueError('Parameter Error: Hatt block with id "%d" does not exist' % params['to_hatt_id'])
 
-		try:
-			self._compile(**params)
-		except KeyError as e:
-			key = e.args[0]
-			if key == 'from_hattblock':
-				key = 'from_hatt_id'
-			elif key == 'to_hattblock':
-				key = 'to_hatt_id'
-			raise ValueError('Parameter Error: "%s" parameter is required' % key)
+		is_procrustes = 'procrustes' in params and params['from_srid'] == PROCRUSTES_SRID and params['to_srid'] == PROCRUSTES_SRID
+		if not is_procrustes:
+			try:
+				self._compile(**params)
+			except KeyError as e:
+				key = e.args[0]
+				if key == 'from_hattblock':
+					key = 'from_hatt_id'
+				elif key == 'to_hattblock':
+					key = 'to_hatt_id'
+				raise ValueError('Parameter Error: "%s" parameter is required' % key)
+		else:
+			transformer = ProcrustesTransformer(params['procrustes'])
+			self.transformers.append(transformer)
+			self.log.append('Procrustes Transformation')
+			if transformer.accuracy == float('inf'):
+				self.transformation_steps.append("Μετασχηματισμός μέσω Προκρούστη. Άγνωστη ακρίβεια.")
+			else:
+				self.transformation_steps.append("Μετασχηματισμός μέσω Προκρούστη. Ακρίβεια ~ %s m." % round(transformer.accuracy,3))
 
 		# if any key error happens this will throw above
 		self.from_refsys = REF_SYS[params['from_srid']]
 		self.to_refsys = REF_SYS[params['to_srid']]
-			
+
 	def _compute_tranform_accuracy(self, refsys1, refsys2):
 
 		#middle_text = "%s συντεταγμένων %s σε %s συντεταγμένες %s" % (
@@ -252,10 +287,10 @@ class WorkHorseTransformer(object):
 	def __call__(self, x, y, z=None):
 		# create numpy array to modify in place
 		# fastest method for proj4 library and modifies in place for the custom methods
-		x = numpy.asarray(x)
-		y = numpy.asarray(y)
+		x = np.asarray(x)
+		y = np.asarray(y)
 		if z is not None:
-			z = numpy.asarray(z)
+			z = np.asarray(z)
 
 		if z is not None:
 			for f in self.transformers:
