@@ -51,6 +51,9 @@ class Transformation2DTest(TestCase):
 		cls.tm3_approx = tm3_approx
 		cls.tm3 = tm3
 
+	def is_near(self, a, b, how_near):
+		self.assertLessEqual(abs(a-b), how_near)
+
 class SimilarityTransformation2DTest(Transformation2DTest):
 
 	def test_fit_tm3_approx_tm3(self):
@@ -62,10 +65,10 @@ class SimilarityTransformation2DTest(Transformation2DTest):
 		rotation = math.degrees(rotation)*3600.0 #convert to sec
 		scale = (1.0-scale)*1000000 #convert to ppm,
 
-		self.assertEqual(round(Tx, 4), 162.5810)
-		self.assertEqual(round(Ty, 4), 187.9988)
-		self.assertEqual(round(rotation, 5),-32.62638)
-		self.assertEqual(round(scale, 3), 282.301)
+		self.is_near(Tx, 162.5810, 0.001)
+		self.is_near(Ty, 187.9988, 0.001)
+		self.is_near(rotation,-32.62638, 0.0001)
+		self.is_near(scale, 282.301, 0.001)
 
 	def test_fit_hatt_tm3(self):
 		t = SimilarityTransformation2D(self.hatt, self.tm3)
@@ -120,12 +123,12 @@ class AffineTransformation2DTest(Transformation2DTest):
 		scale_x = (1.0-scale_x)*1000000 #convert to ppm,
 		scale_y = (1.0-scale_y)*1000000 #convert to ppm,
 
-		self.assertEqual(round(Tx, 3), -162.072)
-		self.assertEqual(round(Ty, 3), 329.616)
-		self.assertEqual(round(rot_x, 5), -26.88051)
-		self.assertEqual(round(rot_y, 5), 44.13099)
-		self.assertEqual(round(scale_x, 3), -34.448)
-		self.assertEqual(round(scale_y, 3), 468.542)
+		self.is_near(Tx, -162.072, 0.001)
+		self.is_near(Ty, 329.616, 0.001)
+		self.is_near(rot_x, -26.88051, 0.0001)
+		self.is_near(rot_y, 44.13099, 0.0001)
+		self.is_near(scale_x, -34.448, 0.001)
+		self.is_near(scale_y, 468.542, 0.001)
 
 		transformed = t(self.tm3_approx)
 		self.assertTrue(np.all(np.less(self.tm3-transformed, 0.1*np.ones(transformed.shape))))
