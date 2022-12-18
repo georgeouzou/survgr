@@ -9,6 +9,8 @@
 - disable rotation on hatt-block map
 
 --- version 2.0 ---
+- procrustes: app for transformation parameters best fitting
 - transform: guess csv format automatically from inputs
 - transform: use proj library's horner for faster hatt-ggrs transformation
 - transform: mmap htrs grid file for faster/lazy reads
+- transform: ability to use procrustes' generated parameters
