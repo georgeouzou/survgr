@@ -233,7 +233,6 @@ $('#form-params').submit(function (e){
     clearOutputAccuracyArea();
     return;
   }
-  console.log($(this).serialize());
 
   var fd = new FormData($(this)[0]);
   fd.append("input", new Blob([$('#input-area').val()], { type: "text/plain;charset=utf-8"}));
@@ -243,7 +242,6 @@ $('#form-params').submit(function (e){
     fd.set('to_srid', PROCRUSTES_SRID);
     idb_get('procrustes_saved_results')
     .then((val) => {
-      console.log(JSON.stringify(val));
       fd.append('procrustes', new Blob([JSON.stringify(val)], { type: 'application/json;charset=utf-8'}));
       send_transform_form_data($(this), fd);
     });
