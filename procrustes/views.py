@@ -3,6 +3,7 @@ import io
 import csv
 from dataclasses import dataclass
 import numpy as np
+import pandas as pd
 from django.shortcuts import render
 from django.http import HttpResponse
 from .forms import ReferencePointsForm
@@ -10,7 +11,7 @@ from .fit import *
 
 @dataclass
 class Point:
-    id: int
+    id: str
     is_ref: bool
     x_src: float
     y_src: float
@@ -26,22 +27,45 @@ def index(request):
     return render(request, 'procrustes/index.html', {'form': form})
 
 def _read_points(fp):
-    dialect = csv.Sniffer().sniff(fp.read(1024), delimiters=";, \t")
+    dialect = csv.Sniffer().sniff(fp.readline(), delimiters=";, \t")
     fp.seek(0)
 
+    if dialect.delimiter in [' ', '\t']:
+        sep = '\s+'
+    else:
+        sep = dialect.delimiter
+
     field_names = ['id', 'is_ref', 'x_src', 'y_src', 'x_dst', 'y_dst']
-    reader = csv.DictReader(fp, fieldnames=field_names,
-                            delimiter=dialect.delimiter, skipinitialspace=True, strict=True)
+    field_dtype = {
+        field_names[0]: str,
+        field_names[1]: str,
+        field_names[2]: float,
+        field_names[3]: float,
+        field_names[4]: float,
+        field_names[5]: float,
+    }
+    df = pd.read_csv(fp,
+        sep=sep,
+        names=field_names,
+        dtype=field_dtype,
+        index_col=field_names[0],
+        skipinitialspace=True,
+        skip_blank_lines=True,
+        decimal='.')
+
+    if df.isna().values.any():
+        raise ValueError('missing values')
+
     pts = [
         Point(
-            int(p['id']),
-            p['is_ref'] == 'R',
-            float(p['x_src']),
-            float(p['y_src']),
-            float(p['x_dst']),
-            float(p['y_dst'])
+            index,
+            row['is_ref'] == 'R',
+            row['x_src'],
+            row['y_src'],
+            row['x_dst'],
+            row['y_dst']
         )
-        for p in reader
+        for index, row in df.iterrows()
     ]
     return pts
 
