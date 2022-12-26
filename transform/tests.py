@@ -1,4 +1,7 @@
 import json
+from io import StringIO
+import pandas as pd
+import numpy as np
 from django.test import TestCase
 from .transform import WorkHorseTransformer
 
@@ -20,7 +23,7 @@ def round_list(l, dec):
 def get_column(l2d, column):
     return list(zip(*l2d))[column]
 
-class TransformAPITest(TestCase):
+class TransformWorkHorseTest(TestCase):
 
     def test_transformer_from_htrs07_tm07_to_hgrs87_tm87(self):
         # fwd
@@ -467,8 +470,6 @@ class TransformAPITest(TestCase):
             self.assertEqual(round_list(xr, 0), round_list(get_column(p0, 0), 0))
             self.assertEqual(round_list(yr, 0), round_list(get_column(p0, 1), 0))
 
-
-
     def test_transformer_compile(self):
         HATT_SRID = 1000000
         GGRS_SRID = 2100
@@ -485,46 +486,234 @@ class TransformAPITest(TestCase):
 
         horse = WorkHorseTransformer(from_srid=GGRS_SRID, to_srid=HATT_SRID, to_hatt_id=2)
 
-    # def test_transform_features(self):
-    #       params = {
-    #               'from_srid': 1000005, # HTRS07 geocentric
-    #               'to_srid': 2100 # GGRS87/TM87
-    #       }
+class TransformAPITestHattGGRS87(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.df_in = pd.DataFrame(data={
+            'id': ['p11', '222', '333'],
+            'x' : [-10157.950, -16090.967, -2162.917],
+            'y' : [-21121.093, -19478.049, -19596.748],
+        })
+        cls.df_in.set_index('id', inplace=True)
 
-    #       data = {
-    #               "type": "FeatureCollection",
-    #               "features": [
-    #               {
-    #                       'type':'Feature',
-    #                       'geometry':{
-    #                               'type':'Point',
-    #                               'coordinates':[566446.108, 2529618.096]
-    #                       },
-    #                       'properties':{'name': 's1'}
-    #               },
-    #               {
-    #                       'type':'Feature',
-    #                       'geometry':{
-    #                               'type':'Linestring',
-    #                               'coordinates':[[566446.108, 2529618.096],[566450.555, 2529690.1]]
-    #                       },
-    #                       'properties':{'name': 's2'}
-    #               },
-    #               {
-    #                       'type':'Feature',
-    #                       'geometry':{
-    #                               'type':'Polygon',
-    #                               'coordinates':[[
-    #                                                               [566446.108, 2529618.096],[566450.555, 2529690.1],
-    #                                                               [566458.200, 2529620.100],[566446.108, 2529618.096]
-    #                                                         ]]
-    #                       },
-    #                       'properties':{'name': 's3'}
-    #               }]
-    #       }
+        cls.df_expect = pd.DataFrame(data={
+            'id': ['p11', '222', '333'],
+            'x' : [360028.794, 354126.164, 368047.902],
+            'y' : [4490989.862, 4492735.790, 4492374.342],
+        })
+        cls.df_expect.set_index('id', inplace=True)
 
-    #       response = self.client.post('/transform/api/',
-    #                                                               data=json.dumps({'params':params,'data':data}),
-    #                                                               content_type='application/json')
+    def test_csv_xy(self):
+        for sep in [',', ', ', ';', '\t', ' ']:
+            sep_with_space = sep == ', '
+            if sep_with_space:
+                sep = ','
 
-    #       self.assertTrue(response.json()['status'] == 'ok')
+            params = {
+                'from_srid':1000000,  # hatt
+                'to_srid': 2100,      # hgrs87 tm87
+                'from_hatt_id': '27', # Alexandria
+                'input_type': 'csv',
+                'csv_fields': 'x,y',
+                'input': StringIO(self.df_in.to_csv(sep=sep, columns=['x','y'], header=False, index=False))
+            }
+            if sep_with_space:
+                params['input'] = StringIO(params['input'].read().replace(',', ', '))
+
+            response = self.client.post('/api/', params)
+            output = response.json()
+            self.assertTrue('result' in output)
+            df_out = pd.read_csv(StringIO(output['result']), sep=sep, names=['x','y'], index_col=False)
+            self.assertTrue(np.array_equal(df_out['x'], self.df_expect['x']))
+            self.assertTrue(np.array_equal(df_out['y'], self.df_expect['y']))
+
+    def test_csv_yx(self):
+        for sep in [',', ', ', ';', '\t', ' ']:
+            sep_with_space = sep == ', '
+            if sep_with_space:
+                sep = ','
+
+            params = {
+                'from_srid':1000000,  # hatt
+                'to_srid': 2100,      # hgrs87 tm87
+                'from_hatt_id': '27', # Alexandria
+                'input_type': 'csv',
+                'csv_fields': 'y,x',
+                'input': StringIO(self.df_in.to_csv(sep=sep, columns=['y', 'x'], header=False, index=False))
+            }
+            if sep_with_space:
+                params['input'] = StringIO(params['input'].read().replace(',', ', '))
+
+            response = self.client.post('/api/', params)
+            output = response.json()
+            self.assertTrue('result' in output)
+            df_out = pd.read_csv(StringIO(output['result']), sep=sep, names=['y','x'], index_col=False)
+            self.assertTrue(np.array_equal(df_out['x'], self.df_expect['x']))
+            self.assertTrue(np.array_equal(df_out['y'], self.df_expect['y']))
+
+    def test_csv_idxy(self):
+        for sep in [',', ', ', ';', '\t', ' ']:
+            sep_with_space = sep == ', '
+            if sep_with_space:
+                sep = ','
+
+            params = {
+                'from_srid':1000000,  # hatt
+                'to_srid': 2100,      # hgrs87 tm87
+                'from_hatt_id': '27', # Alexandria
+                'input_type': 'csv',
+                'csv_fields': 'id,x,y',
+                'input': StringIO(self.df_in.to_csv(sep=sep, columns=['x','y'], header=False, index=True))
+            }
+            if sep_with_space:
+                params['input'] = StringIO(params['input'].read().replace(',', ', '))
+
+            response = self.client.post('/api/', params)
+            output = response.json()
+            self.assertTrue('result' in output)
+            df_out = pd.read_csv(StringIO(output['result']), sep=sep, names=['id','x','y'], index_col='id')
+            self.assertTrue(np.array_equal(df_out.index, self.df_expect.index))
+            self.assertTrue(np.array_equal(df_out['x'], self.df_expect['x']))
+            self.assertTrue(np.array_equal(df_out['y'], self.df_expect['y']))
+
+    def test_csv_idyx(self):
+        for sep in [',', ', ', ';', '\t', ' ']:
+            sep_with_space = sep == ', '
+            if sep_with_space:
+                sep = ','
+
+            params = {
+                'from_srid':1000000,  # hatt
+                'to_srid': 2100,      # hgrs87 tm87
+                'from_hatt_id': '27', # Alexandria
+                'input_type': 'csv',
+                'csv_fields': 'id,y,x',
+                'input': StringIO(self.df_in.to_csv(sep=sep, columns=['y','x'], header=False, index=True))
+            }
+            if sep_with_space:
+                params['input'] = StringIO(params['input'].read().replace(',', ', '))
+
+            response = self.client.post('/api/', params)
+            output = response.json()
+            self.assertTrue('result' in output)
+            df_out = pd.read_csv(StringIO(output['result']), sep=sep, names=['id','y','x'], index_col='id')
+            self.assertTrue(np.array_equal(df_out.index, self.df_expect.index))
+            self.assertTrue(np.array_equal(df_out['x'], self.df_expect['x']))
+            self.assertTrue(np.array_equal(df_out['y'], self.df_expect['y']))
+
+class TransformAPITestHTRS07GGRS87(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.df_in = pd.DataFrame(data={
+            'id': ['s1', 's2'],
+            'x' : [566446.108, 525000.011],
+            'y' : [2529618.096, 2650967.938],
+            'z' : [51.610, 172.591]
+        })
+        cls.df_in.set_index('id', inplace=True)
+
+        cls.df_expect = pd.DataFrame(data={
+            'id': ['s1', 's2'],
+            'x' : [566296.537, 524849.996],
+            'y' : [4529332.307, 4650682.000],
+            'z' : [6.501, 123.000],
+        })
+        cls.df_expect.set_index('id', inplace=True)
+
+    def test_csv_xyz(self):
+        for sep in [',', ', ', ';', '\t', ' ']:
+            sep_with_space = sep == ', '
+            if sep_with_space:
+                sep = ','
+
+            params = {
+                'from_srid':1000005, # htrs07 tm07
+                'to_srid': 2100,     # hgrs87 tm87
+                'input_type': 'csv',
+                'csv_fields': 'x,y,z',
+                'input': StringIO(self.df_in.to_csv(sep=sep, columns=['x','y','z'], header=False, index=False))
+            }
+            if sep_with_space:
+                params['input'] = StringIO(params['input'].read().replace(',', ', '))
+
+            response = self.client.post('/api/', params)
+            output = response.json()
+            self.assertTrue('result' in output)
+            df_out = pd.read_csv(StringIO(output['result']), sep=sep, names=['x','y','z'], index_col=False)
+            self.assertTrue(np.array_equal(df_out['x'], self.df_expect['x']))
+            self.assertTrue(np.array_equal(df_out['y'], self.df_expect['y']))
+            self.assertTrue(np.array_equal(df_out['z'], self.df_expect['z']))
+
+    def test_csv_yxz(self):
+        for sep in [',', ', ', ';', '\t', ' ']:
+            sep_with_space = sep == ', '
+            if sep_with_space:
+                sep = ','
+
+            params = {
+                'from_srid':1000005, # htrs07 tm07
+                'to_srid': 2100,     # hgrs87 tm87
+                'input_type': 'csv',
+                'csv_fields': 'y,x,z',
+                'input': StringIO(self.df_in.to_csv(sep=sep, columns=['y', 'x', 'z'], header=False, index=False))
+            }
+            if sep_with_space:
+                params['input'] = StringIO(params['input'].read().replace(',', ', '))
+
+            response = self.client.post('/api/', params)
+            output = response.json()
+            self.assertTrue('result' in output)
+            df_out = pd.read_csv(StringIO(output['result']), sep=sep, names=['y','x','z'], index_col=False)
+            self.assertTrue(np.array_equal(df_out['x'], self.df_expect['x']))
+            self.assertTrue(np.array_equal(df_out['y'], self.df_expect['y']))
+            self.assertTrue(np.array_equal(df_out['z'], self.df_expect['z']))
+
+    def test_csv_idxyz(self):
+        for sep in [',', ', ', ';', '\t', ' ']:
+            sep_with_space = sep == ', '
+            if sep_with_space:
+                sep = ','
+
+            params = {
+                'from_srid':1000005, # htrs07 tm07
+                'to_srid': 2100,     # hgrs87 tm87
+                'input_type': 'csv',
+                'csv_fields': 'id,x,y,z',
+                'input': StringIO(self.df_in.to_csv(sep=sep, columns=['x','y','z'], header=False, index=True))
+            }
+            if sep_with_space:
+                params['input'] = StringIO(params['input'].read().replace(',', ', '))
+
+            response = self.client.post('/api/', params)
+            output = response.json()
+            self.assertTrue('result' in output)
+            df_out = pd.read_csv(StringIO(output['result']), sep=sep, names=['id','x','y','z'], index_col='id')
+            self.assertTrue(np.array_equal(df_out.index, self.df_expect.index))
+            self.assertTrue(np.array_equal(df_out['x'], self.df_expect['x']))
+            self.assertTrue(np.array_equal(df_out['y'], self.df_expect['y']))
+            self.assertTrue(np.array_equal(df_out['z'], self.df_expect['z']))
+
+    def test_csv_idyxz(self):
+        for sep in [',', ', ', ';', '\t', ' ']:
+            sep_with_space = sep == ', '
+            if sep_with_space:
+                sep = ','
+
+            params = {
+                'from_srid':1000005, # htrs07 tm07
+                'to_srid': 2100,     # hgrs87 tm87
+                'input_type': 'csv',
+                'csv_fields': 'id,y,x,z',
+                'input': StringIO(self.df_in.to_csv(sep=sep, columns=['y','x','z'], header=False, index=True))
+            }
+            if sep_with_space:
+                params['input'] = StringIO(params['input'].read().replace(',', ', '))
+
+            response = self.client.post('/api/', params)
+            output = response.json()
+            self.assertTrue('result' in output)
+            df_out = pd.read_csv(StringIO(output['result']), sep=sep, names=['id','y','x','z'], index_col='id')
+            self.assertTrue(np.array_equal(df_out.index, self.df_expect.index))
+            self.assertTrue(np.array_equal(df_out['x'], self.df_expect['x']))
+            self.assertTrue(np.array_equal(df_out['y'], self.df_expect['y']))
+            self.assertTrue(np.array_equal(df_out['z'], self.df_expect['z']))
