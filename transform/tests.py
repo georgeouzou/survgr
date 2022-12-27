@@ -102,7 +102,7 @@ class TransformWorkHorseTest(TestCase):
         E, N = t(lam, phi)
         self.assertEqual(round(E[0], 3), 210057.870)
         self.assertEqual(round(N[0], 3), 4356213.327)
-    
+
     def test_transformer_between_ed50_utm_zones(self):
         # fotiou 10.8
         params = {
@@ -117,7 +117,7 @@ class TransformWorkHorseTest(TestCase):
         self.assertEqual(round(Nt[0], 3), 4017510.079)
 
     def test_transformer_between_old_greek_grid_and_hgrs87(self):
-        # Fotiou 
+        # Fotiou
         params = {
             'from_srid': 1000000, # hatt
             'to_srid': 2100,      # hgrs87, tm87
@@ -147,7 +147,7 @@ class TransformWorkHorseTest(TestCase):
             -16997.088,
             -2847.613,
         ]
-        yt = [ 
+        yt = [
             -21121.093,
             -19478.049,
             -19596.748,
@@ -209,7 +209,7 @@ class TransformWorkHorseTest(TestCase):
         E, N = t(xt, yt)
         self.assertEqual(list(round(v, 2) for v in E), Et)
         self.assertEqual(list(round(v, 2) for v in N), Nt)
-        
+
         # inverse
         params = {
             'from_srid': 2100,      # hgrs87, tm87
@@ -220,7 +220,7 @@ class TransformWorkHorseTest(TestCase):
         x, y = t(E, N)
         self.assertEqual(list(round(v, 3) for v in x), xt)
         self.assertEqual(list(round(v, 3) for v in y), yt)
-    
+
     def test_transformer_approximate_between_hatt_wgs84(self):
         p0 = [
             [-10157.950, -21121.093],
@@ -601,6 +601,48 @@ class TransformAPITestHattGGRS87(TestCase):
             self.assertTrue(np.array_equal(df_out['x'], self.df_expect['x']))
             self.assertTrue(np.array_equal(df_out['y'], self.df_expect['y']))
 
+    def test_geojson(self):
+        num_rows = len(self.df_in.index)
+
+        geojson_in = {
+            'type': 'Feature',
+            'geometry': {
+                'type': 'LineString',
+                'coordinates': [
+                    [
+                        self.df_in.iloc[i]['x'],
+                        self.df_in.iloc[i]['y'],
+                    ]
+                    for i in range(num_rows)
+                ]
+            },
+            'properties': {
+                'name': 'Test Data',
+            }
+        }
+
+        params = {
+            'from_srid':1000000,  # hatt
+            'to_srid': 2100,      # hgrs87 tm87
+            'from_hatt_id': '27', # Alexandria
+            'input_type': 'geojson',
+            'input': StringIO(json.dumps(geojson_in))
+        }
+
+        response = self.client.post('/api/', params)
+        output = response.json()
+        self.assertTrue('result' in output)
+
+        geojson_out = output['result']
+        self.assertTrue('properties' in geojson_out)
+        geom = geojson_out['geometry']
+
+        for i in range(num_rows):
+            self.assertTrue(abs(geom['coordinates'][i][0] -
+                self.df_expect.iloc[i]['x']) < 0.001)
+            self.assertTrue(abs(geom['coordinates'][i][1] -
+                self.df_expect.iloc[i]['y']) < 0.001)
+
 class TransformAPITestHTRS07GGRS87(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -717,3 +759,48 @@ class TransformAPITestHTRS07GGRS87(TestCase):
             self.assertTrue(np.array_equal(df_out['x'], self.df_expect['x']))
             self.assertTrue(np.array_equal(df_out['y'], self.df_expect['y']))
             self.assertTrue(np.array_equal(df_out['z'], self.df_expect['z']))
+
+    def test_geojson(self):
+        num_rows = len(self.df_in.index)
+
+        geojson_in = {
+            'type': 'Feature',
+            'geometry': {
+                'type': 'LineString',
+                'coordinates': [
+                    [
+                        self.df_in.iloc[i]['x'],
+                        self.df_in.iloc[i]['y'],
+                        self.df_in.iloc[i]['z'],
+                    ]
+                    for i in range(num_rows)
+                ]
+            },
+            'properties': {
+                'name': 'Test Data',
+            }
+        }
+
+        params = {
+            'from_srid':1000005, # htrs07 tm07
+            'to_srid': 2100,     # hgrs87 tm87
+            'input_type': 'geojson',
+            'input': StringIO(json.dumps(geojson_in))
+        }
+
+        response = self.client.post('/api/', params)
+        output = response.json()
+        self.assertTrue('result' in output)
+
+        geojson_out = output['result']
+        self.assertTrue('properties' in geojson_out)
+        geom = geojson_out['geometry']
+
+        for i in range(num_rows):
+            self.assertTrue(abs(geom['coordinates'][i][0] -
+                self.df_expect.iloc[i]['x']) < 0.001)
+            self.assertTrue(abs(geom['coordinates'][i][1] -
+                self.df_expect.iloc[i]['y']) < 0.001)
+            self.assertTrue(abs(geom['coordinates'][i][2] -
+                self.df_expect.iloc[i]['z']) < 0.001)
+
