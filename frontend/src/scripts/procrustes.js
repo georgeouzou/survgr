@@ -151,9 +151,135 @@ function generate_statistics_table(name, statistics) {
     `;
 
     let col = document.createElement("div");
-    $(col).addClass("col-sm-4");
+    $(col).addClass("col-sm-3");
     $(col).append(table);
     return col;
+}
+
+function rad2arcsec(x) {
+    return x * (180.0 / Math.PI) * 3600.0;
+}
+
+function scale2ppm(x) {
+    return (1.0 - x) * 1000000;
+}
+
+function generate_param_table(header, params) {
+    let table_head = document.createElement("thead");
+    {
+        let c = document.createElement("th");
+        c.textContent = header;
+        let row = document.createElement("tr");
+        $(row).append(c);
+        $(table_head).append(row);
+    }
+
+    let table_body = document.createElement("tbody");
+    {
+        params.forEach(p => {
+            let c = document.createElement("td");
+            c.textContent = p;
+            let row = document.createElement("tr");
+            $(row).append(c);
+            $(table_body).append(row);
+        })
+    }
+
+    let table = document.createElement("table");
+    table.appendChild(table_head);
+    table.appendChild(table_body);
+    $(table).addClass("table");
+    return table;
+}
+
+function generate_similarity_transformation_parameters_table(params) {
+
+    const [tx, ty, c, d] = params;
+    let rot = Math.atan(d / c);
+    let scale = Math.sqrt(c * c + d * d);
+    rot = rad2arcsec(rot);
+    scale = scale2ppm(scale);
+
+    const table_head = 'Παράμετροι μετασχηματισμού ομοιότητας';
+    const table_params = [
+        `tx: ${tx.toFixed(3)} m`,
+        `ty: ${ty.toFixed(3)} m`,
+        `θ: ${rot.toFixed(5)} arcsec`,
+        `δs: ${scale.toFixed(3)} ppm`,
+    ];
+
+    const table = generate_param_table(table_head, table_params);
+
+    let col = document.createElement("div");
+    $(col).addClass("col-sm-3");
+    $(col).append(table);
+    return col;
+}
+
+function generate_affine_transformation_parameters_table(params) {
+
+    const [tx, ty, a1, a2, b1, b2] = params;
+    let rot_x = -Math.atan(b1 / a1);
+    let rot_y = Math.atan(a2 / b2);
+    let scale_x = Math.sqrt(a1 * a1 + b1 * b1);
+    let scale_y = Math.sqrt(a2 * a2 + b2 * b2);
+    rot_x = rad2arcsec(rot_x);
+    rot_y = rad2arcsec(rot_y);
+    scale_x = scale2ppm(scale_x);
+    scale_y = scale2ppm(scale_y);
+
+    const table_head = 'Παράμετροι αφινικού μετασχηματισμού';
+    const table_params = [
+        `tx: ${tx.toFixed(3)} m`,
+        `ty: ${ty.toFixed(3)} m`,
+        `θx: ${rot_x.toFixed(5)} arcsec`,
+        `θy: ${rot_y.toFixed(5)} arcsec`,
+        `δsx: ${scale_x.toFixed(3)} ppm`,
+        `δsy: ${scale_y.toFixed(3)} ppm`,
+    ];
+
+    const table = generate_param_table(table_head, table_params);
+
+    let col = document.createElement("div");
+    $(col).addClass("col-sm-3");
+    $(col).append(table);
+    return col;
+}
+
+function generate_polynomial_transformation_parameters_table(params) {
+    const table_head = 'Παράμετροι πολυωνυμικού μετασχηματισμού';
+    const table_params = [
+        `α0: ${params[0]}`,
+        `α1: ${params[1]}`,
+        `α2: ${params[2]}`,
+        `α3: ${params[3]}`,
+        `α4: ${params[4]}`,
+        `α5: ${params[5]}`,
+        `β0: ${params[6]}`,
+        `β1: ${params[7]}`,
+        `β2: ${params[8]}`,
+        `β3: ${params[9]}`,
+        `β4: ${params[10]}`,
+        `β5: ${params[11]}`,
+    ];
+
+    const table = generate_param_table(table_head, table_params);
+
+    let col = document.createElement("div");
+    $(col).addClass("col-sm-3");
+    $(col).append(table);
+    return col;
+}
+
+
+function generate_transformation_parameters_table(type, params) {
+    if (type == TransformationType.Similarity) {
+        return generate_similarity_transformation_parameters_table(params);
+    } else if (type == TransformationType.Affine) {
+        return generate_affine_transformation_parameters_table(params);
+    } else {
+        return generate_polynomial_transformation_parameters_table(params);
+    }
 }
 
 function generate_covariance_plot(covariance_data) {
@@ -216,6 +342,13 @@ function fill_results_block(json_output) {
 
     const transformation = json_output.transformation;
     const transformation_name = transformation_names[transformation.type];
+
+    {
+        $("#output_statistics").append(
+            generate_transformation_parameters_table(
+                transformation.type, transformation.fitted_parameters)
+        );
+    }
     {
         $("#output_statistics").append(
             generate_statistics_table(
