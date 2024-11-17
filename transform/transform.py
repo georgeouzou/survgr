@@ -115,6 +115,7 @@ class WorkHorseTransformer(object):
 		Hatt params:
 		-from_hatt_id: the id of the 1:50000 hatt block (given by OKXE service) if ref. system 1 is a hattblock.
 		-to_hatt_id: the id of the 1:50000 hatt block if ref. system 2 is a hattblock.
+		-okxe_inverse_type: if the okxe inverse transform will be iterative or use the respective inverse coefficients
 	'''
 
 	def __init__(self, **params):
@@ -243,11 +244,15 @@ class WorkHorseTransformer(object):
 		# check if target-datum is the old greek, so we can use OKXE transformation
 		if srs1.datum != Datum.OLD_GREEK and srs2.datum == Datum.OLD_GREEK:
 			block = params['to_hattblock']
+			if 'okxe_inverse_type' in params:
+				is_iterative_inverse = params['okxe_inverse_type'] == 'iterative'
+			else:
+				is_iterative_inverse = True #default
 			# we need to transform from ggrs/greek grid to hatt so...we call recursively with ggrs / greek grid
 			self._compile(from_srid=from_srid, to_srid=TM87_SRID)
 			# and then transform from ggrs / greek grid to hatt map block
-			self.transformers.append(OKXETransformer(block.get_coeffs(), inverse=True))
-			self.log.append('%s --(OKXE)--> %s (%s)' % (REF_SYS[TM87_SRID].name, REF_SYS[HATT_SRID].name, block.name))
+			self.transformers.append(OKXETransformer(block.get_coeffs(), inverse=True, iterative_inverse=is_iterative_inverse))
+			self.log.append('%s --(OKXE)--> %s (%s) %s' % (REF_SYS[TM87_SRID].name, REF_SYS[HATT_SRID].name, block.name, "iter" if is_iterative_inverse else "coeffs"))
 			self.transformation_steps.append(self._compute_tranform_accuracy(REF_SYS[TM87_SRID], REF_SYS[HATT_SRID]))
 			# if to_srid is not hatt projected but in the old greek datum... i.e. TM03
 			if to_srid != HATT_SRID:

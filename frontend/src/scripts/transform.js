@@ -136,6 +136,15 @@ function initSelectors(){
       $("#to-hatt").hide(ANIM_TIME);
       $("#to-hatt input").prop('disabled', true);
     }
+
+    // hide or show type of inverse okxe transformation
+    if (!isOldGreek(fromSrid) && isOldGreek(toSrid)) {
+      $("#okxe-inverse-options").show(ANIM_TIME);
+      $("#okxe-inverse-options select").prop('disabled', false);
+    } else {
+      $("#okxe-inverse-options").hide(ANIM_TIME);
+      $("#okxe-inverse-options select").prop('disabled', true);
+    }
   });
 
   initProcrustesSelector();

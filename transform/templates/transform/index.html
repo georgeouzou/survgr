@@ -180,6 +180,14 @@
                   </div>
                 </div>
 
+                <div id="okxe-inverse-options" class="form-group">
+                  <label for="okxe-inverse-type" class="form-control-label">Αντίστροφος πολυωνυμικός μετασχηματισμός ΟΚΧΕ:</label>
+                  <select id="okxe-inverse-type" name="okxe_inverse_type" class="form-control">
+                    <option value="iterative" selected>Επαναληπτικός</option>
+                    <option value="coeffs">Με νέους συντελεστές</option>
+                  </select>
+                </div>
+
                 <!--output data-->
                 <div class="form-group">
                   <label for="output-area" class="form-control-label">Αποτελέσματα:</label>
@@ -218,6 +226,12 @@
       <p>Το Παλιό Ελληνικό Datum αναφέρεται στο λεγόμενο "Νέο" Bessel η επίλυση του οποίου πραγματοποιήθηκε από την ΓΥΣ και όχι στο "Παλαιό" Bessel της ΤΥΥΓ.
       Για μια εκτενή παρουσίαση των προβλημάτων που προκύπτουν από τυχόν ταύτισή τους διαβάστε <a href=https://kataskevesktirion.gr/%CF%80%CE%B1%CE%BB%CE%B1%CE%B9%CF%8C-%CE%BA%CE%B1%CE%B9-%CE%BD%CE%AD%CE%BF-bessel-%CE%BC%CE%AF%CE%B1-%CF%83%CF%85%CF%87%CE%BD%CE%AE-%CF%80%CE%B1%CF%81%CE%B1%CE%BD%CF%8C%CE%B7/3/>εδώ</a>.</p>
       <p>Για τους μετασχηματισμούς πρός και από το Παλαιό Ελληνικό Datum (προβολές HATT, TM3) χρησιμοποιούνται οι πολυωνυμικοί συντελεστές του OKXE και γίνεται ενδιάμεσος μετασχηματισμός στο ΕΓΣΑ87. Παρομοίως, για τους μετασχηματισμούς από και προς το HTRS07 χρησιμοποιείται το μοντέλο μετασχηματισμού HTRS07-ΕΓΣΑ87 του <a href="https://www.ktimatologio.gr/el/page/geohorika/elliniko-systima-entopismoy-hepos">Hepos</a>.</p>
+      <p>Για τους μετασχηματισμούς πρός το Παλαιό Ελληνικό Datum υπάρχουν δύο επιλογές:
+        <ul>
+          <li>Επαναληπτική αντίστροφη επίλυση με χρήση των κλασικών πολυωνυμικών συντελεστών του ΟΚΧΕ</li>
+          <li>Χρήση <a href="https://github.com/georgeouzou/survgr/issues/31">vέων αντίστροφων πολυωνυμικών συντελεστών</a></li>
+        </ul>
+      </p>
       <h3> Τι δεδομένα υποστηρίζονται </h3>
       <p>
         Με ένα απλό copy-paste από το αρχείο σας εισάγετε και μετασχηματίστε τα δεδομένα σας.
