@@ -470,6 +470,107 @@ class TransformWorkHorseTest(TestCase):
             self.assertEqual(round_list(xr, 0), round_list(get_column(p0, 0), 0))
             self.assertEqual(round_list(yr, 0), round_list(get_column(p0, 1), 0))
 
+    def test_transformer_approximate_between_old_greek_grid_and_hgrs87(self):
+        # Kotsakis
+        xt = [
+            -10157.950,
+            -16090.967,
+            -2162.917,
+            -12362.440,
+            -13108.037,
+            336.201,
+            -11231.498,
+            -8998.309,
+            -3359.300,
+            -13872.954,
+            -5158.639,
+            -9131.276,
+            -12347.558,
+            -16997.088,
+            -2847.613,
+        ]
+        yt = [
+            -21121.093,
+            -19478.049,
+            -19596.748,
+            -18883.749,
+            -18036.475,
+            -18027.094,
+            -17468.572,
+            -17261.061,
+            -17093.966,
+            -15547.749,
+            -14834.349,
+            -14708.860,
+            -14597.090,
+            -14277.153,
+            -14131.222,
+        ]
+        Et = [
+            360028.79,
+            354126.16,
+            368047.90,
+            357863.95,
+            357133.34,
+            370573.61,
+            359019.22,
+            361255.37,
+            366895.56,
+            356412.02,
+            365136.21,
+            361166.95,
+            357953.56,
+            353310.92,
+            367458.81,
+        ]
+        Nt = [
+            4490989.86,
+            4492735.79,
+            4492374.34,
+            4493264.94,
+            4494124.95,
+            4493899.90,
+            4494659.98,
+            4494828.49,
+            4494897.20,
+            4496626.27,
+            4497187.49,
+            4497382.23,
+            4497550.05,
+            4497950.95,
+            4497850.08,
+        ]
+
+        # fwd
+        params = {
+            'from_srid': 1000008, # hatt
+            'to_srid': 2100,      # hgrs87, tm87
+            'from_hatt_centroid': (40.75, -1.25) # Alexandria
+        }
+        t = WorkHorseTransformer(**params)
+        E, N = t(xt, yt)
+
+        E_diff = np.abs(np.array(E) - np.array(Et));
+        N_diff = np.abs(np.array(N) - np.array(Nt));
+        for i,j in zip(E_diff, N_diff):
+            self.assertLess(i, 10)
+            self.assertLess(j, 10)
+
+        # inverse
+        params = {
+            'from_srid': 2100,      # hgrs87, tm87
+            'to_srid': 1000008, # hatt
+            'to_hatt_centroid': (40.75, -1.25) # Alexandria
+        }
+        t = WorkHorseTransformer(**params)
+        x, y = t(E, N)
+
+        x_diff = np.abs(np.array(x) - np.array(xt));
+        y_diff = np.abs(np.array(y) - np.array(yt));
+        for i,j in zip(x_diff, y_diff):
+            self.assertLess(i, 10)
+            self.assertLess(j, 10)
+
     def test_transformer_compile(self):
         HATT_SRID = 1000000
         GGRS_SRID = 2100
