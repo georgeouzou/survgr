@@ -1,6 +1,7 @@
 import $ from 'jquery';
 import Bloodhound from 'corejs-typeahead';
 import { get as idb_get } from 'idb-keyval';
+import parseDMS from 'parse-dms';
 
 import '../styles/transform.css';
 import HATTBLOCK_FEATURES_URL from '../assets/hattblocks.min.geojson';
@@ -11,9 +12,11 @@ import { init_map } from './hattblock_map.js';
  */
 const NOT_SELECTED_ID = -1;
 const ANIM_TIME = 300;
-const HATT_SRID = 1000000;
-const OLD_GREEK_SRIDS = [1000000, 1000001, 1000002, 1000003, 4815];
-const GEODETIC_SRIDS = [4121,4815,4326,4230,1000004];
+const HATT_NEW_SRID = 1000000;
+const HATT_OLD_SRID = 1000008;
+const NEW_BESSEL_SRIDS = [1000000, 1000001, 1000002, 1000003, 4815];
+const OLD_BESSEL_SRIDS = [1000007, 1000008];
+const GEODETIC_SRIDS = [4121,4815,4326,4230,1000004,1000007];
 const PROCRUSTES_SRID = 1000006
 
 /*
@@ -89,7 +92,7 @@ function initProcrustesSelector()
       $('#to-srid').val(PROCRUSTES_SRID).trigger('change');
       $('#to-srid').attr('disabled', true);
     } else if (to_srid == PROCRUSTES_SRID && from_srid != PROCRUSTES_SRID) {
-      $('#to-srid').val(HATT_SRID).trigger('change');
+      $('#to-srid').val(HATT_NEW_SRID).trigger('change');
       $(`#to-srid option[value="${PROCRUSTES_SRID}"]`).parent().attr('hidden', true);
       $('#to-srid').attr('disabled', false);
     }
@@ -112,16 +115,22 @@ function initSelectors(){
   // on the selected srid
   // SRIDS are defined in transform.py
 
-  function isOldGreek(srid){
-    return OLD_GREEK_SRIDS.indexOf(parseInt(srid)) != -1;
+  function isNewBesselSRID(srid){
+    return NEW_BESSEL_SRIDS.indexOf(parseInt(srid)) != -1;
+  }
+  function isOldBesselSRID(srid){
+    return OLD_BESSEL_SRIDS.indexOf(parseInt(srid)) != -1;
+  }
+  function isAnyBesselSRID(srid){
+    return isNewBesselSRID(srid) || isOldBesselSRID(srid);
   }
 
   $(".srid-selection").on('change', function(){
-    // hide or show hatt selection
+    // hide or show new bessel hatt selection
     const fromSrid = $("#from-srid").val();
     const toSrid = $("#to-srid").val();
 
-    if (fromSrid == HATT_SRID || (isOldGreek(fromSrid) && !isOldGreek(toSrid))) {
+    if (fromSrid == HATT_NEW_SRID || (isNewBesselSRID(fromSrid) && !isAnyBesselSRID(toSrid))) {
       $("#from-hatt").show(ANIM_TIME);
       $("#from-hatt input").prop('disabled', false);
     } else {
@@ -129,7 +138,7 @@ function initSelectors(){
       $("#from-hatt input").prop('disabled', true);
     }
 
-    if (toSrid == HATT_SRID || (!isOldGreek(fromSrid) && isOldGreek(toSrid))) {
+    if (toSrid == HATT_NEW_SRID || (!isAnyBesselSRID(fromSrid) && isNewBesselSRID(toSrid))) {
       $("#to-hatt").show(ANIM_TIME);
       $("#to-hatt input").prop('disabled', false);
     } else {
@@ -138,13 +147,30 @@ function initSelectors(){
     }
 
     // hide or show type of inverse okxe transformation
-    if (!isOldGreek(fromSrid) && isOldGreek(toSrid)) {
+    if (!isAnyBesselSRID(fromSrid) && isNewBesselSRID(toSrid)) {
       $("#okxe-inverse-options").show(ANIM_TIME);
       $("#okxe-inverse-options select").prop('disabled', false);
     } else {
       $("#okxe-inverse-options").hide(ANIM_TIME);
       $("#okxe-inverse-options select").prop('disabled', true);
     }
+
+    // hide or show old hatt centroid inputs
+    if (fromSrid == HATT_OLD_SRID) {
+      $("#from-old-hatt").show(ANIM_TIME);
+      $("#from-old-hatt input").prop('disabled', false);
+    } else {
+      $("#from-old-hatt").hide(ANIM_TIME);
+      $("#from-old-hatt input").prop('disabled', true);
+    }
+    if (toSrid == HATT_OLD_SRID) {
+      $("#to-old-hatt").show(ANIM_TIME);
+      $("#to-old-hatt input").prop('disabled', false);
+    } else {
+      $("#to-old-hatt").hide(ANIM_TIME);
+      $("#to-old-hatt input").prop('disabled', true);
+    }
+
   });
 
   initProcrustesSelector();
@@ -172,7 +198,7 @@ function initSelectors(){
   });
 
   // select manually default hatt srid on startup
-  $(".srid-selection").val(HATT_SRID).trigger('change');
+  $(".srid-selection").val(HATT_NEW_SRID).trigger('change');
   $("#input-type input").trigger('change');
 }
 
@@ -191,8 +217,8 @@ function validateInput(){
     return false;
   }
 
-  if ((fromSrid == HATT_SRID && $("#from-hatt .hatt-id").val() == -1) || 
-      (toSrid == HATT_SRID && $("#to-hatt .hatt-id").val() == -1)) {
+  if ((fromSrid == HATT_NEW_SRID && $("#from-hatt .hatt-id").val() == -1) || 
+      (toSrid == HATT_NEW_SRID && $("#to-hatt .hatt-id").val() == -1)) {
     $('#output-area').val("Σφάλμα: Παρακαλώ επιλέξτε φύλλο χάρτη HATT.");
     return false;
   }
@@ -245,6 +271,19 @@ $('#form-params').submit(function (e){
 
   var fd = new FormData($(this)[0]);
   fd.append("input", new Blob([$('#input-area').val()], { type: "text/plain;charset=utf-8"}));
+
+  if (fd.get('from_srid') == HATT_OLD_SRID) {
+    const phi = $('#from-old-hatt-centroid-phi').val();
+    const lambda = $('#from-old-hatt-centroid-lambda').val();
+    const val = parseDMS(phi + ' ' + lambda);
+    fd.append("from_hatt_centroid", JSON.stringify(val));
+  }
+  if (fd.get('to_srid') == HATT_OLD_SRID) {
+    const phi = $('#to-old-hatt-centroid-phi').val();
+    const lambda = $('#to-old-hatt-centroid-lambda').val();
+    const val = parseDMS(phi + ' ' + lambda);
+    fd.append("to_hatt_centroid", JSON.stringify(val));
+  }
   
   if (fd.get('from_srid') == PROCRUSTES_SRID) {
     // in this case the select input is disabled, so we set the value explicitly
@@ -257,6 +296,23 @@ $('#form-params').submit(function (e){
   } else {
     send_transform_form_data($(this), fd);
   }  
+});
+
+$(".dms-text").on("focus", (e) => {
+  let t = $(e.target).val();
+  t = t.replace('°', ' ').replace('\'', '');
+  $(e.target).val(t);
+});
+
+$(".dms-text").on("focusout", (e) => {
+  const t = $(e.target).val();
+  const dm = t.split(/\s+/);
+  const degrees = (dm.length > 0) ? Math.abs(parseInt(dm[0]) || 0) : 0;
+  let minutes = (dm.length > 1) ? Math.abs(parseInt(dm[1]) || 0) : 0;
+  minutes = Math.max(0, Math.min(59, minutes));
+  const is_neg = (dm.length > 0) ? dm[0].startsWith('-') : false;
+  const neg_sign = is_neg ? "-" : "";
+  $(e.target).val(neg_sign + degrees + "°" + minutes + "'");
 });
 
 /*

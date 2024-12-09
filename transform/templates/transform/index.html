@@ -112,11 +112,24 @@
                     </span>
                   </div>
                 </div>
+
+                <!--From Old Hatt selection-->
+                <div id="from-old-hatt" class="form-group">
+                  <label for="from-old-hatt-centroid" class="form-control-label">Κέντρο φύλλου χάρτη 6'x6'</label>
+                  <div id="from-old-hatt-centroid" class="input-group">
+                    <div class="input-group-addon">Φο =</div>
+                    <input type="text" id="from-old-hatt-centroid-phi" class="form-control dms-text" placeholder="40°45'"></input>
+                    <div class="input-group-addon">Λο =</div>
+                    <input type="text" id="from-old-hatt-centroid-lambda" class="form-control dms-text" placeholder="-0°45'"></input>
+                  </div>
+                </div>
+
                 <!--input data-->
                 <div class="form-group">
                   <label for="input-area" class="form-control-label">Εισαγωγή δεδομένων:</label>
                   <textarea id="input-area" class="form-control" rows="10"></textarea>
                 </div>
+
                 <!-- input data options-->
                 <div class="row form-group"> 
                   <div class="col-sm-4">
@@ -186,6 +199,17 @@
                     <option value="iterative" selected>Επαναληπτικός</option>
                     <option value="coeffs">Με νέους συντελεστές</option>
                   </select>
+                </div>
+
+                <!--To Old Hatt selection-->
+                <div id="to-old-hatt" class="form-group">
+                  <label for="to-old-hatt-centroid" class="form-control-label">Κέντρο φύλλου χάρτη 6'x6'</label>
+                  <div id="to-old-hatt-centroid" class="input-group">
+                    <div class="input-group-addon">Φο =</div>
+                    <input type="text" id="to-old-hatt-centroid-phi" class="form-control dms-text" placeholder="40°45'"></input>
+                    <div class="input-group-addon">Λο =</div>
+                    <input type="text" id="to-old-hatt-centroid-lambda" class="form-control dms-text" placeholder="-0°45'"></input>
+                  </div>
                 </div>
 
                 <!--output data-->

@@ -35,7 +35,8 @@ def transform(request):
 		if n in ['from_srid', 'to_srid', 'from_hatt_id', 'to_hatt_id']:
 			params[n] = int(v)
 		if n in ['from_hatt_centroid', 'to_hatt_centroid']:
-			params[n] = (float(v[0]),float(v[1]))
+			latlon = json.loads(v)
+			params[n] = (latlon['lat'], latlon['lon'])
 
 	if 'okxe_inverse_type' in request.POST:
 		params['okxe_inverse_type'] = request.POST['okxe_inverse_type']
