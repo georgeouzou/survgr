@@ -232,7 +232,7 @@ class WorkHorseTransformer(object):
 						  proj4text = params['from_hattblock'].proj4text)
 		elif from_srid == HATT_OLD_SRID:
 			phi0, lambda0 = params['from_hatt_centroid']
-			srs1 = ReferenceSystem(name = '%s (φο=%f, λο=%f)' % (srs1.name, phi0, lambda0),
+			srs1 = ReferenceSystem(name = '%s (φο=%.2f, λο=%.2f)' % (srs1.name, phi0, lambda0),
 							datum = srs1.datum,
 							proj4text = hatt_proj_text_generate(phi0, lambda0))
 
@@ -242,12 +242,14 @@ class WorkHorseTransformer(object):
 						  proj4text = params['to_hattblock'].proj4text)
 		elif to_srid == HATT_OLD_SRID:
 			phi0, lambda0 = params['to_hatt_centroid']
-			srs2 = ReferenceSystem(name = '%s (φο=%f, λο=%f)' % (srs2.name, phi0, lambda0),
+			srs2 = ReferenceSystem(name = '%s (φο=%.2f, λο=%.2f)' % (srs2.name, phi0, lambda0),
 							datum = srs2.datum,
 							proj4text = hatt_proj_text_generate(phi0, lambda0))
- 	
+
+		bessel_to_bessel = (srs1.datum == Datum.NEW_BESSEL and srs2.datum == Datum.OLD_BESSEL) or (srs1.datum == Datum.OLD_BESSEL and srs2.datum == Datum.NEW_BESSEL)
+
 		# check if from-datum is the old greek (new bessel), so we can use OKXE transformation
-		if srs1.datum == Datum.NEW_BESSEL and srs2.datum != Datum.NEW_BESSEL:
+		if not bessel_to_bessel and srs1.datum == Datum.NEW_BESSEL and srs2.datum != Datum.NEW_BESSEL:
 			block = params['from_hattblock']
 			# if not hatt projected ref. sys. but on greek datum... i.e. TM03 --> HATT
 			if from_srid != HATT_NEW_SRID:
@@ -261,7 +263,7 @@ class WorkHorseTransformer(object):
 			return # end
 
 		# check if target-datum is the old greek (new bessel), so we can use OKXE transformation
-		if srs1.datum != Datum.NEW_BESSEL and srs2.datum == Datum.NEW_BESSEL:
+		if not bessel_to_bessel and srs1.datum != Datum.NEW_BESSEL and srs2.datum == Datum.NEW_BESSEL:
 			block = params['to_hattblock']
 			if 'okxe_inverse_type' in params:
 				is_iterative_inverse = params['okxe_inverse_type'] == 'iterative'
@@ -287,13 +289,15 @@ class WorkHorseTransformer(object):
 			self.log.append('%s --(Hepos)--> %s' % (REF_SYS[TM07_SRID].name, REF_SYS[TM87_SRID].name))
 			self.transformation_steps.append(self._compute_tranform_accuracy(REF_SYS[TM07_SRID], REF_SYS[TM87_SRID]))
 			# call recursively with ggrs / greek grid
-			self._compile(from_srid=TM87_SRID, to_srid=to_srid)
+			params['from_srid'] = TM87_SRID
+			self._compile(**params)
 			return # end
 
 		# check if target-datum is htrs 
 		if srs1.datum != Datum.HTRS07 and srs2.datum == Datum.HTRS07:
 			# transform from anywhere to greek grid
-			self._compile(from_srid=from_srid, to_srid=TM87_SRID)
+			params['to_srid'] = TM87_SRID
+			self._compile(**params)
 			# then use Hepos transformation : GGRS87/GG --> HTRS / TM07
 			self.transformers.append(HeposTransformer(inverse=True))
 			# update log
