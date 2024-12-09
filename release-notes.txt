@@ -14,3 +14,7 @@
 - transform: use proj library's horner for faster hatt-ggrs transformation
 - transform: mmap htrs grid file for faster/lazy reads
 - transform: ability to use procrustes' generated parameters
+
+--- version 2.1 ---
+- transform: add "Old Bessel" datum and custom Hatt (6'x6') projections
+- transform: add option for non-iterative inverse OKXE polynomial transformation
