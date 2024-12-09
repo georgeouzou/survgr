@@ -2,7 +2,7 @@ asgiref
 backports.zoneinfo==0.2.1;  python_version < '3.9'
 certifi==2024.7.4
 dj-database-url==0.5.0
-Django==4.1.13
+Django==4.2.16
 django-webpack-loader==1.0.0
 geojson==2.5.0
 gunicorn==22.0.0
