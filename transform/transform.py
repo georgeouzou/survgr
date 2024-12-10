@@ -237,7 +237,7 @@ class WorkHorseTransformer(object):
 						  proj4text = params['from_hattblock'].proj4text)
 		elif from_srid == HATT_OLD_SRID:
 			phi0, lambda0 = params['from_hatt_centroid']
-			srs1 = ReferenceSystem(name = '%s (φο=%.2f, λο=%.2f)' % (srs1.name, phi0, lambda0),
+			srs1 = ReferenceSystem(name = '%s (Φο=%.2f, Λο=%.2f)' % (srs1.name, phi0, lambda0),
 							datum = srs1.datum,
 							proj4text = hatt_proj_text_generate(phi0, lambda0))
 
@@ -247,7 +247,7 @@ class WorkHorseTransformer(object):
 						  proj4text = params['to_hattblock'].proj4text)
 		elif to_srid == HATT_OLD_SRID:
 			phi0, lambda0 = params['to_hatt_centroid']
-			srs2 = ReferenceSystem(name = '%s (φο=%.2f, λο=%.2f)' % (srs2.name, phi0, lambda0),
+			srs2 = ReferenceSystem(name = '%s (Φο=%.2f, Λο=%.2f)' % (srs2.name, phi0, lambda0),
 							datum = srs2.datum,
 							proj4text = hatt_proj_text_generate(phi0, lambda0))
 

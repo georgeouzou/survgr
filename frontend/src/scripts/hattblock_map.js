@@ -209,7 +209,7 @@ function get_hattblock_label(feature, resolution) {
     let [sign_lambda, d_lambda, m_lambda, ] = decdeg2dms(lambda);
 
 
-    let info1 = ` Φo ${sign_phi}${d_phi}\u00B0${m_phi}`;
+    let info1 = ` Φo ${sign_phi}${d_phi}\u00B0${m_phi}'`;
     let info2 = ` Λo ${sign_lambda}${d_lambda}\u00B0${m_lambda}'`;
 
     return [
