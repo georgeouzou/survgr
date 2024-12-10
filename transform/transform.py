@@ -199,11 +199,16 @@ class WorkHorseTransformer(object):
 
 			ed50_wgs84 = (refsys1.datum == Datum.ED50 and refsys2.datum == Datum.WGS84)
 			ed50_wgs84 |= (refsys1.datum == Datum.WGS84 and refsys2.datum == Datum.ED50)
+
+			bessel_to_bessel = (refsys1.datum == Datum.NEW_BESSEL and refsys2.datum == Datum.OLD_BESSEL)
+			bessel_to_bessel |= (refsys1.datum == Datum.OLD_BESSEL and refsys2.datum == Datum.NEW_BESSEL)
 			
 			if ggrs_htrs:
 				return "Μετασχηματισμός %s μέσω διορθωτικών grid του Hepos. Ακρίβεια Οριζόντια ~ 0.05 m, Υψομετρική > 1 m" % (middle_text)
 			elif ggrs_new_bessel: 
 				return "Μετασχηματισμός %s μέσω πολυωνυμικών συντελεστών OKXE. Ακρίβεια ~ 0.10-0.15 m" % (middle_text)
+			elif bessel_to_bessel:
+				return "Μετασχηματισμός %s, θεωρητικά ίδιων datum αλλά άγνωστης ακρίβειας στην πράξη." % (middle_text)
 			else:
 				acc = "1" if ggrs_wgs84 else "5-10"
 				return "Προσεγγιστικός μετασχηματισμός %s. Ακρίβεια ~ %s m" % (middle_text, acc)
