@@ -275,13 +275,13 @@ $('#form-params').submit(function (e){
   if (fd.get('from_srid') == HATT_OLD_SRID) {
     const phi = $('#from-old-hatt-centroid-phi').val();
     const lambda = $('#from-old-hatt-centroid-lambda').val();
-    const val = parseDMS(phi + ' ' + lambda);
+    const val = parseDMS(phi + '  ' + lambda); // needs 2 spaces to work correctly
     fd.append("from_hatt_centroid", JSON.stringify(val));
   }
   if (fd.get('to_srid') == HATT_OLD_SRID) {
     const phi = $('#to-old-hatt-centroid-phi').val();
     const lambda = $('#to-old-hatt-centroid-lambda').val();
-    const val = parseDMS(phi + ' ' + lambda);
+    const val = parseDMS(phi + '  ' + lambda); // needs 2 spaces to work correctly
     fd.append("to_hatt_centroid", JSON.stringify(val));
   }
   
